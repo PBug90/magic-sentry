@@ -1,3 +1,27 @@
+use std::mem::MaybeUninit;
+use std::ptr;
+
+/// Reads a value from a potentially unaligned pointer using byte-by-byte volatile reads.
+///
+/// This is the correct primitive for fields of `#[repr(C, packed)]` structs that live in
+/// shared memory written by an external process (WC3):
+/// - **Volatile per byte**: the compiler must re-fetch each byte from memory on every call
+///   and cannot cache or hoist the read across loop iterations in release builds.
+/// - **Alignment-safe**: reads u8 at a time, so no alignment requirement on `src`.
+///
+/// # Safety
+/// `src` must point to `size_of::<T>()` readable bytes of shared memory for the
+/// lifetime of the call.
+pub unsafe fn vread_unaligned<T>(src: *const T) -> T {
+    let mut buf = MaybeUninit::<T>::uninit();
+    let dst = buf.as_mut_ptr() as *mut u8;
+    let src = src as *const u8;
+    for i in 0..std::mem::size_of::<T>() {
+        dst.add(i).write(ptr::read_volatile(src.add(i)));
+    }
+    buf.assume_init()
+}
+
 pub fn race_str(r: u8) -> &'static str {
     match r {
         1 => "Human",

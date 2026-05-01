@@ -13,7 +13,13 @@ use warcraft3_stats_observer::{ObserverData, ObserverHandle};
 use display::{redraw, DIVIDER};
 use record::write_snapshot;
 use types::{HeroSample, PlayerRecord, PlayerSummary, Sample, UnitSnapshot};
-use util::{fmt_time, race_str, short_map_name};
+use util::{fmt_time, race_str, short_map_name, vread_unaligned};
+
+macro_rules! vread {
+    ($field:expr) => {
+        unsafe { vread_unaligned(ptr::addr_of!($field)) }
+    };
+}
 
 fn main() {
     execute!(std::io::stdout(), cursor::Hide).ok();
@@ -29,26 +35,27 @@ fn main() {
         };
 
         // Wait for a game to start.
-        if !unsafe { ptr::read_volatile(ptr::addr_of!(od.game.in_game)) } {
+        if !vread!(od.game.in_game) {
             let mut ticks: u32 = 0;
             loop {
                 redraw(&[format!("WC3 connected  ·  Waiting for a game to start...  [{ticks}]")]);
                 thread::sleep(Duration::from_secs(1));
                 ticks += 1;
-                if unsafe { ptr::read_volatile(ptr::addr_of!(od.game.in_game)) } {
+                if vread!(od.game.in_game) {
                     break;
                 }
             }
         }
 
         run_game(&od);
+        // od is dropped here, calling UnmapViewOfFile + CloseHandle
     }
 }
 
 fn run_game(od: &ObserverData) {
     let map_name     = short_map_name(&od.game.map_name.to_string());
     let game_name    = od.game.game_name.to_string();
-    let player_count = unsafe { ptr::read_volatile(ptr::addr_of!(od.game.active_player_count)) } as usize;
+    let player_count = vread!(od.game.active_player_count) as usize;
 
     let sanitize = |s: &str| -> String {
         s.chars()
@@ -67,8 +74,8 @@ fn run_game(od: &ObserverData) {
         .take(player_count)
         .map(|p| PlayerRecord {
             name: p.name.to_string(),
-            race: race_str(unsafe { ptr::read_unaligned(ptr::addr_of!(p.player_race)) } as u8).to_string(),
-            team: { p.team_index },
+            race: race_str(vread!(p.player_race) as u8).to_string(),
+            team: vread!(p.team_index),
             result: String::new(),
             time_in_upkeep_ms: Vec::new(),
             samples: Vec::new(),
@@ -87,50 +94,50 @@ fn run_game(od: &ObserverData) {
     let mut ticks: u32 = 0;
 
     loop {
-        let time_ms = od.game.time().as_millis() as u64;
+        let time_ms = unsafe { vread_unaligned(od.game.time_ms_ptr()) } as u64;
 
         let clock_advanced = players[0].samples.last().map_or(true, |s| s.time_ms != time_ms);
 
         if clock_advanced {
             for (i, p) in od.players.iter().take(player_count).enumerate() {
-                let hero_count = { p.hero_count } as usize;
+                let hero_count = vread!(p.hero_count) as usize;
                 let heroes = p.heroes.iter().take(hero_count).map(|h| HeroSample {
                     name:            h.name.to_string(),
-                    level:           { h.level },
-                    xp:              { h.experience },
-                    hp:              { h.hit_points },
-                    hp_max:          { h.max_hit_points },
-                    mp:              { h.mana_points },
-                    mp_max:          { h.max_mana_points },
-                    damage_dealt:    { h.damage_dealt },
-                    damage_received: { h.damage_received },
-                    healing_done:    { h.healing_done },
-                    deaths:          { h.number_of_deaths },
-                    kills:           { h.total_kills },
-                    hero_kills:      { h.hero_kills },
-                    building_kills:  { h.building_kills },
+                    level:           vread!(h.level),
+                    xp:              vread!(h.experience),
+                    hp:              vread!(h.hit_points),
+                    hp_max:          vread!(h.max_hit_points),
+                    mp:              vread!(h.mana_points),
+                    mp_max:          vread!(h.max_mana_points),
+                    damage_dealt:    vread!(h.damage_dealt),
+                    damage_received: vread!(h.damage_received),
+                    healing_done:    vread!(h.healing_done),
+                    deaths:          vread!(h.number_of_deaths),
+                    kills:           vread!(h.total_kills),
+                    hero_kills:      vread!(h.hero_kills),
+                    building_kills:  vread!(h.building_kills),
                 }).collect();
 
                 players[i].samples.push(Sample {
                     time_ms,
-                    gold:               { p.gold },
-                    gold_mined:         { p.gold_mined },
-                    gold_upkeep_lost:   { p.gold_upkeep_lost },
-                    lumber:             { p.lumber },
-                    lumber_mined:       { p.lumber_mined },
-                    lumber_upkeep_lost: { p.lumber_upkeep_lost },
-                    food_used:          { p.food_used },
-                    food_cap:           { p.food_cap },
-                    apm:                { p.actions_per_minute },
+                    gold:               vread!(p.gold),
+                    gold_mined:         vread!(p.gold_mined),
+                    gold_upkeep_lost:   vread!(p.gold_upkeep_lost),
+                    lumber:             vread!(p.lumber),
+                    lumber_mined:       vread!(p.lumber_mined),
+                    lumber_upkeep_lost: vread!(p.lumber_upkeep_lost),
+                    food_used:          vread!(p.food_used),
+                    food_cap:           vread!(p.food_cap),
+                    apm:                vread!(p.actions_per_minute),
                     heroes,
                     units: {
-                        let unit_count = { p.unit_count } as usize;
+                        let unit_count = vread!(p.unit_count) as usize;
                         p.units.iter().take(unit_count)
-                            .filter(|u| { u.total_amount } > 0)
+                            .filter(|u| vread!(u.total_amount) > 0)
                             .map(|u| UnitSnapshot {
                                 name:    u.name.to_string(),
-                                alive:   { u.current_amount },
-                                trained: { u.total_amount },
+                                alive:   vread!(u.current_amount),
+                                trained: vread!(u.total_amount),
                             })
                             .collect()
                     },
@@ -139,10 +146,7 @@ fn run_game(od: &ObserverData) {
         }
 
         let game_over = od.players.iter().take(player_count).any(|p| {
-            matches!(
-                unsafe { ptr::read_volatile(ptr::addr_of!(p.game_result)) } as u8,
-                0 | 1 | 2
-            )
+            matches!(vread!(p.game_result) as u8, 0 | 1 | 2)
         });
 
         let mut lines: Vec<String> = Vec::new();

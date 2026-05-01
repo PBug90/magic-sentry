@@ -260,7 +260,7 @@ checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
 [[package]]
 name = "warcraft3-stats-observer"
 version = "0.1.1"
-source = "git+https://github.com/PBug90/Warcraft3StatsObserverRs?branch=main#3d62572f9927ad2af555d7e20476c13ea52bad0d"
+source = "git+https://github.com/PBug90/Warcraft3StatsObserverRs?branch=main#82b0e2ee45314fa8d298608925d9e5b295fba238"
 dependencies = [
  "winapi",
 ]
