@@ -4,10 +4,10 @@ mod types;
 mod util;
 
 use std::ptr;
-use std::thread;
 use std::time::Duration;
 
-use crossterm::{cursor, execute};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
+use crossterm::{cursor, execute, terminal};
 use warcraft3_stats_observer::{ObserverData, ObserverHandle};
 
 use display::{redraw, DIVIDER};
@@ -21,30 +21,65 @@ macro_rules! vread {
     };
 }
 
+fn ctrl_c_exit() {
+    terminal::disable_raw_mode().ok();
+    std::process::exit(0);
+}
+
+fn is_ctrl_c(key: &event::KeyEvent) -> bool {
+    key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL)
+        || key.code == KeyCode::Char('\x03')
+}
+
+fn is_game_over(od: &ObserverData, player_count: usize) -> bool {
+    od.players.iter().take(player_count).any(|p| {
+        matches!(vread!(p.game_result) as u8, 0 | 1 | 2)
+    })
+}
+
+fn sleep_or_exit(duration: Duration) {
+    let deadline = std::time::Instant::now() + duration;
+    loop {
+        let remaining = deadline.saturating_duration_since(std::time::Instant::now());
+        if remaining.is_zero() { break; }
+        if event::poll(remaining).unwrap_or(false) {
+            if let Ok(Event::Key(key)) = event::read() {
+                if is_ctrl_c(&key) { ctrl_c_exit(); }
+            }
+        } else {
+            break;
+        }
+    }
+}
+
 fn main() {
+    terminal::enable_raw_mode().ok();
     execute!(std::io::stdout(), cursor::Hide).ok();
 
     loop {
-        // Acquire the shared memory region.
-        let od = loop {
-            match ObserverHandle::new() {
-                Ok(od) => break od,
-                Err(_) => redraw(&["Waiting for Warcraft III...".to_string()]),
+        let od = match ObserverHandle::new() {
+            Ok(od) => od,
+            Err(_) => {
+                redraw(&[
+                    "Waiting for Warcraft III...".to_string(),
+                    String::new(),
+                    "Hint: if W3Champions is running, try reloading it (F5) to allow detection.".to_string(),
+                ]);
+                sleep_or_exit(Duration::from_secs(2));
+                continue;
             }
-            thread::sleep(Duration::from_secs(2));
         };
 
-        // Wait for a game to start.
         if !vread!(od.game.in_game) {
-            let mut ticks: u32 = 0;
-            loop {
-                redraw(&[format!("WC3 connected  ·  Waiting for a game to start...  [{ticks}]")]);
-                thread::sleep(Duration::from_secs(1));
-                ticks += 1;
-                if vread!(od.game.in_game) {
-                    break;
-                }
-            }
+            redraw(&["WC3 connected  ·  Waiting for a game to start...".to_string()]);
+            sleep_or_exit(Duration::from_secs(2));
+            continue; // drops od, so next iteration detects if WC3 closed
+        }
+
+        let player_count = vread!(od.game.active_player_count) as usize;
+        if is_game_over(&od, player_count) {
+            sleep_or_exit(Duration::from_secs(2));
+            continue;
         }
 
         run_game(&od);
@@ -92,11 +127,14 @@ fn run_game(od: &ObserverData) {
     let filename = format!("{epoch}-{player_slugs}-{safe_map}.json");
 
     let mut ticks: u32 = 0;
+    let mut stale_ticks: u32 = 0;
 
     loop {
         let time_ms = unsafe { vread_unaligned(od.game.time_ms_ptr()) } as u64;
 
         let clock_advanced = players[0].samples.last().map_or(true, |s| s.time_ms != time_ms);
+
+        if clock_advanced { stale_ticks = 0; } else { stale_ticks += 1; }
 
         if clock_advanced {
             for (i, p) in od.players.iter().take(player_count).enumerate() {
@@ -145,9 +183,7 @@ fn run_game(od: &ObserverData) {
             }
         }
 
-        let game_over = od.players.iter().take(player_count).any(|p| {
-            matches!(vread!(p.game_result) as u8, 0 | 1 | 2)
-        });
+        let game_over = is_game_over(od, player_count);
 
         let mut lines: Vec<String> = Vec::new();
         lines.push(format!("Map      {map_name}"));
@@ -169,19 +205,35 @@ fn run_game(od: &ObserverData) {
             lines.push(String::new());
             lines.push("Game over.".to_string());
         }
+        if stale_ticks >= 10 {
+            lines.push(String::new());
+            lines.push("Game appears stalled. Press [p] to stop recording.".to_string());
+        }
         redraw(&lines);
 
         ticks += 1;
         if ticks % 30 == 0 {
-            write_snapshot(&filename, &map_name, &game_name, &mut players, &od, player_count);
+            write_snapshot(&filename, &map_name, &game_name, &mut players, od, player_count);
         }
 
         if game_over {
             write_snapshot(&filename, &map_name, &game_name, &mut players, od, player_count);
-            thread::sleep(Duration::from_secs(1));
             return;
         }
 
-        thread::sleep(Duration::from_secs(1));
+        if event::poll(Duration::from_secs(1)).unwrap_or(false) {
+            if let Ok(Event::Key(key)) = event::read() {
+                if is_ctrl_c(&key) { ctrl_c_exit(); }
+                if key.kind == KeyEventKind::Press {
+                    match key.code {
+                        KeyCode::Char('p') => {
+                            write_snapshot(&filename, &map_name, &game_name, &mut players, od, player_count);
+                            return;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
     }
 }
