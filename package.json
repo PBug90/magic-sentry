@@ -1,0 +1,24 @@
+{
+  "name": "magic-sentry-monorepo",
+  "private": true,
+  "workspaces": [
+    "twitch-extension",
+    "web"
+  ],
+  "scripts": {
+    "dev": "docker compose up -d && concurrently --names \"web,ext\" --prefix-colors \"cyan,magenta\" \"npm -w magic-sentry-web run dev\" \"npm -w twitch-extension run dev\"",
+    "dev:extension": "npm -w twitch-extension run dev",
+    "dev:web": "npm -w magic-sentry-web run dev",
+    "build:extension": "npm -w twitch-extension run build",
+    "build:web": "npm -w magic-sentry-web run build",
+    "build:all": "npm -w twitch-extension run build && npm -w magic-sentry-web run build",
+    "typecheck:extension": "npm -w twitch-extension run typecheck",
+    "typecheck:web": "npm -w magic-sentry-web run typecheck",
+    "test:web": "npm -w magic-sentry-web run test:server",
+    "format": "prettier --write \"**/*.{ts,tsx,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.8.3"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "magic-sentry-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "vite",
+    "dev:server": "tsx --watch --env-file=.env src/server/index.ts",
+    "build": "npm run build:server && npm run build:client",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "start": "node --env-file=.env dist/server/index.js",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
+    "test:server": "vitest run --config vitest.config.server.ts"
+  },
+  "dependencies": {
+    "hono": "^4.6.0",
+    "postgres": "^3.4.9",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.0.0",
+    "to-ico": "^1.1.5",
+    "tsx": "^4.19.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.0",
+    "vitest": "^4.1.5"
+  }
+}

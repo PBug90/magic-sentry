@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  test-cli:
     runs-on: windows-latest
 
     steps:
@@ -28,5 +28,61 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
 
-      - name: Build
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Test CLI
+        run: cargo test -p magic-sentry
+
+      - name: Build CLI
         run: cargo build --release --target x86_64-pc-windows-msvc
+
+  test-web:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: magic_sentry
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Test web server
+        run: npm run test:web
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost/magic_sentry
+
+      - name: Type-check twitch-extension
+        run: npm run typecheck:extension
+
+      - name: Type-check magic-sentry-web
+        run: npm run typecheck:web
+
+      - name: Build twitch-extension
+        run: npm run build:extension
+
+      - name: Build magic-sentry-web
+        run: npm run build:web

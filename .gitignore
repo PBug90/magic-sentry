@@ -1,2 +1,20 @@
+# Rust
 /target
+
+# CLI game output files (generated at runtime, not project assets)
+/cli/*.json
+
+# Node
+node_modules/
+
+# Web server
+/web/.env
+/web/dist/
+/web/public/favicon.ico
+
+# Twitch extension
+/twitch-extension/dist/
+/twitch-extension/node_modules/
+
+# Claude
 .claude
