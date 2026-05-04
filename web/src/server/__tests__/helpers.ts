@@ -8,6 +8,7 @@ export const TEST_USER: TwitchUser = {
   login: 'back2warcraft',
   display_name: 'Back2Warcraft',
   profile_image_url: 'https://example.com/avatar.png',
+  allowed: true,
 }
 
 /** Truncate all DB tables and clear in-memory store state. */
@@ -17,9 +18,17 @@ export async function resetAll(): Promise<void> {
   authStore.reset()
 }
 
-/** Insert a user and return a fresh CLI token for them. */
+/** Insert an approved user and return a fresh CLI token for them. */
 export async function seedUserWithToken(user: TwitchUser = TEST_USER): Promise<string> {
   await authStore.upsertUser(user)
+  await sql`UPDATE users SET allowed = true WHERE id = ${user.id}`
+  return authStore.createCliToken(user.id, 'test token')
+}
+
+/** Insert an unapproved user (allowed=false) and return a fresh CLI token for them. */
+export async function seedUnapprovedUserWithToken(user: TwitchUser = TEST_USER): Promise<string> {
+  await authStore.upsertUser(user)
+  // allowed stays false (DB default)
   return authStore.createCliToken(user.id, 'test token')
 }
 

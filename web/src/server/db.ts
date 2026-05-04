@@ -21,9 +21,14 @@ export async function migrate(): Promise<void> {
       login             TEXT        NOT NULL,
       display_name      TEXT        NOT NULL,
       profile_image_url TEXT        NOT NULL,
+      allowed           BOOLEAN     NOT NULL DEFAULT FALSE,
       created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
+  `
+
+  await sql`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS allowed BOOLEAN NOT NULL DEFAULT FALSE
   `
 
   await sql`

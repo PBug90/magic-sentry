@@ -2,7 +2,13 @@ import { beforeAll, beforeEach, afterAll, describe, it, expect } from 'vitest'
 import { migrate, sql } from '../db.js'
 import { authStore } from '../authStore.js'
 import { createApp } from '../app.js'
-import { resetAll, seedUserWithToken, makePatch, TEST_USER } from './helpers.js'
+import {
+  resetAll,
+  seedUserWithToken,
+  seedUnapprovedUserWithToken,
+  makePatch,
+  TEST_USER,
+} from './helpers.js'
 
 const app = createApp()
 
@@ -167,6 +173,60 @@ describe('POST /auth/token/me', () => {
     const body = (await res.json()) as { authorized: boolean; user: { login: string } }
     expect(body.authorized).toBe(true)
     expect(body.user.login).toBe(TEST_USER.login)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// allowed flag enforcement
+// ---------------------------------------------------------------------------
+
+describe('allowed flag enforcement', () => {
+  function sessionHeader(token: string) {
+    return { Cookie: `session=${token}` }
+  }
+
+  it('POST /api/ingest returns 401 for an unapproved user token', async () => {
+    const token = await seedUnapprovedUserWithToken()
+    const res = await app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch()),
+    })
+    expect(res.status).toBe(401)
+  })
+
+  it('POST /auth/token/me returns 401 for an unapproved user token', async () => {
+    const token = await seedUnapprovedUserWithToken()
+    const res = await app.request('/auth/token/me', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    expect(res.status).toBe(401)
+  })
+
+  it('POST /api/tokens returns 403 for an unapproved session user', async () => {
+    const user = await authStore.upsertUser(TEST_USER)
+    // user.allowed is false — session reflects that
+    const session = authStore.createSession(user)
+    const res = await app.request('/api/tokens', {
+      method: 'POST',
+      headers: { ...sessionHeader(session), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label: 'my cli' }),
+    })
+    expect(res.status).toBe(403)
+  })
+
+  it('POST /api/tokens succeeds once the user is approved', async () => {
+    await authStore.upsertUser(TEST_USER)
+    await sql`UPDATE users SET allowed = true WHERE id = ${TEST_USER.id}`
+    const user = await authStore.upsertUser(TEST_USER) // re-fetch to get allowed: true
+    const session = authStore.createSession(user)
+    const res = await app.request('/api/tokens', {
+      method: 'POST',
+      headers: { ...sessionHeader(session), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label: 'my cli' }),
+    })
+    expect(res.status).toBe(201)
   })
 })
 

@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, afterAll, describe, it, expect } from 'vitest'
 import { migrate, sql } from '../db.js'
 import { authStore } from '../authStore.js'
-import { resetAll, TEST_USER } from './helpers.js'
+import { resetAll, TEST_USER, seedUnapprovedUserWithToken } from './helpers.js'
 
 beforeAll(async () => {
   await migrate()
@@ -27,16 +27,45 @@ describe('upsertUser', () => {
     const rows = await sql`SELECT display_name FROM users WHERE id = ${TEST_USER.id}`
     expect(rows[0].display_name).toBe('Updated')
   })
+
+  it('returns allowed: false for a new user', async () => {
+    const user = await authStore.upsertUser(TEST_USER)
+    expect(user.allowed).toBe(false)
+  })
+
+  it('preserves allowed: true when upserting an existing approved user', async () => {
+    await authStore.upsertUser(TEST_USER)
+    await sql`UPDATE users SET allowed = true WHERE id = ${TEST_USER.id}`
+    const user = await authStore.upsertUser({ ...TEST_USER, display_name: 'Updated' })
+    expect(user.allowed).toBe(true)
+  })
+
+  it('does not grant allowed when upserting an unapproved user', async () => {
+    await authStore.upsertUser(TEST_USER)
+    const user = await authStore.upsertUser({ ...TEST_USER, display_name: 'Updated' })
+    expect(user.allowed).toBe(false)
+  })
 })
 
 describe('CLI tokens', () => {
-  it('validateBearer approves a freshly created token', async () => {
+  it('validateBearer approves a token for an approved user', async () => {
     await authStore.upsertUser(TEST_USER)
+    await sql`UPDATE users SET allowed = true WHERE id = ${TEST_USER.id}`
     const token = await authStore.createCliToken(TEST_USER.id, 'test')
     const result = await authStore.validateBearer(token)
     expect(result.authorized).toBe(true)
     if (result.authorized) {
       expect(result.user.login).toBe(TEST_USER.login)
+      expect(result.user.allowed).toBe(true)
+    }
+  })
+
+  it('validateBearer rejects a token for an unapproved user', async () => {
+    const token = await seedUnapprovedUserWithToken()
+    const result = await authStore.validateBearer(token)
+    expect(result.authorized).toBe(false)
+    if (!result.authorized) {
+      expect(result.reason).toMatch(/approved/)
     }
   })
 

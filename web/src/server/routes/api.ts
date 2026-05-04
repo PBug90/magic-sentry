@@ -46,6 +46,7 @@ api.get('/me', (c) => {
 api.post('/tokens', async (c) => {
   const user = getSessionUser(c)
   if (!user) return c.json({ error: 'unauthorized' }, 401)
+  if (!user.allowed) return c.json({ error: 'account not yet approved' }, 403)
 
   const body = await c.req.json<{ label?: string }>().catch(() => ({}) as { label?: string })
   const labelErr = validateTokenLabel(body.label)

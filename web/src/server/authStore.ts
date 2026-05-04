@@ -10,6 +10,7 @@ export interface TwitchUser {
   login: string
   display_name: string
   profile_image_url: string
+  allowed: boolean
 }
 
 export interface Session {
@@ -98,8 +99,8 @@ class AuthStore {
   // Users (persisted)
   // ---------------------------------------------------------------------------
 
-  async upsertUser(user: TwitchUser): Promise<void> {
-    await sql`
+  async upsertUser(user: Omit<TwitchUser, 'allowed'>): Promise<TwitchUser> {
+    const rows = await sql<{ allowed: boolean }[]>`
       INSERT INTO users (id, login, display_name, profile_image_url)
       VALUES (${user.id}, ${user.login}, ${user.display_name}, ${user.profile_image_url})
       ON CONFLICT (id) DO UPDATE SET
@@ -107,7 +108,9 @@ class AuthStore {
         display_name      = EXCLUDED.display_name,
         profile_image_url = EXCLUDED.profile_image_url,
         updated_at        = NOW()
+      RETURNING allowed
     `
+    return { ...user, allowed: rows[0].allowed }
   }
 
   // ---------------------------------------------------------------------------
@@ -155,9 +158,15 @@ class AuthStore {
   /** Returns the Twitch user associated with a CLI token, or null if not found. */
   async getUserByCliToken(token: string): Promise<TwitchUser | null> {
     const rows = await sql<
-      { id: string; login: string; display_name: string; profile_image_url: string }[]
+      {
+        id: string
+        login: string
+        display_name: string
+        profile_image_url: string
+        allowed: boolean
+      }[]
     >`
-      SELECT u.id, u.login, u.display_name, u.profile_image_url
+      SELECT u.id, u.login, u.display_name, u.profile_image_url, u.allowed
       FROM cli_tokens ct
       JOIN users u ON u.id = ct.user_id
       WHERE ct.token = ${token}
@@ -192,9 +201,15 @@ class AuthStore {
 
   private async getUserByPublicToken(token: string): Promise<TwitchUser | null> {
     const rows = await sql<
-      { id: string; login: string; display_name: string; profile_image_url: string }[]
+      {
+        id: string
+        login: string
+        display_name: string
+        profile_image_url: string
+        allowed: boolean
+      }[]
     >`
-      SELECT u.id, u.login, u.display_name, u.profile_image_url
+      SELECT u.id, u.login, u.display_name, u.profile_image_url, u.allowed
       FROM public_tokens pt
       JOIN users u ON u.id = pt.user_id
       WHERE pt.token = ${token}
@@ -211,7 +226,10 @@ class AuthStore {
     // All tokens are 64-char lowercase hex
     if (/^[0-9a-f]{64}$/.test(bearer)) {
       const user = await this.getUserByCliToken(bearer)
-      if (user) return { authorized: true, user }
+      if (user) {
+        if (!user.allowed) return { authorized: false, reason: 'account not yet approved' }
+        return { authorized: true, user }
+      }
     }
 
     return { authorized: false, reason: 'invalid token' }

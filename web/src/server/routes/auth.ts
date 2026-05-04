@@ -81,9 +81,9 @@ auth.get('/twitch/callback', async (c) => {
   }
 
   const twitchUser = data[0]
-  await authStore.upsertUser(twitchUser)
-  await authStore.ensurePublicToken(twitchUser.id)
-  const sessionToken = authStore.createSession(twitchUser)
+  const user = await authStore.upsertUser(twitchUser)
+  await authStore.ensurePublicToken(user.id)
+  const sessionToken = authStore.createSession(user)
 
   setCookie(c, 'session', sessionToken, {
     httpOnly: true,
