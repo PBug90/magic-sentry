@@ -317,6 +317,146 @@ function PublicTokenSection({ user }: { user: TwitchUser }) {
   )
 }
 
+interface TrafficRow {
+  day: string
+  ingestCount: number
+  ingestBytes: number
+  fetchCount: number
+  fetchBytes: number
+}
+
+function fmtBytes(n: number): string {
+  if (n === 0) return '—'
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
+  if (n < 1024 * 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(2)} MB`
+  return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`
+}
+
+function DataUsageSection({ user }: { user: TwitchUser }) {
+  const [rows, setRows] = useState<TrafficRow[] | null>(null)
+
+  useEffect(() => {
+    fetch('/api/traffic')
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setRows(data)
+      })
+      .catch(() => setRows([]))
+  }, [user.id])
+
+  const totalIngest = rows?.reduce((s, r) => s + r.ingestBytes, 0) ?? 0
+  const totalFetch = rows?.reduce((s, r) => s + r.fetchBytes, 0) ?? 0
+
+  return (
+    <section className="section">
+      <h2 className="section-title">Data Usage</h2>
+      <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24, marginTop: -10 }}>
+        Network traffic across all your tokens for the past 30 days.
+      </p>
+
+      {rows === null ? (
+        <p className="status-empty">Loading…</p>
+      ) : rows.length === 0 ? (
+        <p className="status-empty">No traffic recorded yet.</p>
+      ) : (
+        <>
+          <div
+            style={{
+              display: 'flex',
+              gap: 16,
+              marginBottom: 24,
+              flexWrap: 'wrap',
+            }}
+          >
+            {[
+              { label: 'Uploaded (30d)', value: fmtBytes(totalIngest) },
+              { label: 'Downloaded (30d)', value: fmtBytes(totalFetch) },
+              { label: 'Active days', value: String(rows.length) },
+            ].map(({ label, value }) => (
+              <div
+                key={label}
+                style={{
+                  flex: '1 1 120px',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  padding: '14px 18px',
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: 'var(--font-data)',
+                    fontSize: '1.1rem',
+                    color: 'var(--accent)',
+                    marginBottom: 4,
+                  }}
+                >
+                  {value}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="token-table">
+            <div className="token-row" style={{ opacity: 0.45, fontSize: '0.75rem' }}>
+              <span style={{ flex: '0 0 90px', fontFamily: 'var(--font-data)' }}>Date</span>
+              <span style={{ flex: 1, textAlign: 'right' }}>Uploads</span>
+              <span style={{ flex: 1, textAlign: 'right' }}>Downloads</span>
+              <span style={{ flex: '0 0 60px', textAlign: 'right' }}>Requests</span>
+            </div>
+            {rows.map((r) => (
+              <div key={r.day} className="token-row">
+                <span
+                  style={{
+                    flex: '0 0 90px',
+                    fontFamily: 'var(--font-data)',
+                    fontSize: '0.8rem',
+                    color: 'var(--muted)',
+                  }}
+                >
+                  {r.day}
+                </span>
+                <span
+                  style={{
+                    flex: 1,
+                    textAlign: 'right',
+                    fontFamily: 'var(--font-data)',
+                    fontSize: '0.82rem',
+                  }}
+                >
+                  {fmtBytes(r.ingestBytes)}
+                </span>
+                <span
+                  style={{
+                    flex: 1,
+                    textAlign: 'right',
+                    fontFamily: 'var(--font-data)',
+                    fontSize: '0.82rem',
+                  }}
+                >
+                  {fmtBytes(r.fetchBytes)}
+                </span>
+                <span
+                  style={{
+                    flex: '0 0 60px',
+                    textAlign: 'right',
+                    fontFamily: 'var(--font-data)',
+                    fontSize: '0.78rem',
+                    color: 'var(--muted)',
+                  }}
+                >
+                  {r.ingestCount + r.fetchCount}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  )
+}
+
 function SettingsPage({
   user,
   logout,
@@ -341,6 +481,7 @@ function SettingsPage({
           <>
             <PublicTokenSection user={user} />
             <TokenManager user={user} />
+            <DataUsageSection user={user} />
           </>
         ) : (
           <p className="status-empty">
@@ -445,6 +586,390 @@ function GameList({ onView }: { onView: (channel: string) => void }) {
 }
 
 // ---------------------------------------------------------------------------
+// Showcase mocks
+// ---------------------------------------------------------------------------
+
+function CliMock() {
+  const kv = (k: string, v: string) => (
+    <div style={{ display: 'flex', gap: 6, marginBottom: 1 }}>
+      <span style={{ color: 'var(--accent)', minWidth: 68, flexShrink: 0 }}>{k}</span>
+      <span>{v}</span>
+    </div>
+  )
+  const players: [string, string, string, string, string][] = [
+    ['Back2War', 'Human', '2840', '62/80', '145'],
+    ['Grubby', 'Orc', '1480', '58/80', '112'],
+  ]
+  return (
+    <div
+      style={{
+        fontFamily: 'var(--font-data)',
+        fontSize: '0.58rem',
+        lineHeight: 1.7,
+        padding: '12px 14px',
+        color: '#7a8c7a',
+        height: '100%',
+      }}
+    >
+      {kv('Map', 'TwistedMeadows')}
+      {kv('Game', 'IEM Qualifier #4')}
+      {kv('Time', '23:47')}
+      {kv('Output', '1703abc-….json')}
+      {kv('Endpoint', 'magic-sentry.io · ok 1s ago')}
+      <div style={{ borderTop: '1px solid rgba(200,160,80,0.1)', margin: '8px 0 6px' }} />
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '5.2rem 3.6rem 3rem 3.5rem 2.8rem',
+          gap: '0 2px',
+          color: '#4a4a4a',
+          marginBottom: 4,
+        }}
+      >
+        <span>Player</span>
+        <span>Race</span>
+        <span style={{ textAlign: 'right' }}>Gold</span>
+        <span style={{ textAlign: 'right' }}>Food</span>
+        <span style={{ textAlign: 'right' }}>APM</span>
+      </div>
+      {players.map(([name, race, gold, food, apm]) => (
+        <div
+          key={name}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '5.2rem 3.6rem 3rem 3.5rem 2.8rem',
+            gap: '0 2px',
+            marginBottom: 1,
+          }}
+        >
+          <span style={{ color: '#ddd8c8', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {name}
+          </span>
+          <span>{race}</span>
+          <span style={{ textAlign: 'right' }}>{gold}</span>
+          <span style={{ textAlign: 'right' }}>{food}</span>
+          <span style={{ textAlign: 'right', color: 'var(--accent)' }}>{apm}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function HeroCardMock({
+  name,
+  level,
+  hp,
+  mp,
+  kills,
+  color,
+}: {
+  name: string
+  level: number
+  hp: number
+  mp: number
+  kills: number
+  color: string
+}) {
+  return (
+    <div
+      style={{
+        background: 'rgba(0,0,0,0.35)',
+        border: '1px solid rgba(200,160,80,0.1)',
+        padding: '8px 10px',
+        flex: 1,
+        minWidth: 0,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
+        <div
+          style={{
+            width: 22,
+            height: 22,
+            background: `${color}18`,
+            border: `1px solid ${color}44`,
+            flexShrink: 0,
+          }}
+        />
+        <div>
+          <div
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '0.54rem',
+              letterSpacing: '0.07em',
+              color: '#ddd8c8',
+            }}
+          >
+            {name}
+          </div>
+          <div
+            style={{ fontFamily: 'var(--font-data)', fontSize: '0.5rem', color: 'var(--accent)' }}
+          >
+            Lv.{level}
+          </div>
+        </div>
+      </div>
+      {[
+        { label: 'HP', pct: hp, c: '#6ecf89' },
+        { label: 'MP', pct: mp, c: '#5ba8c4' },
+      ].map(({ label, pct, c }) => (
+        <div key={label} style={{ marginBottom: 4 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              fontFamily: 'var(--font-data)',
+              fontSize: '0.48rem',
+              color: '#665f52',
+              marginBottom: 2,
+            }}
+          >
+            <span>{label}</span>
+            <span>{pct}%</span>
+          </div>
+          <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', position: 'relative' }}>
+            <div
+              style={{ position: 'absolute', inset: 0, right: `${100 - pct}%`, background: c }}
+            />
+          </div>
+        </div>
+      ))}
+      <div
+        style={{
+          fontFamily: 'var(--font-data)',
+          fontSize: '0.48rem',
+          color: '#665f52',
+          marginTop: 5,
+        }}
+      >
+        {kills} kills
+      </div>
+    </div>
+  )
+}
+
+function DashboardMock() {
+  const tabs = ['Heroes', 'Gold', 'Lumber', 'Food', 'Army']
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div
+        style={{
+          display: 'flex',
+          borderBottom: '1px solid rgba(200,160,80,0.1)',
+          padding: '0 10px',
+          gap: 1,
+          flexShrink: 0,
+        }}
+      >
+        {tabs.map((t, i) => (
+          <div
+            key={t}
+            style={{
+              padding: '5px 8px',
+              fontFamily: 'var(--font-data)',
+              fontSize: '0.5rem',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: i === 0 ? 'var(--accent)' : '#4a4a4a',
+              borderBottom: i === 0 ? '1px solid var(--accent)' : '1px solid transparent',
+              marginBottom: -1,
+              cursor: 'default',
+            }}
+          >
+            {t}
+          </div>
+        ))}
+      </div>
+      <div style={{ padding: '10px', display: 'flex', gap: 8, flex: 1, minHeight: 0 }}>
+        <HeroCardMock name="Archmage" level={5} hp={84} mp={52} kills={8} color="#58a6ff" />
+        <HeroCardMock name="Blademaster" level={4} hp={100} mp={67} kills={5} color="#ff7b72" />
+      </div>
+    </div>
+  )
+}
+
+function ExtensionMock() {
+  const tabs = ['Heroes', 'Gold', 'Lumber', 'Food', 'Army']
+  const heroes = [
+    { name: 'Archmage', level: 5, color: '#58a6ff', kills: 8, hp: 84 },
+    { name: 'Blademaster', level: 4, color: '#ff7b72', kills: 5, hp: 100 },
+  ]
+  return (
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', fontSize: '0.5rem' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          padding: '5px 10px',
+          borderBottom: '1px solid rgba(200,160,80,0.1)',
+          flexShrink: 0,
+        }}
+      >
+        <img
+          src="/magicsentry.png"
+          width={9}
+          height={9}
+          style={{ imageRendering: 'auto', flexShrink: 0 }}
+          alt=""
+        />
+        <span
+          style={{
+            fontFamily: 'var(--font-data)',
+            color: 'var(--accent)',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Magic Sentry
+        </span>
+        <span style={{ color: '#2a2a3a' }}>·</span>
+        <span style={{ color: '#ddd8c8', fontFamily: 'var(--font-body)' }}>TwistedMeadows</span>
+        <span style={{ color: '#665f52', fontFamily: 'var(--font-data)' }}>23:47</span>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          gap: 4,
+          padding: '4px 10px',
+          borderBottom: '1px solid rgba(200,160,80,0.07)',
+          flexShrink: 0,
+        }}
+      >
+        {[
+          ['T1', '#58a6ff', 'Back2War'],
+          ['T2', '#ff7b72', 'Grubby'],
+        ].map(([team, color, name]) => (
+          <div
+            key={team}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              background: '#12121a',
+              border: '1px solid #1e1e2a',
+              padding: '2px 6px',
+              fontFamily: 'var(--font-data)',
+            }}
+          >
+            <span style={{ color: '#555' }}>{team}</span>
+            <div
+              style={{ width: 5, height: 5, borderRadius: '50%', background: color, flexShrink: 0 }}
+            />
+            <span style={{ color: '#ddd8c8' }}>{name}</span>
+          </div>
+        ))}
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          borderBottom: '1px solid rgba(200,160,80,0.1)',
+          padding: '0 10px',
+          flexShrink: 0,
+        }}
+      >
+        {tabs.map((t, i) => (
+          <div
+            key={t}
+            style={{
+              padding: '4px 7px',
+              fontFamily: 'var(--font-data)',
+              color: i === 0 ? 'var(--accent)' : '#4a4a4a',
+              borderBottom: i === 0 ? '1px solid var(--accent)' : '1px solid transparent',
+              marginBottom: -1,
+              cursor: 'default',
+            }}
+          >
+            {t}
+          </div>
+        ))}
+      </div>
+      <div style={{ padding: '8px 10px', flex: 1 }}>
+        {heroes.map((h) => (
+          <div
+            key={h.name}
+            style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 9 }}
+          >
+            <div
+              style={{
+                width: 20,
+                height: 20,
+                background: `${h.color}18`,
+                border: `1px solid ${h.color}44`,
+                flexShrink: 0,
+              }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  marginBottom: 3,
+                  fontFamily: 'var(--font-data)',
+                }}
+              >
+                <span
+                  style={{ color: '#ddd8c8', textTransform: 'uppercase', letterSpacing: '0.06em' }}
+                >
+                  {h.name}
+                </span>
+                <span style={{ color: 'var(--accent)' }}>Lv.{h.level}</span>
+              </div>
+              <div
+                style={{
+                  height: 3,
+                  background: 'rgba(255,255,255,0.06)',
+                  position: 'relative',
+                  marginBottom: 3,
+                }}
+              >
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    right: `${100 - h.hp}%`,
+                    background: '#6ecf89',
+                  }}
+                />
+              </div>
+              <span style={{ color: '#665f52', fontFamily: 'var(--font-data)' }}>
+                {h.kills} kills
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ShowcaseFrame({
+  chromeLabel,
+  label,
+  sublabel,
+  children,
+}: {
+  chromeLabel: string
+  label: string
+  sublabel: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="showcase-item">
+      <div className="showcase-frame">
+        <div className="showcase-chrome">
+          <span className="showcase-chrome-title">{chromeLabel}</span>
+        </div>
+        <div className="showcase-content">{children}</div>
+      </div>
+      <div className="showcase-caption">
+        <span className="showcase-caption-label">{label}</span>
+        <span className="showcase-caption-sub">{sublabel}</span>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Landing page
 // ---------------------------------------------------------------------------
 
@@ -472,7 +997,7 @@ function LandingPage({
         <main className="main">
           {/* Hero */}
           <div className="hero">
-            <p className="hero-eyebrow">Live Intelligence</p>
+            <p className="hero-eyebrow">Streamer companion for historic real time match data</p>
             <h1 className="hero-title">
               Every match detail.
               <br />
@@ -533,6 +1058,34 @@ function LandingPage({
                   played on your machine.
                 </p>
               </div>
+            </div>
+          </section>
+
+          {/* Showcase */}
+          <section className="section">
+            <h2 className="section-title">What You Get</h2>
+            <div className="showcase-grid">
+              <ShowcaseFrame
+                chromeLabel="magic-sentry.exe"
+                label="Desktop Companion"
+                sublabel="Lightweight tray app captures game data as you play"
+              >
+                <CliMock />
+              </ShowcaseFrame>
+              <ShowcaseFrame
+                chromeLabel="magic-sentry.io · dashboard"
+                label="Web Dashboard"
+                sublabel="Browse hero builds, resource curves, and army composition"
+              >
+                <DashboardMock />
+              </ShowcaseFrame>
+              <ShowcaseFrame
+                chromeLabel="Twitch Extension · Overlay"
+                label="Twitch Extension"
+                sublabel="Viewers explore live stats without leaving the stream"
+              >
+                <ExtensionMock />
+              </ShowcaseFrame>
             </div>
           </section>
 

@@ -559,3 +559,80 @@ code {
   color: rgba(200, 160, 80, 0.7);
   line-height: 1.6;
 }
+
+/* --- Showcase -------------------------------------------------------------- */
+.showcase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.showcase-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.showcase-frame {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  flex: 1;
+}
+
+.showcase-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.showcase-chrome::before {
+  content: '';
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(200, 160, 80, 0.2);
+  flex-shrink: 0;
+}
+
+.showcase-chrome-title {
+  font-family: var(--font-data);
+  font-size: 0.52rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.showcase-content {
+  height: 160px;
+  overflow: hidden;
+  background: #09090f;
+}
+
+.showcase-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.showcase-caption-label {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.showcase-caption-sub {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.5;
+}

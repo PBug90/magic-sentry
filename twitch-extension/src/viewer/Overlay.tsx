@@ -7,7 +7,7 @@ import {
   ExtensionConfig,
   DEFAULT_CONFIG,
 } from '../shared/types'
-import { PLAYER_COLORS, formatDuration } from '../shared/chartUtils'
+import { PLAYER_COLORS, formatDuration } from '@magic-sentry/shared'
 import { HeroPanel } from './HeroPanel'
 import { EconomyChart, LumberChart } from './charts/ResourceChart'
 import { FoodChart } from './charts/FoodChart'

@@ -4,6 +4,8 @@
 
 # Magic Sentry
 
+**Deployed at [magicsentry.pro](https://magicsentry.pro/)**
+
 Live WarCraft III game intelligence — a monorepo containing three applications that work together to capture, stream, and visualise real-time game data.
 
 ## Applications

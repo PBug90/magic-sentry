@@ -9,14 +9,19 @@ interface Bucket {
   fetchBytes: number
 }
 
+function today(): string {
+  return new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+}
+
 class TrafficStore {
   private pending = new Map<string, Bucket>()
 
   record(token: string, type: TrafficType, bytes: number): void {
-    let bucket = this.pending.get(token)
+    const key = `${token}::${today()}`
+    let bucket = this.pending.get(key)
     if (!bucket) {
       bucket = { ingestCount: 0, ingestBytes: 0, fetchCount: 0, fetchBytes: 0 }
-      this.pending.set(token, bucket)
+      this.pending.set(key, bucket)
     }
     if (type === 'ingest') {
       bucket.ingestCount++
@@ -34,18 +39,20 @@ class TrafficStore {
     this.pending.clear()
 
     await sql.begin((tx) =>
-      entries.map(
-        ([token, b]) => tx`
-      INSERT INTO traffic_stats (token, ingest_count, ingest_bytes, fetch_count, fetch_bytes, updated_at)
-      VALUES (${token}, ${b.ingestCount}, ${b.ingestBytes}, ${b.fetchCount}, ${b.fetchBytes}, NOW())
-      ON CONFLICT (token) DO UPDATE SET
-        ingest_count = traffic_stats.ingest_count + EXCLUDED.ingest_count,
-        ingest_bytes = traffic_stats.ingest_bytes + EXCLUDED.ingest_bytes,
-        fetch_count  = traffic_stats.fetch_count  + EXCLUDED.fetch_count,
-        fetch_bytes  = traffic_stats.fetch_bytes  + EXCLUDED.fetch_bytes,
-        updated_at   = NOW()
-    `,
-      ),
+      entries.map(([key, b]) => {
+        const sep = key.lastIndexOf('::')
+        const token = key.slice(0, sep)
+        const day = key.slice(sep + 2)
+        return tx`
+          INSERT INTO traffic_stats (token, day, ingest_count, ingest_bytes, fetch_count, fetch_bytes)
+          VALUES (${token}, ${day}::date, ${b.ingestCount}, ${b.ingestBytes}, ${b.fetchCount}, ${b.fetchBytes})
+          ON CONFLICT (token, day) DO UPDATE SET
+            ingest_count = traffic_stats.ingest_count + EXCLUDED.ingest_count,
+            ingest_bytes = traffic_stats.ingest_bytes + EXCLUDED.ingest_bytes,
+            fetch_count  = traffic_stats.fetch_count  + EXCLUDED.fetch_count,
+            fetch_bytes  = traffic_stats.fetch_bytes  + EXCLUDED.fetch_bytes
+        `
+      }),
     )
   }
 

@@ -1,5 +1,5 @@
 import { ChartPlayer, HeroSample } from '../shared/types'
-import { HERO_OBSERVER } from '../shared/wc3data'
+import { HERO_OBSERVER } from '@magic-sentry/shared'
 
 function resolveHeroDisplayName(name: string): string {
   return HERO_OBSERVER[name.toLowerCase().replace(/\s+/g, '')]?.display ?? name

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
-import { HERO_OBSERVER, UNIT_ICON_ID } from '../../shared/wc3data'
-import { heroSupply, fmtTime, UNIT_COLORS } from '../../shared/chartUtils'
+import { HERO_OBSERVER, UNIT_ICON_ID } from '@magic-sentry/shared'
+import { heroSupply, fmtTime, UNIT_COLORS } from '@magic-sentry/shared'
 
 // ---------------------------------------------------------------------------
 // Chart layout constants — same viewBox as MemoryGameView so charts are

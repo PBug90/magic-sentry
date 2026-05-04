@@ -1,5 +1,5 @@
-import { Sample } from './types'
-import { WORKERS, HERO_OBSERVER, UNIT_SUPPLY } from './wc3data'
+import type { Sample } from './types.js'
+import { WORKERS, HERO_OBSERVER, UNIT_SUPPLY } from './wc3data.js'
 
 export const PLAYER_COLORS = ['#58a6ff', '#ff7b72', '#3fb950', '#d2a8ff', '#ffa657']
 export const UNIT_COLORS = [

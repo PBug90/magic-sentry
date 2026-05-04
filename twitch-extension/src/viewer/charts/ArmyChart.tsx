@@ -8,7 +8,7 @@ import {
   timeTicks,
   nearestSampleIdx,
   UNIT_COLORS,
-} from '../../shared/chartUtils'
+} from '@magic-sentry/shared'
 import {
   CM,
   W,

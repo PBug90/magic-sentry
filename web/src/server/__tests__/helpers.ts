@@ -23,6 +23,19 @@ export async function seedUserWithToken(user: TwitchUser = TEST_USER): Promise<s
   return authStore.createCliToken(user.id, 'test token')
 }
 
+/** Minimal valid player patch. */
+export function makePlayer(overrides?: Record<string, unknown>) {
+  return {
+    name: 'TestPlayer',
+    race: 'Human',
+    team: 0,
+    result: '',
+    new_samples: [],
+    summary: null,
+    ...overrides,
+  }
+}
+
 /** Minimal valid game patch factory. */
 export function makePatch(overrides?: Record<string, unknown>) {
   return {
@@ -31,7 +44,7 @@ export function makePatch(overrides?: Record<string, unknown>) {
     is_final: false,
     map: 'Lost Temple',
     game: 'Test Game',
-    players: [],
+    players: [makePlayer()],
     ...overrides,
   }
 }

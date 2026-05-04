@@ -1,5 +1,5 @@
 import { ChartPlayer } from '../../shared/types'
-import { nearestSample, niceMax, timeTicks } from '../../shared/chartUtils'
+import { nearestSample, niceMax, timeTicks } from '@magic-sentry/shared'
 import { CM, W, H, IW, IH, useChartHover, ChartTooltip, TooltipTime, SectionLabel } from './shared'
 
 export function FoodChart({ players }: { players: ChartPlayer[] }) {

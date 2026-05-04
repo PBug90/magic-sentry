@@ -46,23 +46,36 @@ export async function migrate(): Promise<void> {
     )
   `
 
+  // Migrate: drop legacy single-row-per-token table if it has the old PK schema
+  await sql`
+    DO $$ BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE table_name = 'traffic_stats'
+          AND constraint_type = 'PRIMARY KEY'
+          AND constraint_name = 'traffic_stats_pkey'
+      ) AND NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'traffic_stats' AND column_name = 'day'
+      ) THEN
+        DROP TABLE traffic_stats;
+      END IF;
+    END $$
+  `
+
   await sql`
     CREATE TABLE IF NOT EXISTS traffic_stats (
-      token        TEXT        PRIMARY KEY,
-      ingest_count BIGINT      NOT NULL DEFAULT 0,
-      ingest_bytes BIGINT      NOT NULL DEFAULT 0,
-      fetch_count  BIGINT      NOT NULL DEFAULT 0,
-      fetch_bytes  BIGINT      NOT NULL DEFAULT 0,
-      updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      token        TEXT   NOT NULL,
+      day          DATE   NOT NULL,
+      ingest_count BIGINT NOT NULL DEFAULT 0,
+      ingest_bytes BIGINT NOT NULL DEFAULT 0,
+      fetch_count  BIGINT NOT NULL DEFAULT 0,
+      fetch_bytes  BIGINT NOT NULL DEFAULT 0,
+      PRIMARY KEY (token, day)
     )
   `
 
   await sql`
-    ALTER TABLE traffic_stats
-      ADD COLUMN IF NOT EXISTS ingest_count BIGINT NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS ingest_bytes BIGINT NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS fetch_count  BIGINT NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS fetch_bytes  BIGINT NOT NULL DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    CREATE INDEX IF NOT EXISTS traffic_stats_token_idx ON traffic_stats (token)
   `
 }

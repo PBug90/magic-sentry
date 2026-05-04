@@ -26,12 +26,12 @@ export function createApp() {
 
     const isIngest = c.req.method === 'POST' && c.req.path === '/api/ingest'
     if (isIngest) {
-      const bytes = Number(c.req.header('content-length') ?? 0)
+      const bytes = Math.max(0, Number(c.req.header('content-length') ?? 0) || 0)
       await next()
       trafficStore.record(bearer, 'ingest', bytes)
     } else {
       await next()
-      const bytes = Number(c.res.headers.get('content-length') ?? 0)
+      const bytes = Math.max(0, Number(c.res.headers.get('content-length') ?? 0) || 0)
       trafficStore.record(bearer, 'fetch', bytes)
     }
   })
