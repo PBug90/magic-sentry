@@ -10,6 +10,7 @@ interface TwitchUser {
   login: string
   display_name: string
   profile_image_url: string
+  allowed: boolean
 }
 
 interface CliToken {
@@ -457,6 +458,37 @@ function DataUsageSection({ user }: { user: TwitchUser }) {
   )
 }
 
+function PendingApprovalNotice() {
+  return (
+    <div
+      style={{
+        border: '1px solid rgba(200,160,80,0.35)',
+        background: 'rgba(200,160,80,0.07)',
+        padding: '18px 22px',
+        marginBottom: 32,
+        lineHeight: 1.6,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: 'var(--font-data)',
+          fontSize: '0.7rem',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          color: 'var(--accent)',
+          marginBottom: 8,
+        }}
+      >
+        Invite only
+      </div>
+      <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text)' }}>
+        Magic Sentry is currently invite-only. Your account has not been approved yet and you cannot
+        use the service until it is. If you believe you should have access, reach out to the team.
+      </p>
+    </div>
+  )
+}
+
 function SettingsPage({
   user,
   logout,
@@ -478,11 +510,15 @@ function SettingsPage({
       <div className="app" style={{ paddingTop: 48 }}>
         <h1 className="page-title">Settings</h1>
         {user ? (
-          <>
-            <PublicTokenSection user={user} />
-            <TokenManager user={user} />
-            <DataUsageSection user={user} />
-          </>
+          user.allowed ? (
+            <>
+              <PublicTokenSection user={user} />
+              <TokenManager user={user} />
+              <DataUsageSection user={user} />
+            </>
+          ) : (
+            <PendingApprovalNotice />
+          )
         ) : (
           <p className="status-empty">
             <a href="/auth/twitch">Sign in with Twitch</a> to manage your account.
@@ -1007,25 +1043,27 @@ function LandingPage({
               Real-time stats for WC3 streamers — heroes, resources, and army composition updating
               as the battle unfolds.
             </p>
-            {user === undefined
-              ? null
-              : !user && (
-                  <div className="hero-actions">
-                    <a
-                      href="/auth/twitch"
-                      className="btn btn-lg btn-filled"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        textDecoration: 'none',
-                      }}
-                    >
-                      <TwitchIcon />
-                      Sign in with Twitch
-                    </a>
-                  </div>
-                )}
+            {user === undefined ? null : !user ? (
+              <div className="hero-actions">
+                <a
+                  href="/auth/twitch"
+                  className="btn btn-lg btn-filled"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    textDecoration: 'none',
+                  }}
+                >
+                  <TwitchIcon />
+                  Sign in with Twitch
+                </a>
+              </div>
+            ) : !user.allowed ? (
+              <div className="hero-actions">
+                <PendingApprovalNotice />
+              </div>
+            ) : null}
           </div>
 
           {/* Features */}
