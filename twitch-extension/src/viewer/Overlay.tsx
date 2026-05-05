@@ -374,7 +374,7 @@ export function Overlay() {
       {/* Status when no game data yet */}
       {!game && configReady && (
         <div style={{ padding: '20px 24px' }}>
-          {(!config.endpointUrl || !config.token) ? (
+          {!config.endpointUrl || !config.token ? (
             <StatusDot ok={false} label="Incomplete setup — endpoint and token required" />
           ) : fetchError ? (
             <StatusDot ok={false} label={`Error: ${fetchError}`} />
