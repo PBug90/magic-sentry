@@ -1,7 +1,7 @@
 use std::sync::mpsc::{self, Receiver, TryRecvError};
 use std::time::Instant;
 
-use crate::types::{GamePatch, PlayerPatch, PlayerRecord};
+use crate::types::{GamePatch, PlayerPatch, PlayerState};
 
 // ---------------------------------------------------------------------------
 // Pre-flight auth check
@@ -121,7 +121,7 @@ impl Pusher {
 
     /// Builds a patch from new samples, advances cursors, and fires a
     /// background POST. Returns immediately; use `poll()` to read the result.
-    pub fn push(&mut self, players: &[PlayerRecord], map: &str, game: &str, is_final: bool) {
+    pub fn push(&mut self, players: &[PlayerState], map: &str, game: &str, is_final: bool) {
         // Collect new samples per player.
         let player_patches: Vec<PlayerPatch> = players
             .iter()
@@ -204,12 +204,12 @@ mod tests {
     use tiny_http::{Response, Server};
 
     use super::*;
-    use crate::types::{PlayerRecord, PlayerSummary, Sample};
+    use crate::types::{PlayerState, PlayerSummary, ResourceSample};
 
     // --- helpers ---
 
-    fn make_sample(time_ms: u64) -> Sample {
-        Sample {
+    fn make_sample(time_ms: u64) -> ResourceSample {
+        ResourceSample {
             time_ms,
             gold: 500,
             gold_mined: 1000,
@@ -225,13 +225,12 @@ mod tests {
         }
     }
 
-    fn make_player(name: &str, race: &str) -> PlayerRecord {
-        PlayerRecord {
+    fn make_player(name: &str, race: &str) -> PlayerState {
+        PlayerState {
             name: name.to_string(),
             race: race.to_string(),
             team: 0,
             result: String::new(),
-            time_in_upkeep_ms: vec![],
             samples: vec![],
             summary: PlayerSummary {
                 heroes: vec![],

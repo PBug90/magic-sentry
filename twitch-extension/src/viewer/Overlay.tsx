@@ -253,7 +253,6 @@ export function Overlay() {
               race: pp.race,
               team: pp.team,
               result: '',
-              time_in_upkeep_ms: [],
               samples: [],
               summary: { heroes: [], units: [] },
             }
@@ -287,7 +286,7 @@ export function Overlay() {
     currentGameIdRef.current = null
     accumulatedPatchesRef.current = new Map()
 
-    if (!config.endpointUrl) {
+    if (!config.endpointUrl || !config.token) {
       setGame(null)
       setFetchError(null)
       return
@@ -375,11 +374,13 @@ export function Overlay() {
       {/* Status when no game data yet */}
       {!game && configReady && (
         <div style={{ padding: '20px 24px' }}>
-          {!config.endpointUrl && <StatusDot ok={false} label="No endpoint configured" />}
-          {config.endpointUrl && fetchError && (
+          {(!config.endpointUrl || !config.token) ? (
+            <StatusDot ok={false} label="Incomplete setup — endpoint and token required" />
+          ) : fetchError ? (
             <StatusDot ok={false} label={`Error: ${fetchError}`} />
+          ) : (
+            <StatusDot ok={true} label="Waiting for data…" />
           )}
-          {config.endpointUrl && !fetchError && <StatusDot ok={true} label="Waiting for data…" />}
         </div>
       )}
 

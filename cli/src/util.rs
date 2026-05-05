@@ -1,28 +1,6 @@
-use std::mem::MaybeUninit;
-use std::ptr;
+use std::time::Duration;
 
-/// Reads a value from a potentially unaligned pointer using byte-by-byte volatile reads.
-///
-/// This is the correct primitive for fields of `#[repr(C, packed)]` structs that live in
-/// shared memory written by an external process (WC3):
-/// - **Volatile per byte**: the compiler must re-fetch each byte from memory on every call
-///   and cannot cache or hoist the read across loop iterations in release builds.
-/// - **Alignment-safe**: reads u8 at a time, so no alignment requirement on `src`.
-///
-/// # Safety
-/// `src` must point to `size_of::<T>()` readable bytes of shared memory for the
-/// lifetime of the call.
-pub unsafe fn vread_unaligned<T>(src: *const T) -> T {
-    let mut buf = MaybeUninit::<T>::uninit();
-    let dst = buf.as_mut_ptr() as *mut u8;
-    let src = src as *const u8;
-    for i in 0..std::mem::size_of::<T>() {
-        dst.add(i).write(ptr::read_volatile(src.add(i)));
-    }
-    buf.assume_init()
-}
-
-pub fn race_str(r: u8) -> &'static str {
+pub fn race_name(r: u8) -> &'static str {
     match r {
         1 => "Human",
         2 => "Orc",
@@ -33,7 +11,7 @@ pub fn race_str(r: u8) -> &'static str {
     }
 }
 
-pub fn result_str(r: u8) -> &'static str {
+pub fn result_name(r: u8) -> &'static str {
     match r {
         0 => "Victory",
         1 => "Defeat",
@@ -51,6 +29,48 @@ pub fn fmt_time(ms: u64) -> String {
     } else {
         format!("{m}:{:02}", s % 60)
     }
+}
+
+pub fn fmt_bytes(n: usize) -> String {
+    if n < 1024 {
+        format!("{n} B")
+    } else if n < 1024 * 1024 {
+        format!("{:.1} KB", n as f64 / 1024.0)
+    } else {
+        format!("{:.1} MB", n as f64 / (1024.0 * 1024.0))
+    }
+}
+
+pub fn fmt_elapsed(d: Duration) -> String {
+    let s = d.as_secs();
+    if s < 60 {
+        format!("{s}s")
+    } else {
+        format!("{}m{:02}s", s / 60, s % 60)
+    }
+}
+
+/// Replaces any character that is not alphanumeric or `-` with `_`.
+pub fn sanitize(s: &str) -> String {
+    s.chars()
+        .map(|c| if c.is_alphanumeric() || c == '-' { c } else { '_' })
+        .collect()
+}
+
+/// Builds a stable game ID from player names/races and the map name.
+/// Format: `{epoch}-{player_slugs}-{map}` where each slug is `name(race)`.
+pub fn build_game_id(players: &[(&str, &str)], map: &str) -> String {
+    let epoch = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let player_slugs: String = players
+        .iter()
+        .map(|(name, race)| format!("{}({})", sanitize(name), sanitize(race)))
+        .collect::<Vec<_>>()
+        .join("-");
+    let safe_map = sanitize(map);
+    format!("{epoch}-{player_slugs}-{safe_map}")
 }
 
 /// Extracts a human-readable map name from a WC3 map path by returning the

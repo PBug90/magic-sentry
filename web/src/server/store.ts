@@ -108,7 +108,6 @@ class GameStore {
             race: pp.race,
             team: pp.team,
             result: '',
-            time_in_upkeep_ms: [],
             samples: [],
             summary: { heroes: [], units: [] },
           }

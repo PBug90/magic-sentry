@@ -216,7 +216,7 @@ function TokenManager({ user }: { user: TwitchUser }) {
             Add to your config file:
           </div>
           <pre className="code-block">
-            {`endpoint = "https://your-server/api/ingest"\nsecret   = "${newToken}"`}
+            {`endpoint = "https://magicsentry.pro/api/ingest"\nsecret   = "${newToken}"`}
           </pre>
         </div>
       )}
@@ -982,11 +982,13 @@ function ShowcaseFrame({
   chromeLabel,
   label,
   sublabel,
+  action,
   children,
 }: {
   chromeLabel: string
   label: string
   sublabel: string
+  action?: React.ReactNode
   children: React.ReactNode
 }) {
   return (
@@ -1000,6 +1002,7 @@ function ShowcaseFrame({
       <div className="showcase-caption">
         <span className="showcase-caption-label">{label}</span>
         <span className="showcase-caption-sub">{sublabel}</span>
+        {action}
       </div>
     </div>
   )
@@ -1121,6 +1124,23 @@ function LandingPage({
                 chromeLabel="Twitch Extension · Overlay"
                 label="Twitch Extension"
                 sublabel="Viewers explore live stats without leaving the stream"
+                action={
+                  import.meta.env.VITE_EXTENSION_URL ? (
+                    <a
+                      href={import.meta.env.VITE_EXTENSION_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-sm"
+                      style={{ marginTop: 10, textDecoration: 'none', display: 'inline-block' }}
+                    >
+                      Set up extension
+                    </a>
+                  ) : (
+                    <button className="btn btn-sm" onClick={onSettings} style={{ marginTop: 10 }}>
+                      Set up extension
+                    </button>
+                  )
+                }
               >
                 <ExtensionMock />
               </ShowcaseFrame>

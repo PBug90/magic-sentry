@@ -1,11 +1,11 @@
 use serde::Serialize;
 
 // ---------------------------------------------------------------------------
-// Per-second sample types
+// Per-tick snapshot types
 // ---------------------------------------------------------------------------
 
 #[derive(Serialize, Clone)]
-pub struct HeroSample {
+pub struct HeroSnapshot {
     pub name: String,
     pub level: u32,
     pub xp: u32,
@@ -30,7 +30,7 @@ pub struct UnitSnapshot {
 }
 
 #[derive(Serialize, Clone)]
-pub struct Sample {
+pub struct ResourceSample {
     pub time_ms: u64,
     pub gold: u32,
     pub gold_mined: u32,
@@ -41,12 +41,12 @@ pub struct Sample {
     pub food_used: u32,
     pub food_cap: u32,
     pub apm: u32,
-    pub heroes: Vec<HeroSample>,
+    pub heroes: Vec<HeroSnapshot>,
     pub units: Vec<UnitSnapshot>,
 }
 
 // ---------------------------------------------------------------------------
-// Snapshot / summary types (written every 30s and at end)
+// End-of-game summary types
 // ---------------------------------------------------------------------------
 
 #[derive(Serialize, Clone)]
@@ -60,7 +60,7 @@ pub struct UnitSummary {
 }
 
 #[derive(Serialize, Clone)]
-pub struct HeroFinal {
+pub struct HeroSummary {
     pub name: String,
     pub level: u32,
     pub xp: u32,
@@ -74,29 +74,50 @@ pub struct HeroFinal {
     pub time_alive_ms: u32,
 }
 
-#[derive(Serialize, Clone)]
-pub struct PlayerSummary {
-    pub heroes: Vec<HeroFinal>,
-    pub units: Vec<UnitSummary>,
+impl From<&HeroSnapshot> for HeroSummary {
+    fn from(h: &HeroSnapshot) -> Self {
+        HeroSummary {
+            name: h.name.clone(),
+            level: h.level,
+            xp: h.xp,
+            deaths: h.deaths,
+            total_kills: h.kills,
+            hero_kills: h.hero_kills,
+            building_kills: h.building_kills,
+            damage_dealt: h.damage_dealt,
+            damage_received: h.damage_received,
+            healing_done: h.healing_done,
+            time_alive_ms: 0, // not available from mid-game samples
+        }
+    }
 }
 
 #[derive(Serialize, Clone)]
-pub struct PlayerRecord {
+pub struct PlayerSummary {
+    pub heroes: Vec<HeroSummary>,
+    pub units: Vec<UnitSummary>,
+}
+
+// ---------------------------------------------------------------------------
+// Accumulated per-player and per-game state
+// ---------------------------------------------------------------------------
+
+#[derive(Serialize, Clone)]
+pub struct PlayerState {
     pub name: String,
     pub race: String,
     pub team: u8,
     pub result: String,
-    pub time_in_upkeep_ms: Vec<u32>,
-    pub samples: Vec<Sample>,
+    pub samples: Vec<ResourceSample>,
     pub summary: PlayerSummary,
 }
 
 #[derive(Serialize, Clone)]
-pub struct GameRecord {
+pub struct GameState {
     pub map: String,
     pub game: String,
     pub duration_ms: u64,
-    pub players: Vec<PlayerRecord>,
+    pub players: Vec<PlayerState>,
 }
 
 // ---------------------------------------------------------------------------
@@ -111,7 +132,7 @@ pub struct PlayerPatch {
     /// Empty string mid-game; filled only when `GamePatch::is_final` is true.
     pub result: String,
     /// Only the samples collected since the previous push.
-    pub new_samples: Vec<Sample>,
+    pub new_samples: Vec<ResourceSample>,
     /// None mid-game; Some on the final patch.
     pub summary: Option<PlayerSummary>,
 }

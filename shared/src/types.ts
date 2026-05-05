@@ -106,8 +106,7 @@ export const PlayerRecordSchema = z.object({
   race: str(MAX_RACE),
   team: nat(MAX_TEAM),
   result: str(MAX_RESULT),
-  time_in_upkeep_ms: z.array(nat(MAX_GAME_MS)),
-  samples: z.array(SampleSchema),
+samples: z.array(SampleSchema),
   summary: PlayerSummarySchema,
 })
 
