@@ -53,7 +53,13 @@ pub fn fmt_elapsed(d: Duration) -> String {
 /// Replaces any character that is not alphanumeric or `-` with `_`.
 pub fn sanitize(s: &str) -> String {
     s.chars()
-        .map(|c| if c.is_alphanumeric() || c == '-' { c } else { '_' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '-' {
+                c
+            } else {
+                '_'
+            }
+        })
         .collect()
 }
 
@@ -81,7 +87,7 @@ pub fn build_game_id(players: &[(&str, &str)], map: &str) -> String {
 pub fn short_map_name(raw: &str) -> String {
     // Take just the filename (after last path separator).
     let filename = raw
-        .rfind(|c| c == '/' || c == '\\')
+        .rfind(['/', '\\'])
         .map_or(raw, |i| &raw[i + 1..]);
 
     // Strip known WC3 file extensions.

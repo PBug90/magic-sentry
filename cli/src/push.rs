@@ -37,7 +37,7 @@ pub fn check_auth(endpoint: &str, secret: &str) -> Result<Option<String>, String
         .set("Authorization", &format!("Bearer {secret}"))
         .send_string("")
         .map_err(|e| match e {
-            ureq::Error::Status(status, _) if status == 401 => {
+            ureq::Error::Status(401, _) => {
                 "invalid token — check your secret".to_string()
             }
             other => format!("could not reach server: {other}"),

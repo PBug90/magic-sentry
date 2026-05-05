@@ -5,7 +5,7 @@ use crossterm::{
     terminal::{self, ClearType},
 };
 
-use crate::push::{Pusher, PushStatus};
+use crate::push::{PushStatus, Pusher};
 use crate::types::PlayerState;
 use crate::util::{fmt_bytes, fmt_elapsed, fmt_time};
 
@@ -40,6 +40,7 @@ pub fn fmt_push_status(status: &PushStatus) -> String {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn build_game_lines(
     map_name: &str,
     game_name: &str,
@@ -67,9 +68,16 @@ pub fn build_game_lines(
         let user = authorized_as.unwrap_or("anonymous");
         lines.push(format!("Endpoint    {}", endpoint.unwrap_or("")));
         lines.push(format!("User        {user}"));
-        lines.push(format!("Push        {}  (seq {})", fmt_push_status(&p.status), p.seq()));
+        lines.push(format!(
+            "Push        {}  (seq {})",
+            fmt_push_status(&p.status),
+            p.seq()
+        ));
         lines.push(format!("Game sent   {}", fmt_bytes(game_total)));
-        lines.push(format!("Session     {}", fmt_bytes(session_bytes + game_total)));
+        lines.push(format!(
+            "Session     {}",
+            fmt_bytes(session_bytes + game_total)
+        ));
     }
     lines.push(String::new());
     lines.push(format!(

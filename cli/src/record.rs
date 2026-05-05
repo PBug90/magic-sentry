@@ -13,7 +13,10 @@ pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSum
             let p = &od.players[slot];
 
             let hero_count = ({ p.hero_count } as usize).min(999);
-            let heroes = p.heroes.iter().take(hero_count)
+            let heroes = p
+                .heroes
+                .iter()
+                .take(hero_count)
                 .map(|h| HeroSummary {
                     name: h.name.to_string(),
                     level: { h.level },
@@ -30,10 +33,15 @@ pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSum
                 .collect();
 
             let unit_count = ({ p.unit_count } as usize).min(999);
-            let units = p.units.iter().take(unit_count)
+            let units = p
+                .units
+                .iter()
+                .take(unit_count)
                 .filter_map(|u| {
                     let trained = { u.total_amount };
-                    if trained == 0 { return None; }
+                    if trained == 0 {
+                        return None;
+                    }
                     Some(UnitSummary {
                         name: u.name.to_string(),
                         trained,
@@ -61,7 +69,9 @@ pub fn write_snapshot(
     let summaries = build_summary(od, player_slots);
     for (i, &slot) in player_slots.iter().enumerate() {
         let p = &od.players[slot];
-        players[i].result = result_name(unsafe { ptr::read_unaligned(ptr::addr_of!(p.game_result)) } as u8).to_string();
+        players[i].result =
+            result_name(unsafe { ptr::read_unaligned(ptr::addr_of!(p.game_result)) } as u8)
+                .to_string();
 
         let heroes = if !summaries[i].heroes.is_empty() {
             summaries[i].heroes.clone()

@@ -90,8 +90,9 @@ fn find_player_slots(od: &ObserverData, player_count: usize) -> Vec<usize> {
 
 fn is_game_over(od: &ObserverData, player_slots: &[usize]) -> bool {
     player_slots.iter().any(|&slot| {
-        let result = unsafe { ptr::read_unaligned(ptr::addr_of!(od.players[slot].game_result)) } as u8;
-        matches!(result, 0 | 1 | 2)
+        let result =
+            unsafe { ptr::read_unaligned(ptr::addr_of!(od.players[slot].game_result)) } as u8;
+        matches!(result, 0..=2)
     })
 }
 
@@ -119,7 +120,7 @@ fn finish_game(
     filename: &str,
     map_name: &str,
     game_name: &str,
-    players: &mut Vec<PlayerState>,
+    players: &mut [PlayerState],
     od: &ObserverData,
     player_slots: &[usize],
     pusher: &mut Option<Pusher>,
@@ -262,7 +263,8 @@ fn run_game(
             let p = &od.players[slot];
             PlayerState {
                 name: p.name.to_string(),
-                race: race_name(unsafe { ptr::read_unaligned(ptr::addr_of!(p.player_race)) } as u8).to_string(),
+                race: race_name(unsafe { ptr::read_unaligned(ptr::addr_of!(p.player_race)) } as u8)
+                    .to_string(),
                 team: { p.team_index },
                 result: String::new(),
                 samples: Vec::new(),
@@ -301,7 +303,7 @@ fn run_game(
         let clock_advanced = players[0]
             .samples
             .last()
-            .map_or(true, |s| time_ms > s.time_ms);
+            .is_none_or(|s| time_ms > s.time_ms);
 
         if clock_advanced {
             frozen_ticks = 0;
@@ -311,69 +313,88 @@ fn run_game(
 
         if clock_advanced {
             // Collect raw reads for all players before committing any samples.
-            let tick_reads: Vec<PlayerTickRead> = player_slots.iter().map(|&slot| {
-                let p = &od.players[slot];
+            let tick_reads: Vec<PlayerTickRead> = player_slots
+                .iter()
+                .map(|&slot| {
+                    let p = &od.players[slot];
 
-                let hero_count = ({ p.hero_count } as usize).min(999);
-                let heroes: Vec<HeroSnapshot> = p.heroes.iter().take(hero_count)
-                    .map(|h| HeroSnapshot {
-                        name: h.name.to_string(),
-                        level: { h.level },
-                        xp: { h.experience },
-                        hp: { h.hit_points },
-                        hp_max: { h.max_hit_points },
-                        mp: { h.mana_points },
-                        mp_max: { h.max_mana_points },
-                        damage_dealt: { h.damage_dealt },
-                        damage_received: { h.damage_received },
-                        healing_done: { h.healing_done },
-                        deaths: { h.number_of_deaths },
-                        kills: { h.total_kills },
-                        hero_kills: { h.hero_kills },
-                        building_kills: { h.building_kills },
-                    })
-                    .collect();
-
-                let unit_count = ({ p.unit_count } as usize).min(999);
-                let units: Vec<UnitSnapshot> = p.units.iter().take(unit_count)
-                    .filter_map(|u| {
-                        let trained = { u.total_amount };
-                        if trained == 0 { return None; }
-                        Some(UnitSnapshot {
-                            name: u.name.to_string(),
-                            alive: { u.current_amount },
-                            trained,
+                    let hero_count = ({ p.hero_count } as usize).min(999);
+                    let heroes: Vec<HeroSnapshot> = p
+                        .heroes
+                        .iter()
+                        .take(hero_count)
+                        .map(|h| HeroSnapshot {
+                            name: h.name.to_string(),
+                            level: { h.level },
+                            xp: { h.experience },
+                            hp: { h.hit_points },
+                            hp_max: { h.max_hit_points },
+                            mp: { h.mana_points },
+                            mp_max: { h.max_mana_points },
+                            damage_dealt: { h.damage_dealt },
+                            damage_received: { h.damage_received },
+                            healing_done: { h.healing_done },
+                            deaths: { h.number_of_deaths },
+                            kills: { h.total_kills },
+                            hero_kills: { h.hero_kills },
+                            building_kills: { h.building_kills },
                         })
-                    })
-                    .collect();
+                        .collect();
 
-                PlayerTickRead {
-                    heroes,
-                    units,
-                    gold: { p.gold },
-                    gold_mined: { p.gold_mined },
-                    gold_upkeep_lost: { p.gold_upkeep_lost },
-                    lumber: { p.lumber },
-                    lumber_mined: { p.lumber_mined },
-                    lumber_upkeep_lost: { p.lumber_upkeep_lost },
-                    food_used: { p.food_used },
-                    food_cap: { p.food_cap },
-                    apm: { p.actions_per_minute },
-                }
-            }).collect();
+                    let unit_count = ({ p.unit_count } as usize).min(999);
+                    let units: Vec<UnitSnapshot> = p
+                        .units
+                        .iter()
+                        .take(unit_count)
+                        .filter_map(|u| {
+                            let trained = { u.total_amount };
+                            if trained == 0 {
+                                return None;
+                            }
+                            Some(UnitSnapshot {
+                                name: u.name.to_string(),
+                                alive: { u.current_amount },
+                                trained,
+                            })
+                        })
+                        .collect();
+
+                    PlayerTickRead {
+                        heroes,
+                        units,
+                        gold: { p.gold },
+                        gold_mined: { p.gold_mined },
+                        gold_upkeep_lost: { p.gold_upkeep_lost },
+                        lumber: { p.lumber },
+                        lumber_mined: { p.lumber_mined },
+                        lumber_upkeep_lost: { p.lumber_upkeep_lost },
+                        food_used: { p.food_used },
+                        food_cap: { p.food_cap },
+                        apm: { p.actions_per_minute },
+                    }
+                })
+                .collect();
 
             // If every player returned empty heroes AND units this tick the frame
             // is likely partially corrupted (dirty read during WC3's write window).
             // Fall back to heroes/units from each player's most recent clean frame.
-            let dirty_frame = tick_reads.iter().all(|r| r.heroes.is_empty() && r.units.is_empty());
+            let dirty_frame = tick_reads
+                .iter()
+                .all(|r| r.heroes.is_empty() && r.units.is_empty());
 
             for (i, r) in tick_reads.into_iter().enumerate() {
                 let (heroes, units) = if dirty_frame {
-                    let prev_heroes = players[i].samples.iter().rev()
+                    let prev_heroes = players[i]
+                        .samples
+                        .iter()
+                        .rev()
                         .find(|s| !s.heroes.is_empty())
                         .map(|s| s.heroes.clone())
                         .unwrap_or_default();
-                    let prev_units = players[i].samples.iter().rev()
+                    let prev_units = players[i]
+                        .samples
+                        .iter()
+                        .rev()
                         .find(|s| !s.units.is_empty())
                         .map(|s| s.units.clone())
                         .unwrap_or_default();
@@ -407,7 +428,9 @@ fn run_game(
         let game_over = is_game_over(od, &player_slots);
 
         let has_combat_data = players.iter().any(|p| {
-            p.samples.last().map_or(false, |s| !s.heroes.is_empty() || !s.units.is_empty())
+            p.samples
+                .last()
+                .is_some_and(|s| !s.heroes.is_empty() || !s.units.is_empty())
         });
 
         redraw(&build_game_lines(
@@ -436,14 +459,22 @@ fn run_game(
             od,
             &player_slots,
         );
-        if has_combat_data && ticks % PUSH_EVERY_N_SAMPLES == 0 {
+        if has_combat_data && ticks.is_multiple_of(PUSH_EVERY_N_SAMPLES) {
             if let Some(p) = &mut pusher {
                 p.push(&players, &map_name, &game_name, false);
             }
         }
 
         if game_over {
-            return finish_game(&filename, &map_name, &game_name, &mut players, od, &player_slots, &mut pusher);
+            return finish_game(
+                &filename,
+                &map_name,
+                &game_name,
+                &mut players,
+                od,
+                &player_slots,
+                &mut pusher,
+            );
         }
 
         if event::poll(SAMPLE_INTERVAL).unwrap_or(false) {
@@ -453,7 +484,15 @@ fn run_game(
                 }
                 if key.kind == KeyEventKind::Press {
                     if let KeyCode::Char('p') = key.code {
-                        return finish_game(&filename, &map_name, &game_name, &mut players, od, &player_slots, &mut pusher);
+                        return finish_game(
+                            &filename,
+                            &map_name,
+                            &game_name,
+                            &mut players,
+                            od,
+                            &player_slots,
+                            &mut pusher,
+                        );
                     }
                 }
             }
