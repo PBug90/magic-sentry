@@ -11,9 +11,7 @@ export function createApp() {
     '/api/*',
     cors({
       origin: (origin) =>
-        origin === 'http://localhost:3000' || origin.endsWith('.ext-twitch.tv')
-          ? origin
-          : null,
+        origin === 'http://localhost:3000' || origin.endsWith('.ext-twitch.tv') ? origin : null,
       allowHeaders: ['Authorization', 'Content-Type'],
       allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     }),
