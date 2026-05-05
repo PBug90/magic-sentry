@@ -10,7 +10,10 @@ export function createApp() {
   app.use(
     '/api/*',
     cors({
-      origin: ['https://ext-twitch.tv', 'http://localhost:3000'],
+      origin: (origin) =>
+        origin === 'http://localhost:3000' || origin.endsWith('.ext-twitch.tv')
+          ? origin
+          : null,
       allowHeaders: ['Authorization', 'Content-Type'],
       allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     }),
