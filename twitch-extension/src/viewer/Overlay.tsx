@@ -331,7 +331,7 @@ export function Overlay() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           <img
-            src="./magicsentry.png"
+            src="./magicsentry.webp"
             alt="Magic Sentry"
             width={18}
             height={18}

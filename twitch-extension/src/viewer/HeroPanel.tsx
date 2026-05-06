@@ -39,7 +39,7 @@ function HeroIcon({ id, size = 44 }: { id: string; size?: number }) {
       }}
     >
       <img
-        src={`./heroes/${id}.png`}
+        src={`./heroes/${id}.webp`}
         alt={id}
         title={id}
         width={size}
@@ -62,7 +62,6 @@ function fmtStat(n: number): string {
 function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
   const info = ABILITY_BY_ID[ability.id]
   const name = info?.name ?? ability.id
-  const ext = info?.ext ?? 'gif'
   const size = 32
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
@@ -80,7 +79,7 @@ function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
           }}
         >
           <img
-            src={`./abilities/${ability.id}.${ext}`}
+            src={`./abilities/${ability.id}.webp`}
             alt={name}
             width={size}
             height={size}
@@ -166,7 +165,7 @@ function ItemTile({ item }: { item: ItemSnapshot }) {
         }}
       >
         <img
-          src={`./items/${item.id}.png`}
+          src={`./items/${item.id}.webp`}
           alt={item.id}
           width={32}
           height={32}
@@ -480,18 +479,13 @@ function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
           }}
         >
           <img
-            src={`./upgrades/${upgrade.id}.png`}
+            src={`./upgrades/${upgrade.id}.webp`}
             alt={upgrade.id}
             width={25}
             height={25}
             style={{ display: 'block', imageRendering: 'pixelated', width: '100%', height: '100%' }}
             onError={(e) => {
-              const img = e.currentTarget as HTMLImageElement
-              if (!img.src.endsWith('.gif')) {
-                img.src = img.src.replace(/\.[^.]+$/, '.gif')
-              } else {
-                img.style.display = 'none'
-              }
+              ;(e.currentTarget as HTMLImageElement).style.display = 'none'
             }}
           />
         </div>

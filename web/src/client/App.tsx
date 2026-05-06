@@ -90,7 +90,7 @@ function NavBar({
         }}
       >
         <img
-          src="/magicsentry.png"
+          src="/magicsentry.webp"
           alt="Magic Sentry"
           width={24}
           height={24}
@@ -878,7 +878,7 @@ function ExtensionMock() {
         }}
       >
         <img
-          src="/magicsentry.png"
+          src="/magicsentry.webp"
           width={9}
           height={9}
           style={{ imageRendering: 'auto', flexShrink: 0 }}

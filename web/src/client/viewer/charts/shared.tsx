@@ -90,7 +90,7 @@ export function TooltipTime({ sec }: { sec: number }) {
 export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string; size?: number }) {
   const [hovered, setHovered] = useState(false)
   const hero = HERO_OBSERVER_BY_ID[name]
-  const src = hero ? `/heroes/${name}.png` : `/units/${name}.png`
+  const src = hero ? `/heroes/${name}.webp` : `/units/${name}.webp`
   const displayName = hero?.display ?? UNIT_NAME_BY_ID[name] ?? name
   const gold = !hero ? UNIT_GOLD_BY_ID[name] : undefined
   const lumber = !hero ? UNIT_LUMBER_BY_ID[name] : undefined
