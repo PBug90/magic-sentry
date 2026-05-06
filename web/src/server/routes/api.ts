@@ -71,7 +71,7 @@ api.get('/health', (c) => c.json({ status: 'ok' }))
 const EXAMPLE_CHANNEL = '__example__'
 
 const EXAMPLE_FILES: Record<string, string> = {
-  'all': 'example-game.json',
+  all: 'example-game.json',
   'hu-orc': 'example-hu-orc.json',
   'ne-ud': 'example-ne-ud.json',
 }

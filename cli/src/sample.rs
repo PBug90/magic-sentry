@@ -1,4 +1,6 @@
-use warcraft3_stats_observer::{AbilityInfo, HeroInfo, ItemInfo, PlayerInfo, UnitInfo, UpgradeInfo};
+use warcraft3_stats_observer::{
+    AbilityInfo, HeroInfo, ItemInfo, PlayerInfo, UnitInfo, UpgradeInfo,
+};
 
 use crate::types::{AbilitySnapshot, HeroSnapshot, ItemSnapshot, UnitSnapshot, UpgradeSnapshot};
 use crate::util::fourcc;
@@ -30,7 +32,10 @@ fn read_item_snapshot(item: &ItemInfo) -> Option<ItemSnapshot> {
     if item.name.to_string().trim().is_empty() {
         return None;
     }
-    Some(ItemSnapshot { id: fourcc(item.id), charges: item.charges })
+    Some(ItemSnapshot {
+        id: fourcc(item.id),
+        charges: item.charges,
+    })
 }
 
 fn read_ability_snapshot(a: &AbilityInfo) -> Option<AbilitySnapshot> {
@@ -91,7 +96,11 @@ fn read_upgrade_snapshot(u: &UpgradeInfo) -> Option<UpgradeSnapshot> {
     if u.name.to_string().trim_matches('_').trim().is_empty() {
         return None;
     }
-    Some(UpgradeSnapshot { id: fourcc(u.id), level, max_level: u.max_level })
+    Some(UpgradeSnapshot {
+        id: fourcc(u.id),
+        level,
+        max_level: u.max_level,
+    })
 }
 
 fn read_unit_snapshot(u: &UnitInfo) -> Option<UnitSnapshot> {

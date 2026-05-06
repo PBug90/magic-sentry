@@ -3,7 +3,12 @@ use std::time::Duration;
 /// Converts a packed WC3 FourCC integer to its 4-character string form.
 /// e.g. 1751543663 → "hfoo" (Footman)
 pub fn fourcc(id: u32) -> String {
-    let bytes = [(id >> 24) as u8, (id >> 16) as u8, (id >> 8) as u8, id as u8];
+    let bytes = [
+        (id >> 24) as u8,
+        (id >> 16) as u8,
+        (id >> 8) as u8,
+        id as u8,
+    ];
     String::from_utf8_lossy(&bytes).into_owned()
 }
 

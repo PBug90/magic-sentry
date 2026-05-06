@@ -5,12 +5,12 @@ fn main() {
     }
 
     // Re-run this script if the source image changes.
-    println!("cargo:rerun-if-changed=../assets/magicsentry.png");
+    println!("cargo:rerun-if-changed=../assets/magicsentry.webp");
 
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
     let out_dir = std::env::var("OUT_DIR").unwrap();
 
-    let png_path = std::path::Path::new(&manifest_dir).join("../assets/magicsentry.png");
+    let png_path = std::path::Path::new(&manifest_dir).join("../assets/magicsentry.webp");
     let ico_path = std::path::Path::new(&out_dir).join("magicsentry.ico");
 
     build_ico(&png_path, &ico_path);
@@ -22,7 +22,7 @@ fn main() {
 
 /// Loads the PNG and produces a multi-size ICO (16, 32, 48, 256 px).
 fn build_ico(png: &std::path::Path, ico: &std::path::Path) {
-    let img = image::open(png).expect("failed to open magicsentry.png");
+    let img = image::open(png).expect("failed to open magicsentry.webp");
 
     let mut icon_dir = ico::IconDir::new(ico::ResourceType::Icon);
     for size in [16u32, 32, 48, 256] {

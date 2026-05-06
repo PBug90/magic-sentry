@@ -94,9 +94,7 @@ fn find_player_slots(od: &ObserverData, player_count: usize) -> Vec<usize> {
 fn is_game_over(od: &ObserverData, player_slots: &[usize]) -> bool {
     player_slots.iter().any(|&slot| {
         let result = unsafe {
-            std::ptr::read_unaligned(
-                std::ptr::addr_of!(od.players[slot].game_result) as *const u8,
-            )
+            std::ptr::read_unaligned(std::ptr::addr_of!(od.players[slot].game_result) as *const u8)
         };
         matches!(result, 0..=2)
     })
@@ -358,7 +356,14 @@ fn main() {
             ));
 
             ticks += 1;
-            write_snapshot(&filename, &map_name, &game_name, &mut players, od, &player_slots);
+            write_snapshot(
+                &filename,
+                &map_name,
+                &game_name,
+                &mut players,
+                od,
+                &player_slots,
+            );
 
             if has_combat_data && ticks.is_multiple_of(PUSH_EVERY_N_SAMPLES) {
                 if let Some(p) = &mut pusher {
@@ -367,7 +372,14 @@ fn main() {
             }
 
             if game_over {
-                write_snapshot(&filename, &map_name, &game_name, &mut players, od, &player_slots);
+                write_snapshot(
+                    &filename,
+                    &map_name,
+                    &game_name,
+                    &mut players,
+                    od,
+                    &player_slots,
+                );
                 if let Some(p) = pusher.as_mut() {
                     p.push(&players, &map_name, &game_name, true);
                 }
@@ -400,7 +412,7 @@ fn main() {
                 }
             }
 
-           // std::thread::sleep(Duration::from_millis(od.refresh_rate as u64));
+            // std::thread::sleep(Duration::from_millis(od.refresh_rate as u64));
         }
     }
 }

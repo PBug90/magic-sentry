@@ -1,7 +1,10 @@
 use warcraft3_stats_observer::ObserverData;
 
 use crate::display::redraw;
-use crate::types::{AbilitySnapshot, GameState, HeroSummary, ItemSnapshot, PlayerState, PlayerSummary, UnitSummary, UpgradeSnapshot};
+use crate::types::{
+    AbilitySnapshot, GameState, HeroSummary, ItemSnapshot, PlayerState, PlayerSummary, UnitSummary,
+    UpgradeSnapshot,
+};
 use crate::util::{fourcc, result_name};
 
 pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSummary> {
@@ -40,8 +43,13 @@ pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSum
                         .iter()
                         .take((h.item_count as usize).min(6))
                         .filter_map(|item| {
-                            if item.name.to_string().trim().is_empty() { return None; }
-                            Some(ItemSnapshot { id: fourcc(item.id), charges: item.charges })
+                            if item.name.to_string().trim().is_empty() {
+                                return None;
+                            }
+                            Some(ItemSnapshot {
+                                id: fourcc(item.id),
+                                charges: item.charges,
+                            })
                         })
                         .collect();
                     HeroSummary {
@@ -96,11 +104,19 @@ pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSum
                     if u.name.to_string().trim_matches('_').trim().is_empty() {
                         return None;
                     }
-                    Some(UpgradeSnapshot { id: fourcc(u.id), level, max_level: u.max_level })
+                    Some(UpgradeSnapshot {
+                        id: fourcc(u.id),
+                        level,
+                        max_level: u.max_level,
+                    })
                 })
                 .collect();
 
-            PlayerSummary { heroes, units, upgrades }
+            PlayerSummary {
+                heroes,
+                units,
+                upgrades,
+            }
         })
         .collect()
 }
@@ -116,7 +132,10 @@ pub fn write_snapshot(
     let summaries = build_summary(od, player_slots);
     for (i, &slot) in player_slots.iter().enumerate() {
         let p = &od.players[slot];
-        players[i].result = result_name(unsafe { std::ptr::read_unaligned(std::ptr::addr_of!(p.game_result) as *const u8) }).to_string();
+        players[i].result = result_name(unsafe {
+            std::ptr::read_unaligned(std::ptr::addr_of!(p.game_result) as *const u8)
+        })
+        .to_string();
 
         let heroes = if !summaries[i].heroes.is_empty() {
             summaries[i].heroes.clone()
@@ -132,7 +151,11 @@ pub fn write_snapshot(
                 .unwrap_or_default()
         };
         let units = summaries[i].units.clone();
-        players[i].summary = PlayerSummary { heroes, units, upgrades: summaries[i].upgrades.clone() };
+        players[i].summary = PlayerSummary {
+            heroes,
+            units,
+            upgrades: summaries[i].upgrades.clone(),
+        };
     }
 
     let duration_ms = players

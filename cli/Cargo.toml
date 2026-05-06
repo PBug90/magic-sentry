@@ -18,5 +18,5 @@ tiny_http = "0.12"
 
 [build-dependencies]
 winresource = "0.1"
-image = { version = "0.25", default-features = false, features = ["png"] }
+image = { version = "0.25", default-features = false, features = ["png", "webp"] }
 ico = "0.3"
