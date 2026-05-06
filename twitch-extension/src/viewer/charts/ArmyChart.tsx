@@ -8,6 +8,8 @@ import {
   timeTicks,
   nearestSampleIdx,
   UNIT_COLORS,
+  UNIT_NAME_BY_ID,
+  HERO_OBSERVER_BY_ID,
 } from '@magic-sentry/shared'
 import {
   CM,
@@ -453,7 +455,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                       flexShrink: 0,
                     }}
                   />
-                  {name}
+                  {HERO_OBSERVER_BY_ID[name]?.display ?? UNIT_NAME_BY_ID[name] ?? name}
                 </span>
               ))}
             </div>

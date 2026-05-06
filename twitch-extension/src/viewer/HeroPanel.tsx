@@ -1,6 +1,6 @@
 ﻿import { useState } from 'react'
 import { AbilitySnapshot, ChartPlayer, HeroSample, ItemSnapshot, UpgradeSnapshot } from '../shared/types'
-import { ABILITY_BY_ID, HERO_OBSERVER_BY_ID, HERO_XP_THRESHOLDS, ITEM_GOLD_BY_ID, ITEM_NAME_BY_ID, UPGRADE_NAME_BY_ID, UPGRADE_GOLD_BY_ID, UPGRADE_LUMBER_BY_ID } from '@magic-sentry/shared'
+import { ABILITY_BY_ID, HERO_OBSERVER_BY_ID, HERO_XP_THRESHOLDS, ITEM_BY_ID, UPGRADE_NAME_BY_ID, UPGRADE_GOLD_BY_ID, UPGRADE_LUMBER_BY_ID } from '@magic-sentry/shared'
 
 // Unified hero display shape — works for both HeroFinal (summary) and HeroSample (live).
 interface HeroDisplay {
@@ -122,8 +122,9 @@ function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
 
 function ItemTile({ item }: { item: ItemSnapshot }) {
   const [hovered, setHovered] = useState(false)
-  const name = ITEM_NAME_BY_ID[item.id] ?? item.id
-  const gold = ITEM_GOLD_BY_ID[item.id]
+  const item_info = ITEM_BY_ID[item.id]
+  const name = item_info?.name ?? item.id
+  const gold = item_info?.gold
   return (
     <div
       style={{ position: 'relative' }}
