@@ -1,4 +1,4 @@
-import { ChartPlayer } from '../../shared/types'
+﻿import { ChartPlayer } from '../../shared/types'
 import { nearestSample, niceMax, timeTicks } from '@magic-sentry/shared'
 import {
   CM,
@@ -170,7 +170,7 @@ function ResourceChart({
             return (
               <div key={p.name} style={{ marginBottom: 6 }}>
                 <span
-                  style={{ fontSize: '.62rem', color: p.color, display: 'block', marginBottom: 2 }}
+                  style={{ fontSize: '.62em', color: p.color, display: 'block', marginBottom: 2 }}
                 >
                   {p.name}
                 </span>
@@ -189,7 +189,7 @@ function ResourceChart({
                       justifyContent: 'space-between',
                       gap: 12,
                       fontFamily: 'monospace',
-                      fontSize: '.58rem',
+                      fontSize: '.58em',
                     }}
                   >
                     <span style={{ color: '#46464f' }}>{label}</span>
@@ -206,7 +206,7 @@ function ResourceChart({
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0 24px' }}>
         {players.map(({ name, color }) => (
           <span key={name} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: '.65rem', color: '#888', fontFamily: 'sans-serif' }}>
+            <span style={{ fontSize: '.65em', color: '#888', fontFamily: 'sans-serif' }}>
               {name}
             </span>
             {(singleLine
@@ -223,7 +223,7 @@ function ResourceChart({
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
-                  fontSize: '.6rem',
+                  fontSize: '.6em',
                   color: '#555',
                 }}
               >
@@ -280,6 +280,26 @@ export function LumberChart({ players }: { players: ChartPlayer[] }) {
         mined: (s) => s.lumber_mined,
         upkeep: () => 0,
         minedLabel: 'mined',
+        upkeepLabel: '',
+        netLabel: '',
+      }}
+    />
+  )
+}
+
+export function ApmChart({ players }: { players: ChartPlayer[] }) {
+  const rawMax = Math.max(...players.flatMap((p) => p.samples.map((s) => s.apm)), 1)
+  const step = rawMax > 200 ? 100 : rawMax > 100 ? 50 : 25
+  return (
+    <ResourceChart
+      players={players}
+      title="Actions per Minute"
+      yStep={step}
+      singleLine
+      series={{
+        mined: (s) => s.apm,
+        upkeep: () => 0,
+        minedLabel: 'apm',
         upkeepLabel: '',
         netLabel: '',
       }}

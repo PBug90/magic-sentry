@@ -41,7 +41,7 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
                 textAnchor="end"
                 dominantBaseline="middle"
                 fontSize={9}
-                fill="#46464f"
+                fill="#7a7a88"
                 fontFamily="monospace"
               >
                 {v}
@@ -55,7 +55,7 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
               y={IH + 16}
               textAnchor="middle"
               fontSize={9}
-              fill="#46464f"
+              fill="#7a7a88"
               fontFamily="monospace"
             >
               {Math.floor(t / 60)}m
@@ -135,7 +135,7 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
                       fontSize: '.58rem',
                     }}
                   >
-                    <span style={{ color: '#46464f' }}>{label}</span>
+                    <span style={{ color: '#7a7a88' }}>{label}</span>
                     <span style={{ color: '#efeff1' }}>{val}</span>
                   </div>
                 ))}
@@ -162,7 +162,7 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
                   alignItems: 'center',
                   gap: 6,
                   fontSize: '.6rem',
-                  color: '#555',
+                  color: '#888',
                 }}
               >
                 <svg width={16} height={2} style={{ flexShrink: 0 }}>

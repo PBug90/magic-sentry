@@ -109,7 +109,7 @@ class GameStore {
             team: pp.team,
             result: '',
             samples: [],
-            summary: { heroes: [], units: [] },
+            summary: { heroes: [], units: [], upgrades: [] },
           }
           playerMap.set(pp.name, record)
         }

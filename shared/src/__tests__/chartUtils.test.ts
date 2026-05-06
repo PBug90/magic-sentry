@@ -13,7 +13,7 @@ import {
   buildAreas,
   PLAYER_COLORS,
   UNIT_COLORS,
-  HERO_OBSERVER_NAMES,
+  HERO_OBSERVER_IDS,
 } from '../chartUtils.js'
 
 // ---------------------------------------------------------------------------
@@ -34,13 +34,14 @@ function makeSample(overrides: Partial<Sample> = {}): Sample {
     apm: 0,
     heroes: [],
     units: [],
+    upgrades: [],
     ...overrides,
   }
 }
 
-function makeHero(name: string, hp = 100) {
+function makeHero(id: string, hp = 100) {
   return {
-    name,
+    id,
     level: 1,
     xp: 0,
     hp,
@@ -54,11 +55,13 @@ function makeHero(name: string, hp = 100) {
     kills: 0,
     hero_kills: 0,
     building_kills: 0,
+    abilities: [],
+    inventory: [],
   }
 }
 
-function makeUnit(name: string, alive: number) {
-  return { name, alive, trained: alive }
+function makeUnit(id: string, alive: number) {
+  return { id, alive, trained: alive }
 }
 
 // ---------------------------------------------------------------------------
@@ -183,18 +186,18 @@ describe('timeTicks', () => {
 // ---------------------------------------------------------------------------
 
 describe('heroSupply', () => {
-  it('returns 5 for any hero observer name', () => {
-    for (const name of HERO_OBSERVER_NAMES) {
-      expect(heroSupply(name)).toBe(5)
+  it('returns 5 for any hero observer id', () => {
+    for (const id of HERO_OBSERVER_IDS) {
+      expect(heroSupply(id)).toBe(5)
     }
   })
 
-  it('returns the correct unit supply for known units', () => {
-    expect(heroSupply('Footman')).toBe(2)
-    expect(heroSupply('Grunt')).toBe(3)
-    expect(heroSupply('Peasant')).toBe(1)
-    expect(heroSupply('Tauren')).toBe(5)
-    expect(heroSupply('Frost Wyrm')).toBe(7)
+  it('returns the correct unit supply for known unit ids', () => {
+    expect(heroSupply('hfoo')).toBe(2)
+    expect(heroSupply('ogru')).toBe(3)
+    expect(heroSupply('hpea')).toBe(1)
+    expect(heroSupply('otau')).toBe(5)
+    expect(heroSupply('ufro')).toBe(7)
   })
 
   it('returns 1 as fallback for unknown unit names', () => {
@@ -267,42 +270,42 @@ describe('buildLayers', () => {
   })
 
   it('places worker units first', () => {
-    const samples = [makeSample({ units: [makeUnit('Peasant', 5), makeUnit('Footman', 3)] })]
+    const samples = [makeSample({ units: [makeUnit('hpea', 5), makeUnit('hfoo', 3)] })]
     const layers = buildLayers(samples)
-    expect(layers[0]).toBe('Peasant')
+    expect(layers[0]).toBe('hpea')
   })
 
   it('places heroes last', () => {
     const samples = [
       makeSample({
-        units: [makeUnit('Footman', 4)],
-        heroes: [makeHero('archmage')],
+        units: [makeUnit('hfoo', 4)],
+        heroes: [makeHero('Hamg')],
       }),
     ]
     const layers = buildLayers(samples)
-    expect(layers[layers.length - 1]).toBe('archmage')
-    expect(layers).toContain('Footman')
+    expect(layers[layers.length - 1]).toBe('Hamg')
+    expect(layers).toContain('hfoo')
   })
 
   it('excludes units with zero alive count across all samples', () => {
-    const samples = [makeSample({ units: [makeUnit('Footman', 0)] })]
-    expect(buildLayers(samples)).not.toContain('Footman')
+    const samples = [makeSample({ units: [makeUnit('hfoo', 0)] })]
+    expect(buildLayers(samples)).not.toContain('hfoo')
   })
 
   it('excludes dead heroes (hp = 0)', () => {
-    const samples = [makeSample({ heroes: [makeHero('archmage', 0)] })]
-    expect(buildLayers(samples)).not.toContain('archmage')
+    const samples = [makeSample({ heroes: [makeHero('Hamg', 0)] })]
+    expect(buildLayers(samples)).not.toContain('Hamg')
   })
 
   it('sorts non-worker units by peak supply descending', () => {
     const samples = [
       makeSample({
-        units: [makeUnit('Footman', 2), makeUnit('Gryphon Rider', 4)], // supply 2 vs 4
+        units: [makeUnit('hfoo', 2), makeUnit('hgry', 4)], // supply 2 vs 4
       }),
     ]
     const layers = buildLayers(samples)
-    // Gryphon Rider (supply 4) appears before Footman (supply 2)
-    expect(layers.indexOf('Gryphon Rider')).toBeLessThan(layers.indexOf('Footman'))
+    // hgry (Gryphon Rider, supply 4) appears before hfoo (Footman, supply 2)
+    expect(layers.indexOf('hgry')).toBeLessThan(layers.indexOf('hfoo'))
   })
 })
 
@@ -317,40 +320,40 @@ describe('buildByTime', () => {
     expect(result[0]).toEqual({})
   })
 
-  it('maps unit names to their alive count', () => {
-    const samples = [makeSample({ units: [makeUnit('Footman', 3), makeUnit('Peasant', 5)] })]
-    expect(buildByTime(samples)[0]).toEqual({ Footman: 3, Peasant: 5 })
+  it('maps unit ids to their alive count', () => {
+    const samples = [makeSample({ units: [makeUnit('hfoo', 3), makeUnit('hpea', 5)] })]
+    expect(buildByTime(samples)[0]).toEqual({ hfoo: 3, hpea: 5 })
   })
 
   it('increments hero count for alive heroes', () => {
-    const samples = [makeSample({ heroes: [makeHero('archmage', 100), makeHero('paladin', 100)] })]
+    const samples = [makeSample({ heroes: [makeHero('Hamg', 100), makeHero('Hpal', 100)] })]
     const map = buildByTime(samples)[0]
-    expect(map['archmage']).toBe(1)
-    expect(map['paladin']).toBe(1)
+    expect(map['Hamg']).toBe(1)
+    expect(map['Hpal']).toBe(1)
   })
 
   it('omits dead heroes (hp = 0)', () => {
-    const samples = [makeSample({ heroes: [makeHero('archmage', 0)] })]
-    expect(buildByTime(samples)[0]).not.toHaveProperty('archmage')
+    const samples = [makeSample({ heroes: [makeHero('Hamg', 0)] })]
+    expect(buildByTime(samples)[0]).not.toHaveProperty('Hamg')
   })
 
-  it('adds hero on top of a unit with the same name', () => {
+  it('adds hero on top of a unit with the same id', () => {
     // Unlikely in practice but tests the accumulation logic
     const samples = [
-      makeSample({ units: [makeUnit('archmage', 1)], heroes: [makeHero('archmage', 50)] }),
+      makeSample({ units: [makeUnit('Hamg', 1)], heroes: [makeHero('Hamg', 50)] }),
     ]
-    expect(buildByTime(samples)[0]['archmage']).toBe(2)
+    expect(buildByTime(samples)[0]['Hamg']).toBe(2)
   })
 
   it('produces one entry per sample', () => {
     const samples = [
-      makeSample({ time_ms: 0, units: [makeUnit('Footman', 1)] }),
-      makeSample({ time_ms: 30_000, units: [makeUnit('Footman', 3)] }),
+      makeSample({ time_ms: 0, units: [makeUnit('hfoo', 1)] }),
+      makeSample({ time_ms: 30_000, units: [makeUnit('hfoo', 3)] }),
     ]
     const result = buildByTime(samples)
     expect(result).toHaveLength(2)
-    expect(result[0]['Footman']).toBe(1)
-    expect(result[1]['Footman']).toBe(3)
+    expect(result[0]['hfoo']).toBe(1)
+    expect(result[1]['hfoo']).toBe(3)
   })
 })
 
@@ -364,26 +367,26 @@ describe('buildAreas', () => {
 
   it('returns one area per layer', () => {
     const samples = [makeSample({ time_ms: 0 }), makeSample({ time_ms: 30_000 })]
-    const layers = ['Footman', 'Peasant']
+    const layers = ['hfoo', 'hpea']
     const byTime = [
-      { Footman: 3, Peasant: 1 },
-      { Footman: 4, Peasant: 1 },
+      { hfoo: 3, hpea: 1 },
+      { hfoo: 4, hpea: 1 },
     ]
     const areas = buildAreas(samples, layers, byTime, xOf, yOf)
     expect(areas).toHaveLength(2)
-    expect(areas.map((a) => a.name)).toEqual(['Footman', 'Peasant'])
+    expect(areas.map((a) => a.name)).toEqual(['hfoo', 'hpea'])
   })
 
   it('each area has a non-empty SVG path string', () => {
     const samples = [makeSample({ time_ms: 0 }), makeSample({ time_ms: 10_000 })]
-    const areas = buildAreas(samples, ['Footman'], [{ Footman: 2 }, { Footman: 3 }], xOf, yOf)
+    const areas = buildAreas(samples, ['hfoo'], [{ hfoo: 2 }, { hfoo: 3 }], xOf, yOf)
     expect(areas[0].d).toMatch(/^M/)
     expect(areas[0].d).toMatch(/Z$/)
   })
 
   it('uses UNIT_COLORS by default', () => {
     const samples = [makeSample({ time_ms: 0 })]
-    const areas = buildAreas(samples, ['Footman'], [{ Footman: 1 }], xOf, yOf)
+    const areas = buildAreas(samples, ['hfoo'], [{ hfoo: 1 }], xOf, yOf)
     expect(UNIT_COLORS).toContain(areas[0].fill)
   })
 
@@ -391,8 +394,8 @@ describe('buildAreas', () => {
     const samples = [makeSample({ time_ms: 0 })]
     const areas = buildAreas(
       samples,
-      ['Footman'],
-      [{ Footman: 1 }],
+      ['hfoo'],
+      [{ hfoo: 1 }],
       xOf,
       yOf,
       () => 1,
@@ -435,20 +438,20 @@ describe('UNIT_COLORS', () => {
   })
 })
 
-describe('HERO_OBSERVER_NAMES', () => {
-  it('contains all 4 races', () => {
+describe('HERO_OBSERVER_IDS', () => {
+  it('contains fourcc ids for all 4 races', () => {
     // Human
-    expect(HERO_OBSERVER_NAMES.has('archmage')).toBe(true)
+    expect(HERO_OBSERVER_IDS.has('Hamg')).toBe(true)
     // Orc
-    expect(HERO_OBSERVER_NAMES.has('blademaster')).toBe(true)
+    expect(HERO_OBSERVER_IDS.has('Obla')).toBe(true)
     // Undead
-    expect(HERO_OBSERVER_NAMES.has('deathknight')).toBe(true)
+    expect(HERO_OBSERVER_IDS.has('Udea')).toBe(true)
     // Night Elf
-    expect(HERO_OBSERVER_NAMES.has('demonhunter')).toBe(true)
+    expect(HERO_OBSERVER_IDS.has('Edem')).toBe(true)
   })
 
-  it('does not contain unit names', () => {
-    expect(HERO_OBSERVER_NAMES.has('Footman')).toBe(false)
-    expect(HERO_OBSERVER_NAMES.has('Peasant')).toBe(false)
+  it('does not contain unit ids', () => {
+    expect(HERO_OBSERVER_IDS.has('hfoo')).toBe(false)
+    expect(HERO_OBSERVER_IDS.has('hpea')).toBe(false)
   })
 })

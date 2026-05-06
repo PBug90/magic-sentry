@@ -1,6 +1,9 @@
 export type {
   HeroSample,
   UnitSnapshot,
+  AbilitySnapshot,
+  ItemSnapshot,
+  UpgradeSnapshot,
   Sample,
   HeroFinal,
   UnitSummary,

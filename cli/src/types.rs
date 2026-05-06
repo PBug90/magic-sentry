@@ -5,8 +5,22 @@ use serde::Serialize;
 // ---------------------------------------------------------------------------
 
 #[derive(Serialize, Clone)]
+pub struct ItemSnapshot {
+    pub id: String,
+    pub charges: u32,
+}
+
+#[derive(Serialize, Clone)]
+pub struct AbilitySnapshot {
+    pub id: String,
+    pub level: u32,
+    pub damage_dealt: u32,
+    pub healing_done: u32,
+}
+
+#[derive(Serialize, Clone)]
 pub struct HeroSnapshot {
-    pub name: String,
+    pub id: String,
     pub level: u32,
     pub xp: u32,
     pub hp: u32,
@@ -20,13 +34,22 @@ pub struct HeroSnapshot {
     pub kills: u32,
     pub hero_kills: u32,
     pub building_kills: u32,
+    pub abilities: Vec<AbilitySnapshot>,
+    pub inventory: Vec<ItemSnapshot>,
 }
 
 #[derive(Serialize, Clone)]
 pub struct UnitSnapshot {
-    pub name: String,
+    pub id: String,
     pub alive: u32,   // current_amount — units on the field right now
     pub trained: u32, // total_amount   — ever produced
+}
+
+#[derive(Serialize, Clone)]
+pub struct UpgradeSnapshot {
+    pub id: String,
+    pub level: u32,
+    pub max_level: u32,
 }
 
 #[derive(Serialize, Clone)]
@@ -43,6 +66,7 @@ pub struct ResourceSample {
     pub apm: u32,
     pub heroes: Vec<HeroSnapshot>,
     pub units: Vec<UnitSnapshot>,
+    pub upgrades: Vec<UpgradeSnapshot>,
 }
 
 // ---------------------------------------------------------------------------
@@ -51,7 +75,7 @@ pub struct ResourceSample {
 
 #[derive(Serialize, Clone)]
 pub struct UnitSummary {
-    pub name: String,
+    pub id: String,
     pub trained: u32,
     pub alive: u32,
     pub damage_dealt: u32,
@@ -61,7 +85,7 @@ pub struct UnitSummary {
 
 #[derive(Serialize, Clone)]
 pub struct HeroSummary {
-    pub name: String,
+    pub id: String,
     pub level: u32,
     pub xp: u32,
     pub deaths: u32,
@@ -72,12 +96,14 @@ pub struct HeroSummary {
     pub damage_received: u32,
     pub healing_done: u32,
     pub time_alive_ms: u32,
+    pub abilities: Vec<AbilitySnapshot>,
+    pub inventory: Vec<ItemSnapshot>,
 }
 
 impl From<&HeroSnapshot> for HeroSummary {
     fn from(h: &HeroSnapshot) -> Self {
         HeroSummary {
-            name: h.name.clone(),
+            id: h.id.clone(),
             level: h.level,
             xp: h.xp,
             deaths: h.deaths,
@@ -88,6 +114,8 @@ impl From<&HeroSnapshot> for HeroSummary {
             damage_received: h.damage_received,
             healing_done: h.healing_done,
             time_alive_ms: 0, // not available from mid-game samples
+            abilities: h.abilities.clone(),
+            inventory: h.inventory.clone(),
         }
     }
 }
@@ -96,6 +124,7 @@ impl From<&HeroSnapshot> for HeroSummary {
 pub struct PlayerSummary {
     pub heroes: Vec<HeroSummary>,
     pub units: Vec<UnitSummary>,
+    pub upgrades: Vec<UpgradeSnapshot>,
 }
 
 // ---------------------------------------------------------------------------

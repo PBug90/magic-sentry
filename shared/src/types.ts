@@ -12,6 +12,7 @@ export const MAX_PLAYERS = 24
 export const MAX_SAMPLES_PER_PATCH = 1800 // ~1 sample / 2 s for a 1-hour game
 export const MAX_HEROES = 3
 export const MAX_UNITS = 200
+export const MAX_UPGRADES = 100
 export const MAX_SEQ = 100_000
 export const MAX_GAME_MS = 10_800_000 // 3 hours
 export const MAX_APM = 1_000
@@ -30,13 +31,26 @@ export const CHANNEL_RE = /^[a-zA-Z0-9_]{1,25}$/
 
 const nat = (max: number) => z.number().finite().int().min(0).max(max)
 const str = (max: number) => z.string().max(max)
+const fcc = z.string().max(4)
 
 // ---------------------------------------------------------------------------
 // Schemas — mirrors magic-sentry-cli/src/types.rs
 // ---------------------------------------------------------------------------
 
+export const ItemSnapshotSchema = z.object({
+  id: fcc,
+  charges: nat(999),
+})
+
+export const AbilitySnapshotSchema = z.object({
+  id: fcc,
+  level: nat(10),
+  damage_dealt: nat(MAX_STAT),
+  healing_done: nat(MAX_STAT),
+})
+
 export const HeroSampleSchema = z.object({
-  name: str(MAX_NAME),
+  id: fcc,
   level: nat(10),
   xp: nat(MAX_STAT),
   hp: nat(MAX_HP_MP),
@@ -50,12 +64,20 @@ export const HeroSampleSchema = z.object({
   kills: nat(100_000),
   hero_kills: nat(10_000),
   building_kills: nat(100_000),
+  abilities: z.array(AbilitySnapshotSchema).max(24),
+  inventory: z.array(ItemSnapshotSchema).max(6),
 })
 
 export const UnitSnapshotSchema = z.object({
-  name: str(MAX_NAME),
+  id: fcc,
   alive: nat(10_000),
   trained: nat(100_000),
+})
+
+export const UpgradeSnapshotSchema = z.object({
+  id: fcc,
+  level: nat(10),
+  max_level: nat(10),
 })
 
 export const SampleSchema = z.object({
@@ -71,10 +93,11 @@ export const SampleSchema = z.object({
   apm: nat(MAX_APM),
   heroes: z.array(HeroSampleSchema).max(MAX_HEROES),
   units: z.array(UnitSnapshotSchema).max(MAX_UNITS),
+  upgrades: z.array(UpgradeSnapshotSchema).max(MAX_UPGRADES),
 })
 
 export const HeroFinalSchema = z.object({
-  name: str(MAX_NAME),
+  id: fcc,
   level: nat(10),
   xp: nat(MAX_STAT),
   deaths: nat(10_000),
@@ -85,10 +108,12 @@ export const HeroFinalSchema = z.object({
   damage_received: nat(MAX_STAT),
   healing_done: nat(MAX_STAT),
   time_alive_ms: nat(MAX_GAME_MS),
+  abilities: z.array(AbilitySnapshotSchema).max(24),
+  inventory: z.array(ItemSnapshotSchema).max(6),
 })
 
 export const UnitSummarySchema = z.object({
-  name: str(MAX_NAME),
+  id: fcc,
   trained: nat(100_000),
   alive: nat(10_000),
   damage_dealt: nat(MAX_STAT),
@@ -99,6 +124,7 @@ export const UnitSummarySchema = z.object({
 export const PlayerSummarySchema = z.object({
   heroes: z.array(HeroFinalSchema).max(MAX_HEROES),
   units: z.array(UnitSummarySchema).max(MAX_UNITS),
+  upgrades: z.array(UpgradeSnapshotSchema).max(MAX_UPGRADES),
 })
 
 export const PlayerRecordSchema = z.object({
@@ -149,8 +175,11 @@ export const GamePatchSchema = z.object({
 // Inferred types
 // ---------------------------------------------------------------------------
 
+export type ItemSnapshot = z.infer<typeof ItemSnapshotSchema>
+export type AbilitySnapshot = z.infer<typeof AbilitySnapshotSchema>
 export type HeroSample = z.infer<typeof HeroSampleSchema>
 export type UnitSnapshot = z.infer<typeof UnitSnapshotSchema>
+export type UpgradeSnapshot = z.infer<typeof UpgradeSnapshotSchema>
 export type Sample = z.infer<typeof SampleSchema>
 export type HeroFinal = z.infer<typeof HeroFinalSchema>
 export type UnitSummary = z.infer<typeof UnitSummarySchema>

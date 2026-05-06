@@ -1,12 +1,12 @@
-import { useState, useEffect, useRef, useCallback, type CSSProperties } from 'react'
+﻿import { useState, useEffect, useRef, useCallback, type CSSProperties } from 'react'
 import { GameRecord, GamePatch, PlayerRecord, ChartPlayer } from '../shared/types'
 import { PLAYER_COLORS, formatDuration } from '@magic-sentry/shared'
 import { HeroPanel } from './HeroPanel'
-import { EconomyChart, LumberChart } from './charts/ResourceChart'
+import { EconomyChart, LumberChart, ApmChart } from './charts/ResourceChart'
 import { FoodChart } from './charts/FoodChart'
 import { ArmyChart } from './charts/ArmyChart'
 
-type TabKey = 'heroes' | 'gold' | 'lumber' | 'food' | 'army'
+type TabKey = 'heroes' | 'gold' | 'lumber' | 'food' | 'army' | 'apm'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'heroes', label: 'Heroes' },
@@ -14,6 +14,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'lumber', label: 'Lumber' },
   { key: 'food', label: 'Food' },
   { key: 'army', label: 'Army' },
+  { key: 'apm', label: 'APM' },
 ]
 
 function TabBar({ active, onChange }: { active: TabKey; onChange: (t: TabKey) => void }) {
@@ -24,14 +25,14 @@ function TabBar({ active, onChange }: { active: TabKey; onChange: (t: TabKey) =>
         const style: CSSProperties = {
           padding: '9px 18px',
           fontFamily: 'monospace',
-          fontSize: '.7rem',
+          fontSize: '.7em',
           letterSpacing: '.08em',
           textTransform: 'uppercase',
           cursor: 'pointer',
           background: 'none',
           border: 'none',
           borderBottom: isActive ? '2px solid #c8a050' : '2px solid transparent',
-          color: isActive ? '#c8a050' : '#555',
+          color: isActive ? '#c8a050' : '#888',
           transition: 'color .12s',
           marginBottom: -1,
         }
@@ -67,9 +68,9 @@ function TeamsBar({ players }: { players: ChartPlayer[] }) {
           >
             <span
               style={{
-                fontSize: '.55rem',
+                fontSize: '.55em',
                 letterSpacing: '.14em',
-                color: '#555',
+                color: '#888',
                 fontFamily: 'monospace',
                 textTransform: 'uppercase',
               }}
@@ -87,13 +88,13 @@ function TeamsBar({ players }: { players: ChartPlayer[] }) {
                     display: 'inline-block',
                   }}
                 />
-                <span style={{ fontSize: '.75rem', color: '#efeff1' }}>{p.name}</span>
+                <span style={{ fontSize: '.75em', color: '#efeff1' }}>{p.name}</span>
               </span>
             ))}
             {won && (
               <span
                 style={{
-                  fontSize: '.52rem',
+                  fontSize: '.52em',
                   letterSpacing: '.14em',
                   color: '#c8a050',
                   fontFamily: 'monospace',
@@ -149,7 +150,7 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
               team: pp.team,
               result: '',
               samples: [],
-              summary: { heroes: [], units: [] },
+              summary: { heroes: [], units: [], upgrades: [] },
             }
             playerMap.set(pp.name, record)
           }
@@ -190,6 +191,7 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
   return (
     <div
       style={{
+        fontSize: '22px',
         fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
         display: 'flex',
         flexDirection: 'column',
@@ -214,7 +216,7 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
             borderRadius: 3,
             color: '#777',
             cursor: 'pointer',
-            fontSize: '.7rem',
+            fontSize: '.7em',
             fontFamily: 'monospace',
             padding: '4px 10px',
           }}
@@ -223,7 +225,7 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
         </button>
         <span
           style={{
-            fontSize: '.75rem',
+            fontSize: '.75em',
             letterSpacing: '.1em',
             color: '#c8a050',
             fontFamily: 'monospace',
@@ -235,8 +237,8 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
         {game && (
           <>
             <span style={{ color: '#2a2a3a' }}>·</span>
-            <span style={{ fontSize: '.8rem', color: '#efeff1' }}>{game.map}</span>
-            <span style={{ fontSize: '.72rem', color: '#555', fontFamily: 'monospace' }}>
+            <span style={{ fontSize: '.8em', color: '#efeff1' }}>{game.map}</span>
+            <span style={{ fontSize: '.72em', color: '#888', fontFamily: 'monospace' }}>
               {formatDuration(game.duration_ms)}
             </span>
             <TeamsBar players={playerData} />
@@ -246,8 +248,8 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
           <span
             style={{
               marginLeft: 'auto',
-              fontSize: '.6rem',
-              color: '#444',
+              fontSize: '.6em',
+              color: '#777',
               fontFamily: 'monospace',
             }}
           >
@@ -260,11 +262,11 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
       {!game && (
         <div style={{ padding: '20px 24px' }}>
           {fetchError ? (
-            <span style={{ fontSize: '.7rem', color: '#ff7b72', fontFamily: 'monospace' }}>
+            <span style={{ fontSize: '.7em', color: '#ff7b72', fontFamily: 'monospace' }}>
               Error: {fetchError}
             </span>
           ) : (
-            <span style={{ fontSize: '.7rem', color: '#555', fontFamily: 'monospace' }}>
+            <span style={{ fontSize: '.7em', color: '#888', fontFamily: 'monospace' }}>
               Loading…
             </span>
           )}
@@ -281,7 +283,7 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
             {fetchError && (
               <div
                 style={{
-                  fontSize: '.65rem',
+                  fontSize: '.65em',
                   color: '#ff7b72',
                   fontFamily: 'monospace',
                   padding: '7px 12px',
@@ -299,6 +301,7 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
             {tab === 'lumber' && <LumberChart players={playerData} />}
             {tab === 'food' && <FoodChart players={playerData} />}
             {tab === 'army' && <ArmyChart players={playerData} />}
+            {tab === 'apm' && <ApmChart players={playerData} />}
           </div>
         </>
       )}

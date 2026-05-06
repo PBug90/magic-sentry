@@ -1,5 +1,5 @@
 import type { Sample } from './types.js'
-import { WORKERS, HERO_OBSERVER, UNIT_SUPPLY } from './wc3data.js'
+import { WORKERS_BY_ID, HERO_OBSERVER_BY_ID, UNIT_SUPPLY_BY_ID } from './wc3data.js'
 
 export const PLAYER_COLORS = ['#58a6ff', '#ff7b72', '#3fb950', '#d2a8ff', '#ffa657']
 export const UNIT_COLORS = [
@@ -20,10 +20,11 @@ export const UNIT_COLORS = [
   '#c9e0a0',
 ]
 
-export const HERO_OBSERVER_NAMES = new Set(Object.keys(HERO_OBSERVER))
+export const HERO_OBSERVER_IDS = new Set(Object.keys(HERO_OBSERVER_BY_ID))
 
-export function heroSupply(n: string): number {
-  return HERO_OBSERVER_NAMES.has(n) ? 5 : (UNIT_SUPPLY[n] ?? 1)
+/** Supply cost for a unit or hero id. Heroes cost 5 food in the army chart. */
+export function heroSupply(id: string): number {
+  return HERO_OBSERVER_IDS.has(id) ? 5 : (UNIT_SUPPLY_BY_ID[id] ?? 1)
 }
 
 export function formatDuration(ms: number): string {
@@ -69,42 +70,42 @@ export function nearestSampleIdx(samples: Sample[], targetSec: number): number {
 
 /** Build sorted layer order: workers first, then others by peak supply desc, heroes on top. */
 export function buildLayers(samples: Sample[]): string[] {
-  const unitNames = [
-    ...new Set(samples.flatMap((s) => s.units.filter((u) => u.alive > 0).map((u) => u.name))),
+  const unitIds = [
+    ...new Set(samples.flatMap((s) => s.units.filter((u) => u.alive > 0).map((u) => u.id))),
   ]
-  const heroNames = [
-    ...new Set(samples.flatMap((s) => s.heroes.filter((h) => h.hp > 0).map((h) => h.name))),
+  const heroIds = [
+    ...new Set(samples.flatMap((s) => s.heroes.filter((h) => h.hp > 0).map((h) => h.id))),
   ]
-  const allNames = [...new Set([...unitNames, ...heroNames])]
+  const allIds = [...new Set([...unitIds, ...heroIds])]
   const peakSupply = Object.fromEntries(
-    allNames.map((n) => [
-      n,
+    allIds.map((id) => [
+      id,
       Math.max(
         ...samples.map((s) => {
-          if (HERO_OBSERVER_NAMES.has(n))
-            return s.heroes.some((h) => h.name === n && h.hp > 0) ? 5 : 0
-          return (s.units.find((u) => u.name === n)?.alive ?? 0) * heroSupply(n)
+          if (HERO_OBSERVER_IDS.has(id))
+            return s.heroes.some((h) => h.id === id && h.hp > 0) ? 5 : 0
+          return (s.units.find((u) => u.id === id)?.alive ?? 0) * heroSupply(id)
         }),
       ),
     ]),
   )
-  const workers = allNames
-    .filter((n) => WORKERS.has(n))
+  const workers = allIds
+    .filter((id) => WORKERS_BY_ID.has(id))
     .sort((a, b) => peakSupply[b] - peakSupply[a])
-  const heroes = allNames
-    .filter((n) => HERO_OBSERVER_NAMES.has(n))
+  const heroes = allIds
+    .filter((id) => HERO_OBSERVER_IDS.has(id))
     .sort((a, b) => peakSupply[b] - peakSupply[a])
-  const others = allNames
-    .filter((n) => !WORKERS.has(n) && !HERO_OBSERVER_NAMES.has(n))
+  const others = allIds
+    .filter((id) => !WORKERS_BY_ID.has(id) && !HERO_OBSERVER_IDS.has(id))
     .sort((a, b) => peakSupply[b] - peakSupply[a])
   return [...workers, ...others, ...heroes]
 }
 
-/** Map name → count (alive units + alive heroes) per sample. */
+/** Map id → count (alive units + alive heroes) per sample. */
 export function buildByTime(samples: Sample[]): Record<string, number>[] {
   return samples.map((s) => {
-    const map: Record<string, number> = Object.fromEntries(s.units.map((u) => [u.name, u.alive]))
-    for (const h of s.heroes) if (h.hp > 0) map[h.name] = (map[h.name] ?? 0) + 1
+    const map: Record<string, number> = Object.fromEntries(s.units.map((u) => [u.id, u.alive]))
+    for (const h of s.heroes) if (h.hp > 0) map[h.id] = (map[h.id] ?? 0) + 1
     return map
   })
 }
@@ -116,10 +117,10 @@ export function buildAreas(
   byTime: Record<string, number>[],
   xOf: (t: number) => number,
   yOf: (v: number) => number,
-  weight: (name: string) => number = () => 1,
-  colorOf: (name: string, idx: number) => string = (_, i) => UNIT_COLORS[i % UNIT_COLORS.length],
+  weight: (id: string) => number = () => 1,
+  colorOf: (id: string, idx: number) => string = (_, i) => UNIT_COLORS[i % UNIT_COLORS.length],
 ): { name: string; d: string; fill: string }[] {
-  return layers.map((name, li) => {
+  return layers.map((id, li) => {
     const topPts = samples.map((_, si) => {
       const cum = layers
         .slice(0, li + 1)
@@ -137,6 +138,6 @@ export function buildAreas(
       .reverse()
       .map(([x, y]) => `L${x.toFixed(1)},${y.toFixed(1)}`)
       .join(' ')
-    return { name, d: `${fwd} ${bwd} Z`, fill: colorOf(name, li) }
+    return { name: id, d: `${fwd} ${bwd} Z`, fill: colorOf(id, li) }
   })
 }

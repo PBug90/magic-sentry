@@ -1,4 +1,4 @@
-import { ChartPlayer } from '../../shared/types'
+﻿import { ChartPlayer } from '../../shared/types'
 import {
   buildLayers,
   buildByTime,
@@ -22,6 +22,72 @@ import {
   UnitIcon,
   UnitIconRow,
 } from './shared'
+
+function ArmySnapshotPanel({
+  player,
+  layers,
+  lastByTime,
+  colorOf,
+}: {
+  player: ChartPlayer
+  layers: string[]
+  lastByTime: Record<string, number>
+  colorOf: (name: string) => string
+}) {
+  const units = layers
+    .map((name) => ({ name, fill: colorOf(name), count: lastByTime[name] ?? 0 }))
+    .filter((u) => u.count > 0)
+    .reverse()
+
+  const totalFood = units.reduce((s, { name, count }) => s + count * heroSupply(name), 0)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 0 }}>
+      <span
+        style={{
+          fontSize: '.62em',
+          color: player.color,
+          fontFamily: 'monospace',
+          letterSpacing: '.06em',
+        }}
+      >
+        {player.name}
+      </span>
+      {units.length === 0 ? (
+        <span style={{ fontSize: '.58em', color: '#7a7a88', fontFamily: 'monospace' }}>
+          no units
+        </span>
+      ) : (
+        <>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {units.map(({ name, fill, count }) => (
+              <div
+                key={name}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}
+              >
+                <UnitIcon name={name} fill={fill} size={26} />
+                <span style={{ fontSize: '.5em', color: '#b0b0c0', fontFamily: 'monospace' }}>
+                  {count}
+                </span>
+              </div>
+            ))}
+          </div>
+          <span
+            style={{
+              fontSize: '.58em',
+              color: '#888',
+              fontFamily: 'monospace',
+              paddingTop: 2,
+              borderTop: '1px solid #1e1e26',
+            }}
+          >
+            {totalFood} food
+          </span>
+        </>
+      )}
+    </div>
+  )
+}
 
 export function ArmyChart({ players }: { players: ChartPlayer[] }) {
   const { hover, wrapRef, onSvgMouseMove, onSvgMouseLeave } = useChartHover()
@@ -85,6 +151,30 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
       style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}
     >
       <SectionLabel>Army Comparison</SectionLabel>
+      <div
+        style={{
+          display: 'flex',
+          gap: 16,
+          padding: '10px 12px',
+          background: '#12121a',
+          border: '1px solid #2a2a3a',
+          marginBottom: 4,
+        }}
+      >
+        <ArmySnapshotPanel
+          player={p1}
+          layers={layers1}
+          lastByTime={byTime1.length ? byTime1[byTime1.length - 1] : {}}
+          colorOf={colorOf}
+        />
+        <div style={{ width: 1, background: '#2a2a3a', flexShrink: 0 }} />
+        <ArmySnapshotPanel
+          player={p2}
+          layers={layers2}
+          lastByTime={byTime2.length ? byTime2[byTime2.length - 1] : {}}
+          colorOf={colorOf}
+        />
+      </div>
       <svg
         viewBox={`0 0 ${W} ${CH}`}
         width="100%"
@@ -103,7 +193,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                 textAnchor="end"
                 dominantBaseline="middle"
                 fontSize={9}
-                fill="#46464f"
+                fill="#7a7a88"
                 fontFamily="monospace"
               >
                 {v}
@@ -114,7 +204,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                 textAnchor="end"
                 dominantBaseline="middle"
                 fontSize={9}
-                fill="#46464f"
+                fill="#7a7a88"
                 fontFamily="monospace"
               >
                 {v}
@@ -156,7 +246,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
               y={CIH + 16}
               textAnchor="middle"
               fontSize={9}
-              fill="#46464f"
+              fill="#7a7a88"
               fontFamily="monospace"
             >
               {Math.floor(t / 60)}m
@@ -211,7 +301,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                 <div style={{ marginBottom: 8 }}>
                   <span
                     style={{
-                      fontSize: '.62rem',
+                      fontSize: '.62em',
                       color: p1.color,
                       display: 'block',
                       marginBottom: 5,
@@ -232,7 +322,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                       >
                         <UnitIcon name={name} fill={fill} size={22} />
                         <span
-                          style={{ fontSize: '.5rem', color: '#8b8b99', fontFamily: 'monospace' }}
+                          style={{ fontSize: '.5em', color: '#b0b0c0', fontFamily: 'monospace' }}
                         >
                           {count}
                         </span>
@@ -247,13 +337,13 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                       display: 'flex',
                       justifyContent: 'space-between',
                       fontFamily: 'monospace',
-                      fontSize: '.6rem',
+                      fontSize: '.6em',
                       marginTop: 4,
                       paddingTop: 4,
                       borderTop: '1px solid #2a2a3a',
                     }}
                   >
-                    <span style={{ color: '#46464f' }}>total food</span>
+                    <span style={{ color: '#7a7a88' }}>total food</span>
                     <span style={{ color: '#efeff1' }}>
                       {units.reduce((s, { name, count }) => s + count * heroSupply(name), 0)}
                     </span>
@@ -275,7 +365,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                 <div>
                   <span
                     style={{
-                      fontSize: '.62rem',
+                      fontSize: '.62em',
                       color: p2.color,
                       display: 'block',
                       marginBottom: 5,
@@ -296,7 +386,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                       >
                         <UnitIcon name={name} fill={fill} size={22} />
                         <span
-                          style={{ fontSize: '.5rem', color: '#8b8b99', fontFamily: 'monospace' }}
+                          style={{ fontSize: '.5em', color: '#b0b0c0', fontFamily: 'monospace' }}
                         >
                           {count}
                         </span>
@@ -311,13 +401,13 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                       display: 'flex',
                       justifyContent: 'space-between',
                       fontFamily: 'monospace',
-                      fontSize: '.6rem',
+                      fontSize: '.6em',
                       marginTop: 4,
                       paddingTop: 4,
                       borderTop: '1px solid #2a2a3a',
                     }}
                   >
-                    <span style={{ color: '#46464f' }}>total food</span>
+                    <span style={{ color: '#7a7a88' }}>total food</span>
                     <span style={{ color: '#efeff1' }}>
                       {units.reduce((s, { name, count }) => s + count * heroSupply(name), 0)}
                     </span>
@@ -334,7 +424,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
           { player: p2, areas: areas2 },
         ].map(({ player, areas }) => (
           <div key={player.name} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <span style={{ fontSize: '.65rem', color: player.color }}>{player.name}</span>
+            <span style={{ fontSize: '.65em', color: player.color }}>{player.name}</span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>
               {[...areas].reverse().map(({ name, fill }) => (
                 <span
@@ -343,8 +433,8 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
-                    fontSize: '.6rem',
-                    color: '#8b8b99',
+                    fontSize: '.6em',
+                    color: '#b0b0c0',
                   }}
                 >
                   <span

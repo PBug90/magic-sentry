@@ -1,3 +1,6 @@
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { join, dirname } from 'path'
 import { Hono } from 'hono'
 import type { MiddlewareHandler } from 'hono'
 import { getCookie } from 'hono/cookie'
@@ -60,6 +63,40 @@ function getSessionUser(c: Parameters<typeof getCookie>[0]) {
 // ---------------------------------------------------------------------------
 
 api.get('/health', (c) => c.json({ status: 'ok' }))
+
+// ---------------------------------------------------------------------------
+// POST /api/load-example — ingest example-game.json into the in-memory store
+// ---------------------------------------------------------------------------
+
+const EXAMPLE_CHANNEL = '__example__'
+
+const EXAMPLE_FILES: Record<string, string> = {
+  'all': 'example-game.json',
+  'hu-orc': 'example-hu-orc.json',
+  'ne-ud': 'example-ne-ud.json',
+}
+
+api.post('/load-example', (c) => {
+  const game = c.req.query('game') ?? 'all'
+  const filename = EXAMPLE_FILES[game]
+  if (!filename) return c.json({ error: 'unknown example game' }, 400)
+
+  let body: unknown
+  try {
+    const filePath = join(dirname(fileURLToPath(import.meta.url)), `../../../../${filename}`)
+    body = JSON.parse(readFileSync(filePath, 'utf-8'))
+  } catch {
+    return c.json({ error: `${filename} not found` }, 404)
+  }
+
+  const parsed = validatePatch(body)
+  if ('error' in parsed) return c.json({ error: `invalid patch: ${parsed.error}` }, 400)
+
+  const patch = parsed.data
+  gameStore.ingest(patch)
+  gameStore.setChannelGame(EXAMPLE_CHANNEL, patch.game_id)
+  return c.json({ channel: EXAMPLE_CHANNEL })
+})
 
 // ---------------------------------------------------------------------------
 // GET /api/me

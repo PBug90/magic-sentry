@@ -582,6 +582,7 @@ function GameCard({ game, onView }: { game: GameSummary; onView: (channel: strin
 function GameList({ onView }: { onView: (channel: string) => void }) {
   const [games, setGames] = useState<GameSummary[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [loadingGame, setLoadingGame] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -605,20 +606,53 @@ function GameList({ onView }: { onView: (channel: string) => void }) {
     }
   }, [])
 
-  if (error) return <p className="status-error">Could not reach server: {error}</p>
-  if (games.length === 0) {
-    return (
-      <p className="status-empty">
-        No live games right now. Start the Magic Sentry app to begin streaming.
-      </p>
-    )
+  async function loadExample(game: string) {
+    setLoadingGame(game)
+    try {
+      const res = await fetch(`/api/load-example?game=${game}`, { method: 'POST' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const { channel } = await res.json()
+      onView(channel as string)
+    } catch (e) {
+      console.error('Failed to load example:', e)
+    } finally {
+      setLoadingGame(null)
+    }
   }
 
+  const examples = [
+    { game: 'all', label: 'All races (2v2)' },
+    { game: 'hu-orc', label: 'Human vs Orc' },
+    { game: 'ne-ud', label: 'Night Elf vs Undead' },
+  ]
+
   return (
-    <div className="game-grid">
-      {games.map((g) => (
-        <GameCard key={g.game_id} game={g} onView={onView} />
-      ))}
+    <div>
+      {error ? (
+        <p className="status-error">Could not reach server: {error}</p>
+      ) : games.length === 0 ? (
+        <p className="status-empty">
+          No live games right now. Start the Magic Sentry app to begin streaming.
+        </p>
+      ) : (
+        <div className="game-grid">
+          {games.map((g) => (
+            <GameCard key={g.game_id} game={g} onView={onView} />
+          ))}
+        </div>
+      )}
+      <div style={{ marginTop: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {examples.map(({ game, label }) => (
+          <button
+            key={game}
+            className="btn btn-sm btn-ghost"
+            onClick={() => loadExample(game)}
+            disabled={loadingGame !== null}
+          >
+            {loadingGame === game ? 'Loading…' : label}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

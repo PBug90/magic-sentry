@@ -3,3 +3,6 @@ resolver = "2"
 members = [
     "cli",
 ]
+
+[patch."https://github.com/PBug90/Warcraft3StatsObserverRs"]
+warcraft3-stats-observer = { path = "../warcraft3statsobserverrs" }

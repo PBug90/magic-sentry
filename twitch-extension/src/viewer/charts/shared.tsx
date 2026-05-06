@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react'
-import { HERO_OBSERVER, UNIT_ICON_ID } from '@magic-sentry/shared'
+﻿import { useState, useRef } from 'react'
+import { HERO_OBSERVER_BY_ID, UNIT_NAME_BY_ID, UNIT_GOLD_BY_ID, UNIT_LUMBER_BY_ID } from '@magic-sentry/shared'
 import { heroSupply, fmtTime, UNIT_COLORS } from '@magic-sentry/shared'
 
 // ---------------------------------------------------------------------------
@@ -88,7 +88,7 @@ export function TooltipTime({ sec }: { sec: number }) {
   return (
     <div
       style={{
-        fontSize: '.58rem',
+        fontSize: '.58em',
         marginBottom: 5,
         letterSpacing: '.05em',
         color: '#555',
@@ -105,12 +105,14 @@ export function TooltipTime({ sec }: { sec: number }) {
 // ---------------------------------------------------------------------------
 
 export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string; size?: number }) {
-  const hero = HERO_OBSERVER[name]
-  const unitId = UNIT_ICON_ID[name]
-  const src = hero ? `./heroes/${hero.icon}.png` : unitId ? `./units/${unitId}.png` : null
+  const [hovered, setHovered] = useState(false)
+  const hero = HERO_OBSERVER_BY_ID[name]
+  const src = hero ? `./heroes/${name}.png` : `./units/${name}.png`
+  const displayName = hero?.display ?? UNIT_NAME_BY_ID[name] ?? name
+  const gold = !hero ? UNIT_GOLD_BY_ID[name] : undefined
+  const lumber = !hero ? UNIT_LUMBER_BY_ID[name] : undefined
   return (
     <div
-      title={hero?.display ?? name}
       style={{
         width: size,
         height: size,
@@ -118,22 +120,55 @@ export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string
         opacity: 0.9,
         flexShrink: 0,
         borderRadius: 3,
-        overflow: 'hidden',
+        overflow: 'visible',
         border: '1px solid rgba(255,255,255,0.1)',
         position: 'relative',
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {src && (
-        <img
-          src={src}
-          alt={name}
-          width={size}
-          height={size}
-          style={{ display: 'block', imageRendering: 'pixelated', width: '100%', height: '100%' }}
-          onError={(e) => {
-            ;(e.currentTarget as HTMLImageElement).style.display = 'none'
+      <div style={{ width: '100%', height: '100%', borderRadius: 3, overflow: 'hidden' }}>
+        {src && (
+          <img
+            src={src}
+            alt={name}
+            width={size}
+            height={size}
+            style={{ display: 'block', imageRendering: 'pixelated', width: '100%', height: '100%' }}
+            onError={(e) => {
+              ;(e.currentTarget as HTMLImageElement).style.display = 'none'
+            }}
+          />
+        )}
+      </div>
+      {hovered && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            marginBottom: 4,
+            background: '#0f0f1a',
+            border: '1px solid #2a2a3a',
+            padding: '4px 8px',
+            whiteSpace: 'nowrap',
+            zIndex: 100,
+            pointerEvents: 'none',
+            fontSize: '0.7rem',
+            lineHeight: 1.6,
+            color: '#f0ece0',
+            borderRadius: 3,
           }}
-        />
+        >
+          <div>{displayName}</div>
+          {gold !== undefined && gold > 0 && (
+            <div style={{ color: '#c8a050', fontFamily: 'monospace' }}>{gold}g</div>
+          )}
+          {lumber !== undefined && lumber > 0 && (
+            <div style={{ color: '#7dbf7d', fontFamily: 'monospace' }}>{lumber}w</div>
+          )}
+        </div>
       )}
     </div>
   )
@@ -141,15 +176,15 @@ export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string
 
 export function UnitIconRow({ fill, name, count }: { fill: string; name: string; count: number }) {
   const sup = heroSupply(name)
-  const displayName = HERO_OBSERVER[name]?.display ?? name
+  const displayName = HERO_OBSERVER_BY_ID[name]?.display ?? UNIT_NAME_BY_ID[name] ?? name
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
       <UnitIcon name={name} fill={fill} size={14} />
-      <span style={{ fontSize: '.6rem', color: '#8b8b99', fontFamily: 'sans-serif', flex: 1 }}>
+      <span style={{ fontSize: '.6em', color: '#8b8b99', fontFamily: 'sans-serif', flex: 1 }}>
         {displayName}
       </span>
-      <span style={{ fontSize: '.6rem', fontFamily: 'monospace', color: '#efeff1' }}>×{count}</span>
-      <span style={{ fontSize: '.55rem', fontFamily: 'monospace', color: '#555' }}>
+      <span style={{ fontSize: '.6em', fontFamily: 'monospace', color: '#efeff1' }}>×{count}</span>
+      <span style={{ fontSize: '.55em', fontFamily: 'monospace', color: '#555' }}>
         {count * sup}f
       </span>
     </div>
@@ -172,7 +207,7 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        fontSize: '.62rem',
+        fontSize: '.62em',
         letterSpacing: '.12em',
         color: '#555',
         fontFamily: 'monospace',

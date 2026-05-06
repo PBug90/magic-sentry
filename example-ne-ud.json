@@ -1,0 +1,497 @@
+{
+  "game_id": "example-ne-ud",
+  "seq": 0,
+  "is_final": true,
+  "map": "EchoIsles",
+  "game": "Example Night Elf vs Undead",
+  "players": [
+    {
+      "name": "NightElf",
+      "race": "NightElf",
+      "team": 1,
+      "result": "Victory",
+      "new_samples": [
+        {
+          "time_ms": 120000,
+          "gold": 1550, "gold_mined": 2500, "gold_upkeep_lost": 0,
+          "lumber": 420, "lumber_mined": 580, "lumber_upkeep_lost": 0,
+          "food_used": 11, "food_cap": 30, "apm": 82,
+          "heroes": [
+            {
+              "id": "Edem", "level": 2, "xp": 290, "hp": 740, "hp_max": 740, "mp": 280, "mp_max": 280,
+              "damage_dealt": 6200, "damage_received": 1000, "healing_done": 0,
+              "deaths": 0, "kills": 16, "hero_kills": 0, "building_kills": 0,
+              "abilities": [
+                {"id": "AEmb", "level": 1, "damage_dealt": 4500, "healing_done": 0},
+                {"id": "AEim", "level": 1, "damage_dealt": 1400, "healing_done": 0}
+              ],
+              "inventory": [{"id": "stwp", "charges": 0}, {"id": "phea", "charges": 0}]
+            }
+          ],
+          "units": [
+            {"id":"ewsp","alive":5,"trained":6}, {"id":"earc","alive":5,"trained":6}
+          ],
+          "upgrades": [{"id":"Resm","level":1,"max_level":3}, {"id":"Repb","level":1,"max_level":1}]
+        },
+        {
+          "time_ms": 600000,
+          "gold": 4300, "gold_mined": 12000, "gold_upkeep_lost": 210,
+          "lumber": 1350, "lumber_mined": 3500, "lumber_upkeep_lost": 0,
+          "food_used": 62, "food_cap": 80, "apm": 115,
+          "heroes": [
+            {
+              "id": "Edem", "level": 7, "xp": 2900, "hp": 880, "hp_max": 880, "mp": 360, "mp_max": 360,
+              "damage_dealt": 55000, "damage_received": 8000, "healing_done": 0,
+              "deaths": 1, "kills": 96, "hero_kills": 3, "building_kills": 4,
+              "abilities": [
+                {"id": "AEmb", "level": 3, "damage_dealt": 38000, "healing_done": 0},
+                {"id": "AEim", "level": 3, "damage_dealt": 14000, "healing_done": 0},
+                {"id": "AEev", "level": 1, "damage_dealt": 0, "healing_done": 0}
+              ],
+              "inventory": [
+                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+                {"id": "pman", "charges": 0}, {"id": "ckng", "charges": 0}
+              ]
+            },
+            {
+              "id": "Ekee", "level": 4, "xp": 1100, "hp": 820, "hp_max": 820, "mp": 400, "mp_max": 400,
+              "damage_dealt": 24000, "damage_received": 4500, "healing_done": 14000,
+              "deaths": 0, "kills": 40, "hero_kills": 1, "building_kills": 2,
+              "abilities": [
+                {"id": "AEfn", "level": 2, "damage_dealt": 18000, "healing_done": 0},
+                {"id": "AEer", "level": 2, "damage_dealt": 0, "healing_done": 0}
+              ],
+              "inventory": [{"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0}]
+            },
+            {
+              "id": "Emoo", "level": 3, "xp": 780, "hp": 760, "hp_max": 760, "mp": 340, "mp_max": 340,
+              "damage_dealt": 16000, "damage_received": 3000, "healing_done": 0,
+              "deaths": 0, "kills": 28, "hero_kills": 0, "building_kills": 1,
+              "abilities": [
+                {"id": "AHfa", "level": 2, "damage_dealt": 12000, "healing_done": 0},
+                {"id": "AEar", "level": 1, "damage_dealt": 0, "healing_done": 0}
+              ],
+              "inventory": [{"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0}]
+            }
+          ],
+          "units": [
+            {"id":"ewsp","alive":5,"trained":8}, {"id":"earc","alive":8,"trained":12},
+            {"id":"edot","alive":3,"trained":4}, {"id":"esen","alive":5,"trained":7},
+            {"id":"edry","alive":4,"trained":5}, {"id":"ehip","alive":3,"trained":4}
+          ],
+          "upgrades": [
+            {"id":"Resm","level":2,"max_level":3}, {"id":"Resw","level":1,"max_level":3},
+            {"id":"Rema","level":2,"max_level":3}, {"id":"Repb","level":1,"max_level":1},
+            {"id":"Rehs","level":1,"max_level":2}, {"id":"Redt","level":1,"max_level":2},
+            {"id":"Rerh","level":1,"max_level":1}
+          ]
+        },
+        {
+          "time_ms": 1200000,
+          "gold": 7200, "gold_mined": 27000, "gold_upkeep_lost": 850,
+          "lumber": 2900, "lumber_mined": 9500, "lumber_upkeep_lost": 0,
+          "food_used": 80, "food_cap": 100, "apm": 128,
+          "heroes": [
+            {
+              "id": "Edem", "level": 10, "xp": 5400, "hp": 880, "hp_max": 880, "mp": 360, "mp_max": 360,
+              "damage_dealt": 158000, "damage_received": 22000, "healing_done": 0,
+              "deaths": 2, "kills": 265, "hero_kills": 7, "building_kills": 16,
+              "abilities": [
+                {"id": "AEmb", "level": 3, "damage_dealt": 110000, "healing_done": 0},
+                {"id": "AEim", "level": 3, "damage_dealt": 35000, "healing_done": 0},
+                {"id": "AEev", "level": 2, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AEme", "level": 2, "damage_dealt": 12000, "healing_done": 0}
+              ],
+              "inventory": [
+                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+                {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
+                {"id": "belv", "charges": 0}, {"id": "ofro", "charges": 0}
+              ]
+            },
+            {
+              "id": "Ekee", "level": 8, "xp": 4100, "hp": 820, "hp_max": 820, "mp": 400, "mp_max": 400,
+              "damage_dealt": 95000, "damage_received": 16000, "healing_done": 55000,
+              "deaths": 1, "kills": 162, "hero_kills": 4, "building_kills": 10,
+              "abilities": [
+                {"id": "AEfn", "level": 3, "damage_dealt": 68000, "healing_done": 0},
+                {"id": "AEer", "level": 3, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AEah", "level": 2, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AEtq", "level": 2, "damage_dealt": 0, "healing_done": 48000}
+              ],
+              "inventory": [
+                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+                {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0}
+              ]
+            },
+            {
+              "id": "Emoo", "level": 7, "xp": 3100, "hp": 760, "hp_max": 760, "mp": 340, "mp_max": 340,
+              "damage_dealt": 62000, "damage_received": 10000, "healing_done": 0,
+              "deaths": 1, "kills": 105, "hero_kills": 3, "building_kills": 6,
+              "abilities": [
+                {"id": "AHfa", "level": 3, "damage_dealt": 48000, "healing_done": 0},
+                {"id": "AEar", "level": 3, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AEst", "level": 2, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AEsf", "level": 2, "damage_dealt": 12000, "healing_done": 0}
+              ],
+              "inventory": [
+                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+                {"id": "ankh", "charges": 0}, {"id": "rlif", "charges": 0}
+              ]
+            }
+          ],
+          "units": [
+            {"id":"ewsp","alive":5,"trained":9}, {"id":"earc","alive":10,"trained":16},
+            {"id":"edot","alive":3,"trained":5}, {"id":"ehip","alive":3,"trained":5},
+            {"id":"efdr","alive":2,"trained":4}, {"id":"esen","alive":6,"trained":10},
+            {"id":"edry","alive":4,"trained":7}, {"id":"ebal","alive":2,"trained":4},
+            {"id":"edoc","alive":3,"trained":5}, {"id":"ehir","alive":2,"trained":4},
+            {"id":"echm","alive":3,"trained":5}, {"id":"emtg","alive":2,"trained":3},
+            {"id":"ensw","alive":3,"trained":8}, {"id":"etrt","alive":3,"trained":9},
+            {"id":"eaow","alive":1,"trained":1}, {"id":"eaol","alive":1,"trained":1},
+            {"id":"eawn","alive":1,"trained":1}, {"id":"etol","alive":1,"trained":1},
+            {"id":"etoa","alive":1,"trained":1}, {"id":"etoe","alive":1,"trained":1},
+            {"id":"emwl","alive":4,"trained":4}, {"id":"ehhl","alive":1,"trained":1},
+            {"id":"eale","alive":1,"trained":1}, {"id":"eawo","alive":1,"trained":1}
+          ],
+          "upgrades": [
+            {"id":"Resm","level":3,"max_level":3}, {"id":"Resw","level":3,"max_level":3},
+            {"id":"Rema","level":3,"max_level":3}, {"id":"Repb","level":1,"max_level":1},
+            {"id":"Recb","level":1,"max_level":1}, {"id":"Redc","level":2,"max_level":2},
+            {"id":"Redt","level":2,"max_level":2}, {"id":"Reeb","level":1,"max_level":1},
+            {"id":"Reec","level":2,"max_level":2}, {"id":"Rehs","level":2,"max_level":2},
+            {"id":"Reib","level":2,"max_level":2}, {"id":"Remg","level":1,"max_level":1},
+            {"id":"Remk","level":1,"max_level":1}, {"id":"Renb","level":1,"max_level":1},
+            {"id":"Repm","level":2,"max_level":2}, {"id":"Rerh","level":1,"max_level":1},
+            {"id":"Rers","level":1,"max_level":1}, {"id":"Resc","level":1,"max_level":1},
+            {"id":"Resi","level":1,"max_level":1}, {"id":"Reuv","level":1,"max_level":1},
+            {"id":"Rews","level":1,"max_level":1}
+          ]
+        }
+      ],
+      "summary": {
+        "heroes": [
+          {
+            "id": "Edem", "level": 10, "xp": 5400, "deaths": 2, "total_kills": 265,
+            "hero_kills": 7, "building_kills": 16, "damage_dealt": 158000,
+            "damage_received": 22000, "healing_done": 0, "time_alive_ms": 1155000,
+            "abilities": [
+              {"id": "AEmb", "level": 3, "damage_dealt": 110000, "healing_done": 0},
+              {"id": "AEim", "level": 3, "damage_dealt": 35000, "healing_done": 0},
+              {"id": "AEev", "level": 2, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AEme", "level": 2, "damage_dealt": 12000, "healing_done": 0}
+            ],
+            "inventory": [
+              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+              {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
+              {"id": "belv", "charges": 0}, {"id": "ofro", "charges": 0}
+            ]
+          },
+          {
+            "id": "Ekee", "level": 8, "xp": 4100, "deaths": 1, "total_kills": 162,
+            "hero_kills": 4, "building_kills": 10, "damage_dealt": 95000,
+            "damage_received": 16000, "healing_done": 55000, "time_alive_ms": 1175000,
+            "abilities": [
+              {"id": "AEfn", "level": 3, "damage_dealt": 68000, "healing_done": 0},
+              {"id": "AEer", "level": 3, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AEah", "level": 2, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AEtq", "level": 2, "damage_dealt": 0, "healing_done": 48000}
+            ],
+            "inventory": [
+              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+              {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0}
+            ]
+          },
+          {
+            "id": "Emoo", "level": 7, "xp": 3100, "deaths": 1, "total_kills": 105,
+            "hero_kills": 3, "building_kills": 6, "damage_dealt": 62000,
+            "damage_received": 10000, "healing_done": 0, "time_alive_ms": 1165000,
+            "abilities": [
+              {"id": "AHfa", "level": 3, "damage_dealt": 48000, "healing_done": 0},
+              {"id": "AEar", "level": 3, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AEst", "level": 2, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AEsf", "level": 2, "damage_dealt": 12000, "healing_done": 0}
+            ],
+            "inventory": [
+              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+              {"id": "ankh", "charges": 0}, {"id": "rlif", "charges": 0}
+            ]
+          }
+        ],
+        "units": [
+          {"id":"ewsp","alive":5,"trained":9,"damage_dealt":0,"damage_received":0,"healing_done":0},
+          {"id":"earc","alive":10,"trained":16,"damage_dealt":70000,"damage_received":36000,"healing_done":0},
+          {"id":"edot","alive":3,"trained":5,"damage_dealt":16000,"damage_received":8000,"healing_done":0},
+          {"id":"ehip","alive":3,"trained":5,"damage_dealt":22000,"damage_received":11000,"healing_done":0},
+          {"id":"efdr","alive":2,"trained":4,"damage_dealt":18000,"damage_received":7000,"healing_done":0},
+          {"id":"esen","alive":6,"trained":10,"damage_dealt":55000,"damage_received":26000,"healing_done":0},
+          {"id":"edry","alive":4,"trained":7,"damage_dealt":25000,"damage_received":13000,"healing_done":0},
+          {"id":"ebal","alive":2,"trained":4,"damage_dealt":40000,"damage_received":11000,"healing_done":0},
+          {"id":"edoc","alive":3,"trained":5,"damage_dealt":42000,"damage_received":18000,"healing_done":0},
+          {"id":"ehir","alive":2,"trained":4,"damage_dealt":32000,"damage_received":14000,"healing_done":0},
+          {"id":"echm","alive":3,"trained":5,"damage_dealt":62000,"damage_received":20000,"healing_done":0},
+          {"id":"emtg","alive":2,"trained":3,"damage_dealt":75000,"damage_received":26000,"healing_done":0},
+          {"id":"ensw","alive":3,"trained":8,"damage_dealt":0,"damage_received":0,"healing_done":0},
+          {"id":"etrt","alive":3,"trained":9,"damage_dealt":20000,"damage_received":7000,"healing_done":0},
+          {"id":"eaow","alive":1,"trained":1,"damage_dealt":0,"damage_received":5000,"healing_done":0},
+          {"id":"eaol","alive":1,"trained":1,"damage_dealt":0,"damage_received":4000,"healing_done":0},
+          {"id":"eawn","alive":1,"trained":1,"damage_dealt":0,"damage_received":4000,"healing_done":0},
+          {"id":"etol","alive":1,"trained":1,"damage_dealt":0,"damage_received":6000,"healing_done":0},
+          {"id":"etoa","alive":1,"trained":1,"damage_dealt":0,"damage_received":5000,"healing_done":0},
+          {"id":"etoe","alive":1,"trained":1,"damage_dealt":0,"damage_received":4000,"healing_done":0},
+          {"id":"emwl","alive":4,"trained":4,"damage_dealt":0,"damage_received":8000,"healing_done":0},
+          {"id":"ehhl","alive":1,"trained":1,"damage_dealt":0,"damage_received":3000,"healing_done":0},
+          {"id":"eale","alive":1,"trained":1,"damage_dealt":0,"damage_received":3000,"healing_done":0},
+          {"id":"eawo","alive":1,"trained":1,"damage_dealt":0,"damage_received":3000,"healing_done":0}
+        ],
+        "upgrades": [
+          {"id":"Resm","level":3,"max_level":3}, {"id":"Resw","level":3,"max_level":3},
+          {"id":"Rema","level":3,"max_level":3}, {"id":"Repb","level":1,"max_level":1},
+          {"id":"Recb","level":1,"max_level":1}, {"id":"Redc","level":2,"max_level":2},
+          {"id":"Redt","level":2,"max_level":2}, {"id":"Reeb","level":1,"max_level":1},
+          {"id":"Reec","level":2,"max_level":2}, {"id":"Rehs","level":2,"max_level":2},
+          {"id":"Reib","level":2,"max_level":2}, {"id":"Remg","level":1,"max_level":1},
+          {"id":"Remk","level":1,"max_level":1}, {"id":"Renb","level":1,"max_level":1},
+          {"id":"Repm","level":2,"max_level":2}, {"id":"Rerh","level":1,"max_level":1},
+          {"id":"Rers","level":1,"max_level":1}, {"id":"Resc","level":1,"max_level":1},
+          {"id":"Resi","level":1,"max_level":1}, {"id":"Reuv","level":1,"max_level":1},
+          {"id":"Rews","level":1,"max_level":1}
+        ]
+      }
+    },
+    {
+      "name": "Undead",
+      "race": "Undead",
+      "team": 2,
+      "result": "Defeat",
+      "new_samples": [
+        {
+          "time_ms": 120000,
+          "gold": 1700, "gold_mined": 2700, "gold_upkeep_lost": 0,
+          "lumber": 340, "lumber_mined": 490, "lumber_upkeep_lost": 0,
+          "food_used": 10, "food_cap": 30, "apm": 70,
+          "heroes": [
+            {
+              "id": "Udea", "level": 2, "xp": 300, "hp": 620, "hp_max": 620, "mp": 300, "mp_max": 300,
+              "damage_dealt": 4800, "damage_received": 1000, "healing_done": 0,
+              "deaths": 0, "kills": 12, "hero_kills": 0, "building_kills": 0,
+              "abilities": [
+                {"id": "AUdc", "level": 1, "damage_dealt": 3500, "healing_done": 0},
+                {"id": "AUau", "level": 1, "damage_dealt": 0, "healing_done": 0}
+              ],
+              "inventory": [{"id": "stwp", "charges": 0}]
+            }
+          ],
+          "units": [
+            {"id":"uaco","alive":4,"trained":5}, {"id":"ugho","alive":5,"trained":6}
+          ],
+          "upgrades": [{"id":"Rume","level":1,"max_level":3}]
+        },
+        {
+          "time_ms": 600000,
+          "gold": 4200, "gold_mined": 11800, "gold_upkeep_lost": 200,
+          "lumber": 920, "lumber_mined": 2500, "lumber_upkeep_lost": 0,
+          "food_used": 55, "food_cap": 80, "apm": 98,
+          "heroes": [
+            {
+              "id": "Udea", "level": 6, "xp": 2000, "hp": 740, "hp_max": 740, "mp": 400, "mp_max": 400,
+              "damage_dealt": 36000, "damage_received": 7000, "healing_done": 0,
+              "deaths": 1, "kills": 62, "hero_kills": 2, "building_kills": 3,
+              "abilities": [
+                {"id": "AUdc", "level": 3, "damage_dealt": 25000, "healing_done": 0},
+                {"id": "AUau", "level": 2, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AUdp", "level": 1, "damage_dealt": 0, "healing_done": 8000}
+              ],
+              "inventory": [
+                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+                {"id": "pman", "charges": 0}, {"id": "ckng", "charges": 0}
+              ]
+            },
+            {
+              "id": "Udre", "level": 4, "xp": 1000, "hp": 800, "hp_max": 800, "mp": 360, "mp_max": 360,
+              "damage_dealt": 22000, "damage_received": 5000, "healing_done": 0,
+              "deaths": 0, "kills": 38, "hero_kills": 1, "building_kills": 2,
+              "abilities": [
+                {"id": "AUcs", "level": 2, "damage_dealt": 16000, "healing_done": 0},
+                {"id": "AUav", "level": 2, "damage_dealt": 0, "healing_done": 0}
+              ],
+              "inventory": [{"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0}]
+            },
+            {
+              "id": "Ulic", "level": 3, "xp": 750, "hp": 660, "hp_max": 660, "mp": 420, "mp_max": 420,
+              "damage_dealt": 18000, "damage_received": 3500, "healing_done": 0,
+              "deaths": 0, "kills": 28, "hero_kills": 0, "building_kills": 1,
+              "abilities": [
+                {"id": "AUfn", "level": 2, "damage_dealt": 14000, "healing_done": 0},
+                {"id": "AUfa", "level": 1, "damage_dealt": 0, "healing_done": 0}
+              ],
+              "inventory": [{"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0}]
+            }
+          ],
+          "units": [
+            {"id":"uaco","alive":4,"trained":7}, {"id":"ugho","alive":8,"trained":12},
+            {"id":"ugar","alive":4,"trained":5}, {"id":"unec","alive":3,"trained":4},
+            {"id":"ucry","alive":4,"trained":5}, {"id":"uobs","alive":3,"trained":4}
+          ],
+          "upgrades": [
+            {"id":"Rume","level":2,"max_level":3}, {"id":"Ruar","level":2,"max_level":3},
+            {"id":"Rura","level":1,"max_level":3}, {"id":"Ruex","level":1,"max_level":1},
+            {"id":"Rune","level":1,"max_level":2}
+          ]
+        },
+        {
+          "time_ms": 1200000,
+          "gold": 6500, "gold_mined": 25000, "gold_upkeep_lost": 720,
+          "lumber": 1800, "lumber_mined": 6200, "lumber_upkeep_lost": 0,
+          "food_used": 80, "food_cap": 100, "apm": 112,
+          "heroes": [
+            {
+              "id": "Udea", "level": 10, "xp": 5400, "hp": 740, "hp_max": 740, "mp": 400, "mp_max": 400,
+              "damage_dealt": 108000, "damage_received": 20000, "healing_done": 0,
+              "deaths": 2, "kills": 182, "hero_kills": 5, "building_kills": 9,
+              "abilities": [
+                {"id": "AUdc", "level": 3, "damage_dealt": 75000, "healing_done": 0},
+                {"id": "AUau", "level": 3, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AUdp", "level": 2, "damage_dealt": 0, "healing_done": 20000},
+                {"id": "AUan", "level": 2, "damage_dealt": 0, "healing_done": 0}
+              ],
+              "inventory": [
+                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+                {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
+                {"id": "modt", "charges": 0}, {"id": "odef", "charges": 0}
+              ]
+            },
+            {
+              "id": "Udre", "level": 8, "xp": 3900, "hp": 800, "hp_max": 800, "mp": 360, "mp_max": 360,
+              "damage_dealt": 78000, "damage_received": 15000, "healing_done": 0,
+              "deaths": 2, "kills": 138, "hero_kills": 4, "building_kills": 8,
+              "abilities": [
+                {"id": "AUcs", "level": 3, "damage_dealt": 52000, "healing_done": 0},
+                {"id": "AUav", "level": 3, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AUsl", "level": 2, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AUin", "level": 2, "damage_dealt": 24000, "healing_done": 0}
+              ],
+              "inventory": [
+                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+                {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0}
+              ]
+            },
+            {
+              "id": "Ulic", "level": 7, "xp": 3000, "hp": 660, "hp_max": 660, "mp": 420, "mp_max": 420,
+              "damage_dealt": 72000, "damage_received": 12000, "healing_done": 0,
+              "deaths": 1, "kills": 118, "hero_kills": 3, "building_kills": 6,
+              "abilities": [
+                {"id": "AUfn", "level": 3, "damage_dealt": 48000, "healing_done": 0},
+                {"id": "AUfa", "level": 3, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AUdr", "level": 2, "damage_dealt": 0, "healing_done": 0},
+                {"id": "AUdd", "level": 2, "damage_dealt": 22000, "healing_done": 0}
+              ],
+              "inventory": [
+                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+                {"id": "ankh", "charges": 0}, {"id": "ofro", "charges": 0}
+              ]
+            }
+          ],
+          "units": [
+            {"id":"uaco","alive":4,"trained":8}, {"id":"ushd","alive":2,"trained":4},
+            {"id":"ugho","alive":10,"trained":16}, {"id":"ugar","alive":4,"trained":7},
+            {"id":"uban","alive":3,"trained":5}, {"id":"unec","alive":3,"trained":5},
+            {"id":"ucry","alive":4,"trained":6}, {"id":"uobs","alive":3,"trained":5},
+            {"id":"uabo","alive":3,"trained":5}, {"id":"umtw","alive":2,"trained":3},
+            {"id":"ubsp","alive":2,"trained":4}, {"id":"ufro","alive":2,"trained":3},
+            {"id":"uskw","alive":4,"trained":12}, {"id":"uskm","alive":2,"trained":6},
+            {"id":"ucrb","alive":3,"trained":8}
+          ],
+          "upgrades": [
+            {"id":"Rume","level":3,"max_level":3}, {"id":"Ruar","level":3,"max_level":3},
+            {"id":"Rura","level":3,"max_level":3}, {"id":"Ruac","level":1,"max_level":1},
+            {"id":"Ruba","level":2,"max_level":2}, {"id":"Rubu","level":2,"max_level":2},
+            {"id":"Rucr","level":1,"max_level":1}, {"id":"Ruex","level":1,"max_level":1},
+            {"id":"Rufb","level":1,"max_level":1}, {"id":"Rugf","level":1,"max_level":1},
+            {"id":"Rune","level":2,"max_level":2}, {"id":"Rupc","level":1,"max_level":1},
+            {"id":"Rupm","level":2,"max_level":2}, {"id":"Rusf","level":1,"max_level":1},
+            {"id":"Rusm","level":1,"max_level":1}, {"id":"Rusp","level":1,"max_level":1},
+            {"id":"Ruwb","level":1,"max_level":1}
+          ]
+        }
+      ],
+      "summary": {
+        "heroes": [
+          {
+            "id": "Udea", "level": 10, "xp": 5400, "deaths": 2, "total_kills": 182,
+            "hero_kills": 5, "building_kills": 9, "damage_dealt": 108000,
+            "damage_received": 20000, "healing_done": 0, "time_alive_ms": 1145000,
+            "abilities": [
+              {"id": "AUdc", "level": 3, "damage_dealt": 75000, "healing_done": 0},
+              {"id": "AUau", "level": 3, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AUdp", "level": 2, "damage_dealt": 0, "healing_done": 20000},
+              {"id": "AUan", "level": 2, "damage_dealt": 0, "healing_done": 0}
+            ],
+            "inventory": [
+              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+              {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
+              {"id": "modt", "charges": 0}, {"id": "odef", "charges": 0}
+            ]
+          },
+          {
+            "id": "Udre", "level": 8, "xp": 3900, "deaths": 2, "total_kills": 138,
+            "hero_kills": 4, "building_kills": 8, "damage_dealt": 78000,
+            "damage_received": 15000, "healing_done": 0, "time_alive_ms": 1135000,
+            "abilities": [
+              {"id": "AUcs", "level": 3, "damage_dealt": 52000, "healing_done": 0},
+              {"id": "AUav", "level": 3, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AUsl", "level": 2, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AUin", "level": 2, "damage_dealt": 24000, "healing_done": 0}
+            ],
+            "inventory": [
+              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+              {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0}
+            ]
+          },
+          {
+            "id": "Ulic", "level": 7, "xp": 3000, "deaths": 1, "total_kills": 118,
+            "hero_kills": 3, "building_kills": 6, "damage_dealt": 72000,
+            "damage_received": 12000, "healing_done": 0, "time_alive_ms": 1165000,
+            "abilities": [
+              {"id": "AUfn", "level": 3, "damage_dealt": 48000, "healing_done": 0},
+              {"id": "AUfa", "level": 3, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AUdr", "level": 2, "damage_dealt": 0, "healing_done": 0},
+              {"id": "AUdd", "level": 2, "damage_dealt": 22000, "healing_done": 0}
+            ],
+            "inventory": [
+              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
+              {"id": "ankh", "charges": 0}, {"id": "ofro", "charges": 0}
+            ]
+          }
+        ],
+        "units": [
+          {"id":"uaco","alive":4,"trained":8,"damage_dealt":0,"damage_received":0,"healing_done":0},
+          {"id":"ushd","alive":2,"trained":4,"damage_dealt":0,"damage_received":2000,"healing_done":0},
+          {"id":"ugho","alive":10,"trained":16,"damage_dealt":82000,"damage_received":52000,"healing_done":0},
+          {"id":"ugar","alive":4,"trained":7,"damage_dealt":45000,"damage_received":20000,"healing_done":0},
+          {"id":"uban","alive":3,"trained":5,"damage_dealt":14000,"damage_received":7000,"healing_done":0},
+          {"id":"unec","alive":3,"trained":5,"damage_dealt":11000,"damage_received":6000,"healing_done":32000},
+          {"id":"ucry","alive":4,"trained":6,"damage_dealt":48000,"damage_received":23000,"healing_done":0},
+          {"id":"uobs","alive":3,"trained":5,"damage_dealt":16000,"damage_received":9000,"healing_done":42000},
+          {"id":"uabo","alive":3,"trained":5,"damage_dealt":68000,"damage_received":32000,"healing_done":0},
+          {"id":"umtw","alive":2,"trained":3,"damage_dealt":32000,"damage_received":8000,"healing_done":0},
+          {"id":"ubsp","alive":2,"trained":4,"damage_dealt":40000,"damage_received":14000,"healing_done":0},
+          {"id":"ufro","alive":2,"trained":3,"damage_dealt":62000,"damage_received":18000,"healing_done":0},
+          {"id":"uskw","alive":4,"trained":12,"damage_dealt":20000,"damage_received":11000,"healing_done":0},
+          {"id":"uskm","alive":2,"trained":6,"damage_dealt":14000,"damage_received":7000,"healing_done":0},
+          {"id":"ucrb","alive":3,"trained":8,"damage_dealt":9000,"damage_received":5000,"healing_done":0}
+        ],
+        "upgrades": [
+          {"id":"Rume","level":3,"max_level":3}, {"id":"Ruar","level":3,"max_level":3},
+          {"id":"Rura","level":3,"max_level":3}, {"id":"Ruac","level":1,"max_level":1},
+          {"id":"Ruba","level":2,"max_level":2}, {"id":"Rubu","level":2,"max_level":2},
+          {"id":"Rucr","level":1,"max_level":1}, {"id":"Ruex","level":1,"max_level":1},
+          {"id":"Rufb","level":1,"max_level":1}, {"id":"Rugf","level":1,"max_level":1},
+          {"id":"Rune","level":2,"max_level":2}, {"id":"Rupc","level":1,"max_level":1},
+          {"id":"Rupm","level":2,"max_level":2}, {"id":"Rusf","level":1,"max_level":1},
+          {"id":"Rusm","level":1,"max_level":1}, {"id":"Rusp","level":1,"max_level":1},
+          {"id":"Ruwb","level":1,"max_level":1}
+        ]
+      }
+    }
+  ]
+}
