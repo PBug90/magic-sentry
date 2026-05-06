@@ -339,9 +339,7 @@ describe('buildByTime', () => {
 
   it('adds hero on top of a unit with the same id', () => {
     // Unlikely in practice but tests the accumulation logic
-    const samples = [
-      makeSample({ units: [makeUnit('Hamg', 1)], heroes: [makeHero('Hamg', 50)] }),
-    ]
+    const samples = [makeSample({ units: [makeUnit('Hamg', 1)], heroes: [makeHero('Hamg', 50)] })]
     expect(buildByTime(samples)[0]['Hamg']).toBe(2)
   })
 

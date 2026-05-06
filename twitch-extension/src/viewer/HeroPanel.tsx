@@ -1,6 +1,20 @@
 ﻿import { useState } from 'react'
-import { AbilitySnapshot, ChartPlayer, HeroSample, ItemSnapshot, UpgradeSnapshot } from '../shared/types'
-import { ABILITY_BY_ID, HERO_OBSERVER_BY_ID, HERO_XP_THRESHOLDS, ITEM_BY_ID, UPGRADE_NAME_BY_ID, UPGRADE_GOLD_BY_ID, UPGRADE_LUMBER_BY_ID } from '@magic-sentry/shared'
+import {
+  AbilitySnapshot,
+  ChartPlayer,
+  HeroSample,
+  ItemSnapshot,
+  UpgradeSnapshot,
+} from '../shared/types'
+import {
+  ABILITY_BY_ID,
+  HERO_OBSERVER_BY_ID,
+  HERO_XP_THRESHOLDS,
+  ITEM_BY_ID,
+  UPGRADE_NAME_BY_ID,
+  UPGRADE_GOLD_BY_ID,
+  UPGRADE_LUMBER_BY_ID,
+} from '@magic-sentry/shared'
 
 // Unified hero display shape — works for both HeroFinal (summary) and HeroSample (live).
 interface HeroDisplay {
@@ -199,7 +213,11 @@ function XpBar({ xp, level }: { xp: number; level: number }) {
   const isMax = level >= maxLevel
   const floorXp = HERO_XP_THRESHOLDS[Math.min(level - 1, maxLevel - 1)] ?? 0
   const ceilXp = HERO_XP_THRESHOLDS[Math.min(level, maxLevel - 1)] ?? floorXp
-  const fraction = isMax ? 1 : ceilXp === floorXp ? 1 : Math.min((xp - floorXp) / (ceilXp - floorXp), 1)
+  const fraction = isMax
+    ? 1
+    : ceilXp === floorXp
+      ? 1
+      : Math.min((xp - floorXp) / (ceilXp - floorXp), 1)
   const label = isMax
     ? `${xp.toLocaleString()} xp — max level`
     : `${xp.toLocaleString()} / ${ceilXp.toLocaleString()} xp`
@@ -541,7 +559,7 @@ export function HeroPanel({ players }: { players: ChartPlayer[] }) {
                 <HeroCard key={heroes[i].id} hero={heroes[i]} player={player} index={i} />
               ) : (
                 <EmptyHeroSlot key={i} index={i} color={player.color} />
-              )
+              ),
             )}
           </div>
           {upgrades.length > 0 && (

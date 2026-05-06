@@ -13,154 +13,365 @@
       "new_samples": [
         {
           "time_ms": 120000,
-          "gold": 1800, "gold_mined": 2800, "gold_upkeep_lost": 0,
-          "lumber": 380, "lumber_mined": 520, "lumber_upkeep_lost": 0,
-          "food_used": 14, "food_cap": 30, "apm": 88,
+          "gold": 1800,
+          "gold_mined": 2800,
+          "gold_upkeep_lost": 0,
+          "lumber": 380,
+          "lumber_mined": 520,
+          "lumber_upkeep_lost": 0,
+          "food_used": 14,
+          "food_cap": 30,
+          "apm": 88,
           "heroes": [
             {
-              "id": "Hamg", "level": 2, "xp": 320, "hp": 680, "hp_max": 680, "mp": 360, "mp_max": 360,
-              "damage_dealt": 5200, "damage_received": 900, "healing_done": 0,
-              "deaths": 0, "kills": 14, "hero_kills": 0, "building_kills": 0,
+              "id": "Hamg",
+              "level": 2,
+              "xp": 320,
+              "hp": 680,
+              "hp_max": 680,
+              "mp": 360,
+              "mp_max": 360,
+              "damage_dealt": 5200,
+              "damage_received": 900,
+              "healing_done": 0,
+              "deaths": 0,
+              "kills": 14,
+              "hero_kills": 0,
+              "building_kills": 0,
               "abilities": [
-                {"id": "AHbz", "level": 1, "damage_dealt": 4100, "healing_done": 0},
-                {"id": "AHwe", "level": 1, "damage_dealt": 900, "healing_done": 0}
-              ],
-              "inventory": [{"id": "stwp", "charges": 0}, {"id": "phea", "charges": 0}]
-            }
-          ],
-          "units": [
-            {"id":"hpea","alive":5,"trained":6}, {"id":"hfoo","alive":6,"trained":7}, {"id":"hmpr","alive":2,"trained":2}
-          ],
-          "upgrades": [{"id":"Rhme","level":1,"max_level":3}, {"id":"Rhde","level":1,"max_level":1}]
-        },
-        {
-          "time_ms": 600000,
-          "gold": 5100, "gold_mined": 14000, "gold_upkeep_lost": 300,
-          "lumber": 1200, "lumber_mined": 3100, "lumber_upkeep_lost": 0,
-          "food_used": 58, "food_cap": 80, "apm": 122,
-          "heroes": [
-            {
-              "id": "Hamg", "level": 6, "xp": 2100, "hp": 820, "hp_max": 820, "mp": 490, "mp_max": 490,
-              "damage_dealt": 42000, "damage_received": 6200, "healing_done": 0,
-              "deaths": 1, "kills": 72, "hero_kills": 2, "building_kills": 4,
-              "abilities": [
-                {"id": "AHbz", "level": 3, "damage_dealt": 31000, "healing_done": 0},
-                {"id": "AHwe", "level": 2, "damage_dealt": 9500, "healing_done": 0},
-                {"id": "AHab", "level": 1, "damage_dealt": 0, "healing_done": 0}
+                { "id": "AHbz", "level": 1, "damage_dealt": 4100, "healing_done": 0 },
+                { "id": "AHwe", "level": 1, "damage_dealt": 900, "healing_done": 0 }
               ],
               "inventory": [
-                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-                {"id": "pgma", "charges": 0}, {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0}
+                { "id": "stwp", "charges": 0 },
+                { "id": "phea", "charges": 0 }
               ]
             }
           ],
           "units": [
-            {"id":"hpea","alive":5,"trained":8}, {"id":"hfoo","alive":10,"trained":14},
-            {"id":"hrif","alive":6,"trained":8}, {"id":"hkni","alive":4,"trained":5},
-            {"id":"hmpr","alive":3,"trained":4}, {"id":"hsor","alive":3,"trained":4},
-            {"id":"hspt","alive":3,"trained":4}, {"id":"hgry","alive":3,"trained":4}
+            { "id": "hpea", "alive": 5, "trained": 6 },
+            { "id": "hfoo", "alive": 6, "trained": 7 },
+            { "id": "hmpr", "alive": 2, "trained": 2 }
           ],
           "upgrades": [
-            {"id":"Rhme","level":2,"max_level":3}, {"id":"Rhan","level":2,"max_level":3},
-            {"id":"Rhar","level":2,"max_level":3}, {"id":"Rhla","level":1,"max_level":1},
-            {"id":"Rhde","level":1,"max_level":1}, {"id":"Rhpm","level":1,"max_level":2},
-            {"id":"Rhsb","level":1,"max_level":2}, {"id":"Rhri","level":1,"max_level":1}
+            { "id": "Rhme", "level": 1, "max_level": 3 },
+            { "id": "Rhde", "level": 1, "max_level": 1 }
+          ]
+        },
+        {
+          "time_ms": 600000,
+          "gold": 5100,
+          "gold_mined": 14000,
+          "gold_upkeep_lost": 300,
+          "lumber": 1200,
+          "lumber_mined": 3100,
+          "lumber_upkeep_lost": 0,
+          "food_used": 58,
+          "food_cap": 80,
+          "apm": 122,
+          "heroes": [
+            {
+              "id": "Hamg",
+              "level": 6,
+              "xp": 2100,
+              "hp": 820,
+              "hp_max": 820,
+              "mp": 490,
+              "mp_max": 490,
+              "damage_dealt": 42000,
+              "damage_received": 6200,
+              "healing_done": 0,
+              "deaths": 1,
+              "kills": 72,
+              "hero_kills": 2,
+              "building_kills": 4,
+              "abilities": [
+                { "id": "AHbz", "level": 3, "damage_dealt": 31000, "healing_done": 0 },
+                { "id": "AHwe", "level": 2, "damage_dealt": 9500, "healing_done": 0 },
+                { "id": "AHab", "level": 1, "damage_dealt": 0, "healing_done": 0 }
+              ],
+              "inventory": [
+                { "id": "stwp", "charges": 0 },
+                { "id": "pghe", "charges": 0 },
+                { "id": "pgma", "charges": 0 },
+                { "id": "ankh", "charges": 0 },
+                { "id": "ckng", "charges": 0 }
+              ]
+            }
+          ],
+          "units": [
+            { "id": "hpea", "alive": 5, "trained": 8 },
+            { "id": "hfoo", "alive": 10, "trained": 14 },
+            { "id": "hrif", "alive": 6, "trained": 8 },
+            { "id": "hkni", "alive": 4, "trained": 5 },
+            { "id": "hmpr", "alive": 3, "trained": 4 },
+            { "id": "hsor", "alive": 3, "trained": 4 },
+            { "id": "hspt", "alive": 3, "trained": 4 },
+            { "id": "hgry", "alive": 3, "trained": 4 }
+          ],
+          "upgrades": [
+            { "id": "Rhme", "level": 2, "max_level": 3 },
+            { "id": "Rhan", "level": 2, "max_level": 3 },
+            { "id": "Rhar", "level": 2, "max_level": 3 },
+            { "id": "Rhla", "level": 1, "max_level": 1 },
+            { "id": "Rhde", "level": 1, "max_level": 1 },
+            { "id": "Rhpm", "level": 1, "max_level": 2 },
+            { "id": "Rhsb", "level": 1, "max_level": 2 },
+            { "id": "Rhri", "level": 1, "max_level": 1 }
           ]
         },
         {
           "time_ms": 1200000,
-          "gold": 7800, "gold_mined": 31000, "gold_upkeep_lost": 980,
-          "lumber": 2400, "lumber_mined": 8200, "lumber_upkeep_lost": 0,
-          "food_used": 80, "food_cap": 100, "apm": 138,
+          "gold": 7800,
+          "gold_mined": 31000,
+          "gold_upkeep_lost": 980,
+          "lumber": 2400,
+          "lumber_mined": 8200,
+          "lumber_upkeep_lost": 0,
+          "food_used": 80,
+          "food_cap": 100,
+          "apm": 138,
           "heroes": [
             {
-              "id": "Hamg", "level": 10, "xp": 5400, "hp": 820, "hp_max": 820, "mp": 490, "mp_max": 490,
-              "damage_dealt": 138000, "damage_received": 20000, "healing_done": 0,
-              "deaths": 2, "kills": 228, "hero_kills": 6, "building_kills": 14,
+              "id": "Hamg",
+              "level": 10,
+              "xp": 5400,
+              "hp": 820,
+              "hp_max": 820,
+              "mp": 490,
+              "mp_max": 490,
+              "damage_dealt": 138000,
+              "damage_received": 20000,
+              "healing_done": 0,
+              "deaths": 2,
+              "kills": 228,
+              "hero_kills": 6,
+              "building_kills": 14,
               "abilities": [
-                {"id": "AHbz", "level": 3, "damage_dealt": 105000, "healing_done": 0},
-                {"id": "AHwe", "level": 3, "damage_dealt": 25000, "healing_done": 0},
-                {"id": "AHab", "level": 2, "damage_dealt": 0, "healing_done": 0},
-                {"id": "AHmt", "level": 2, "damage_dealt": 0, "healing_done": 0}
+                { "id": "AHbz", "level": 3, "damage_dealt": 105000, "healing_done": 0 },
+                { "id": "AHwe", "level": 3, "damage_dealt": 25000, "healing_done": 0 },
+                { "id": "AHab", "level": 2, "damage_dealt": 0, "healing_done": 0 },
+                { "id": "AHmt", "level": 2, "damage_dealt": 0, "healing_done": 0 }
               ],
               "inventory": [
-                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-                {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
-                {"id": "belv", "charges": 0}, {"id": "afac", "charges": 0}
+                { "id": "stwp", "charges": 0 },
+                { "id": "pghe", "charges": 0 },
+                { "id": "ankh", "charges": 0 },
+                { "id": "ckng", "charges": 0 },
+                { "id": "belv", "charges": 0 },
+                { "id": "afac", "charges": 0 }
               ]
             }
           ],
           "units": [
-            {"id":"hpea","alive":5,"trained":8}, {"id":"hmil","alive":3,"trained":6},
-            {"id":"hfoo","alive":12,"trained":18}, {"id":"hrif","alive":8,"trained":12},
-            {"id":"hkni","alive":6,"trained":9}, {"id":"hmpr","alive":3,"trained":5},
-            {"id":"hsor","alive":3,"trained":5}, {"id":"hspt","alive":4,"trained":6},
-            {"id":"hgyr","alive":4,"trained":7}, {"id":"hmtm","alive":2,"trained":4},
-            {"id":"hmtt","alive":2,"trained":3}, {"id":"hgry","alive":4,"trained":7},
-            {"id":"hdhw","alive":3,"trained":4}, {"id":"hwel","alive":2,"trained":5}
+            { "id": "hpea", "alive": 5, "trained": 8 },
+            { "id": "hmil", "alive": 3, "trained": 6 },
+            { "id": "hfoo", "alive": 12, "trained": 18 },
+            { "id": "hrif", "alive": 8, "trained": 12 },
+            { "id": "hkni", "alive": 6, "trained": 9 },
+            { "id": "hmpr", "alive": 3, "trained": 5 },
+            { "id": "hsor", "alive": 3, "trained": 5 },
+            { "id": "hspt", "alive": 4, "trained": 6 },
+            { "id": "hgyr", "alive": 4, "trained": 7 },
+            { "id": "hmtm", "alive": 2, "trained": 4 },
+            { "id": "hmtt", "alive": 2, "trained": 3 },
+            { "id": "hgry", "alive": 4, "trained": 7 },
+            { "id": "hdhw", "alive": 3, "trained": 4 },
+            { "id": "hwel", "alive": 2, "trained": 5 }
           ],
           "upgrades": [
-            {"id":"Rhme","level":3,"max_level":3}, {"id":"Rhan","level":3,"max_level":3},
-            {"id":"Rhar","level":3,"max_level":3}, {"id":"Rhla","level":1,"max_level":1},
-            {"id":"Rhlh","level":1,"max_level":1}, {"id":"Rhac","level":2,"max_level":2},
-            {"id":"Rhde","level":1,"max_level":1}, {"id":"Rhfc","level":1,"max_level":1},
-            {"id":"Rhfl","level":1,"max_level":1}, {"id":"Rhfs","level":1,"max_level":1},
-            {"id":"Rhgb","level":1,"max_level":1}, {"id":"Rhhb","level":1,"max_level":1},
-            {"id":"Rhpm","level":2,"max_level":2}, {"id":"Rhpt","level":2,"max_level":2},
-            {"id":"Rhra","level":1,"max_level":1}, {"id":"Rhri","level":1,"max_level":1},
-            {"id":"Rhrt","level":1,"max_level":1}, {"id":"Rhsb","level":2,"max_level":2},
-            {"id":"Rhse","level":1,"max_level":1}, {"id":"Rhss","level":2,"max_level":2},
-            {"id":"Rhst","level":1,"max_level":1}, {"id":"Rhcd","level":1,"max_level":1}
+            { "id": "Rhme", "level": 3, "max_level": 3 },
+            { "id": "Rhan", "level": 3, "max_level": 3 },
+            { "id": "Rhar", "level": 3, "max_level": 3 },
+            { "id": "Rhla", "level": 1, "max_level": 1 },
+            { "id": "Rhlh", "level": 1, "max_level": 1 },
+            { "id": "Rhac", "level": 2, "max_level": 2 },
+            { "id": "Rhde", "level": 1, "max_level": 1 },
+            { "id": "Rhfc", "level": 1, "max_level": 1 },
+            { "id": "Rhfl", "level": 1, "max_level": 1 },
+            { "id": "Rhfs", "level": 1, "max_level": 1 },
+            { "id": "Rhgb", "level": 1, "max_level": 1 },
+            { "id": "Rhhb", "level": 1, "max_level": 1 },
+            { "id": "Rhpm", "level": 2, "max_level": 2 },
+            { "id": "Rhpt", "level": 2, "max_level": 2 },
+            { "id": "Rhra", "level": 1, "max_level": 1 },
+            { "id": "Rhri", "level": 1, "max_level": 1 },
+            { "id": "Rhrt", "level": 1, "max_level": 1 },
+            { "id": "Rhsb", "level": 2, "max_level": 2 },
+            { "id": "Rhse", "level": 1, "max_level": 1 },
+            { "id": "Rhss", "level": 2, "max_level": 2 },
+            { "id": "Rhst", "level": 1, "max_level": 1 },
+            { "id": "Rhcd", "level": 1, "max_level": 1 }
           ]
         }
       ],
       "summary": {
         "heroes": [
           {
-            "id": "Hamg", "level": 10, "xp": 5400, "deaths": 2, "total_kills": 228,
-            "hero_kills": 6, "building_kills": 14, "damage_dealt": 138000,
-            "damage_received": 20000, "healing_done": 0, "time_alive_ms": 1160000,
+            "id": "Hamg",
+            "level": 10,
+            "xp": 5400,
+            "deaths": 2,
+            "total_kills": 228,
+            "hero_kills": 6,
+            "building_kills": 14,
+            "damage_dealt": 138000,
+            "damage_received": 20000,
+            "healing_done": 0,
+            "time_alive_ms": 1160000,
             "abilities": [
-              {"id": "AHbz", "level": 3, "damage_dealt": 105000, "healing_done": 0},
-              {"id": "AHwe", "level": 3, "damage_dealt": 25000, "healing_done": 0},
-              {"id": "AHab", "level": 2, "damage_dealt": 0, "healing_done": 0},
-              {"id": "AHmt", "level": 2, "damage_dealt": 0, "healing_done": 0}
+              { "id": "AHbz", "level": 3, "damage_dealt": 105000, "healing_done": 0 },
+              { "id": "AHwe", "level": 3, "damage_dealt": 25000, "healing_done": 0 },
+              { "id": "AHab", "level": 2, "damage_dealt": 0, "healing_done": 0 },
+              { "id": "AHmt", "level": 2, "damage_dealt": 0, "healing_done": 0 }
             ],
             "inventory": [
-              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-              {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
-              {"id": "belv", "charges": 0}, {"id": "afac", "charges": 0}
+              { "id": "stwp", "charges": 0 },
+              { "id": "pghe", "charges": 0 },
+              { "id": "ankh", "charges": 0 },
+              { "id": "ckng", "charges": 0 },
+              { "id": "belv", "charges": 0 },
+              { "id": "afac", "charges": 0 }
             ]
           }
         ],
         "units": [
-          {"id":"hpea","alive":5,"trained":8,"damage_dealt":0,"damage_received":0,"healing_done":0},
-          {"id":"hmil","alive":3,"trained":6,"damage_dealt":22000,"damage_received":15000,"healing_done":0},
-          {"id":"hfoo","alive":12,"trained":18,"damage_dealt":92000,"damage_received":68000,"healing_done":0},
-          {"id":"hrif","alive":8,"trained":12,"damage_dealt":68000,"damage_received":31000,"healing_done":0},
-          {"id":"hkni","alive":6,"trained":9,"damage_dealt":78000,"damage_received":38000,"healing_done":0},
-          {"id":"hmpr","alive":3,"trained":5,"damage_dealt":9000,"damage_received":6000,"healing_done":52000},
-          {"id":"hsor","alive":3,"trained":5,"damage_dealt":25000,"damage_received":9000,"healing_done":0},
-          {"id":"hspt","alive":4,"trained":6,"damage_dealt":38000,"damage_received":20000,"healing_done":0},
-          {"id":"hgyr","alive":4,"trained":7,"damage_dealt":31000,"damage_received":13000,"healing_done":0},
-          {"id":"hmtm","alive":2,"trained":4,"damage_dealt":48000,"damage_received":9000,"healing_done":0},
-          {"id":"hmtt","alive":2,"trained":3,"damage_dealt":42000,"damage_received":17000,"healing_done":0},
-          {"id":"hgry","alive":4,"trained":7,"damage_dealt":60000,"damage_received":24000,"healing_done":0},
-          {"id":"hdhw","alive":3,"trained":4,"damage_dealt":20000,"damage_received":9000,"healing_done":0},
-          {"id":"hwel","alive":2,"trained":5,"damage_dealt":25000,"damage_received":6000,"healing_done":0}
+          {
+            "id": "hpea",
+            "alive": 5,
+            "trained": 8,
+            "damage_dealt": 0,
+            "damage_received": 0,
+            "healing_done": 0
+          },
+          {
+            "id": "hmil",
+            "alive": 3,
+            "trained": 6,
+            "damage_dealt": 22000,
+            "damage_received": 15000,
+            "healing_done": 0
+          },
+          {
+            "id": "hfoo",
+            "alive": 12,
+            "trained": 18,
+            "damage_dealt": 92000,
+            "damage_received": 68000,
+            "healing_done": 0
+          },
+          {
+            "id": "hrif",
+            "alive": 8,
+            "trained": 12,
+            "damage_dealt": 68000,
+            "damage_received": 31000,
+            "healing_done": 0
+          },
+          {
+            "id": "hkni",
+            "alive": 6,
+            "trained": 9,
+            "damage_dealt": 78000,
+            "damage_received": 38000,
+            "healing_done": 0
+          },
+          {
+            "id": "hmpr",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 9000,
+            "damage_received": 6000,
+            "healing_done": 52000
+          },
+          {
+            "id": "hsor",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 25000,
+            "damage_received": 9000,
+            "healing_done": 0
+          },
+          {
+            "id": "hspt",
+            "alive": 4,
+            "trained": 6,
+            "damage_dealt": 38000,
+            "damage_received": 20000,
+            "healing_done": 0
+          },
+          {
+            "id": "hgyr",
+            "alive": 4,
+            "trained": 7,
+            "damage_dealt": 31000,
+            "damage_received": 13000,
+            "healing_done": 0
+          },
+          {
+            "id": "hmtm",
+            "alive": 2,
+            "trained": 4,
+            "damage_dealt": 48000,
+            "damage_received": 9000,
+            "healing_done": 0
+          },
+          {
+            "id": "hmtt",
+            "alive": 2,
+            "trained": 3,
+            "damage_dealt": 42000,
+            "damage_received": 17000,
+            "healing_done": 0
+          },
+          {
+            "id": "hgry",
+            "alive": 4,
+            "trained": 7,
+            "damage_dealt": 60000,
+            "damage_received": 24000,
+            "healing_done": 0
+          },
+          {
+            "id": "hdhw",
+            "alive": 3,
+            "trained": 4,
+            "damage_dealt": 20000,
+            "damage_received": 9000,
+            "healing_done": 0
+          },
+          {
+            "id": "hwel",
+            "alive": 2,
+            "trained": 5,
+            "damage_dealt": 25000,
+            "damage_received": 6000,
+            "healing_done": 0
+          }
         ],
         "upgrades": [
-          {"id":"Rhme","level":3,"max_level":3}, {"id":"Rhan","level":3,"max_level":3},
-          {"id":"Rhar","level":3,"max_level":3}, {"id":"Rhla","level":1,"max_level":1},
-          {"id":"Rhlh","level":1,"max_level":1}, {"id":"Rhac","level":2,"max_level":2},
-          {"id":"Rhde","level":1,"max_level":1}, {"id":"Rhfc","level":1,"max_level":1},
-          {"id":"Rhfl","level":1,"max_level":1}, {"id":"Rhfs","level":1,"max_level":1},
-          {"id":"Rhgb","level":1,"max_level":1}, {"id":"Rhhb","level":1,"max_level":1},
-          {"id":"Rhpm","level":2,"max_level":2}, {"id":"Rhpt","level":2,"max_level":2},
-          {"id":"Rhra","level":1,"max_level":1}, {"id":"Rhri","level":1,"max_level":1},
-          {"id":"Rhrt","level":1,"max_level":1}, {"id":"Rhsb","level":2,"max_level":2},
-          {"id":"Rhse","level":1,"max_level":1}, {"id":"Rhss","level":2,"max_level":2},
-          {"id":"Rhst","level":1,"max_level":1}, {"id":"Rhcd","level":1,"max_level":1}
+          { "id": "Rhme", "level": 3, "max_level": 3 },
+          { "id": "Rhan", "level": 3, "max_level": 3 },
+          { "id": "Rhar", "level": 3, "max_level": 3 },
+          { "id": "Rhla", "level": 1, "max_level": 1 },
+          { "id": "Rhlh", "level": 1, "max_level": 1 },
+          { "id": "Rhac", "level": 2, "max_level": 2 },
+          { "id": "Rhde", "level": 1, "max_level": 1 },
+          { "id": "Rhfc", "level": 1, "max_level": 1 },
+          { "id": "Rhfl", "level": 1, "max_level": 1 },
+          { "id": "Rhfs", "level": 1, "max_level": 1 },
+          { "id": "Rhgb", "level": 1, "max_level": 1 },
+          { "id": "Rhhb", "level": 1, "max_level": 1 },
+          { "id": "Rhpm", "level": 2, "max_level": 2 },
+          { "id": "Rhpt", "level": 2, "max_level": 2 },
+          { "id": "Rhra", "level": 1, "max_level": 1 },
+          { "id": "Rhri", "level": 1, "max_level": 1 },
+          { "id": "Rhrt", "level": 1, "max_level": 1 },
+          { "id": "Rhsb", "level": 2, "max_level": 2 },
+          { "id": "Rhse", "level": 1, "max_level": 1 },
+          { "id": "Rhss", "level": 2, "max_level": 2 },
+          { "id": "Rhst", "level": 1, "max_level": 1 },
+          { "id": "Rhcd", "level": 1, "max_level": 1 }
         ]
       }
     },
@@ -172,219 +383,752 @@
       "new_samples": [
         {
           "time_ms": 120000,
-          "gold": 1650, "gold_mined": 2600, "gold_upkeep_lost": 0,
-          "lumber": 310, "lumber_mined": 460, "lumber_upkeep_lost": 0,
-          "food_used": 12, "food_cap": 30, "apm": 75,
+          "gold": 1650,
+          "gold_mined": 2600,
+          "gold_upkeep_lost": 0,
+          "lumber": 310,
+          "lumber_mined": 460,
+          "lumber_upkeep_lost": 0,
+          "food_used": 12,
+          "food_cap": 30,
+          "apm": 75,
           "heroes": [
             {
-              "id": "Obla", "level": 2, "xp": 280, "hp": 760, "hp_max": 760, "mp": 240, "mp_max": 240,
-              "damage_dealt": 6800, "damage_received": 1200, "healing_done": 0,
-              "deaths": 0, "kills": 18, "hero_kills": 0, "building_kills": 0,
+              "id": "Obla",
+              "level": 2,
+              "xp": 280,
+              "hp": 760,
+              "hp_max": 760,
+              "mp": 240,
+              "mp_max": 240,
+              "damage_dealt": 6800,
+              "damage_received": 1200,
+              "healing_done": 0,
+              "deaths": 0,
+              "kills": 18,
+              "hero_kills": 0,
+              "building_kills": 0,
               "abilities": [
-                {"id": "AOcr", "level": 1, "damage_dealt": 4200, "healing_done": 0},
-                {"id": "AOwk", "level": 1, "damage_dealt": 0, "healing_done": 0}
-              ],
-              "inventory": [{"id": "stwp", "charges": 0}, {"id": "phea", "charges": 0}]
-            }
-          ],
-          "units": [
-            {"id":"opeo","alive":5,"trained":6}, {"id":"ogru","alive":5,"trained":6}
-          ],
-          "upgrades": [{"id":"Roar","level":1,"max_level":3}, {"id":"Ropg","level":1,"max_level":1}]
-        },
-        {
-          "time_ms": 600000,
-          "gold": 4600, "gold_mined": 13000, "gold_upkeep_lost": 250,
-          "lumber": 1050, "lumber_mined": 2800, "lumber_upkeep_lost": 0,
-          "food_used": 62, "food_cap": 80, "apm": 108,
-          "heroes": [
-            {
-              "id": "Obla", "level": 7, "xp": 2900, "hp": 910, "hp_max": 910, "mp": 320, "mp_max": 320,
-              "damage_dealt": 55000, "damage_received": 8000, "healing_done": 0,
-              "deaths": 1, "kills": 95, "hero_kills": 3, "building_kills": 5,
-              "abilities": [
-                {"id": "AOww", "level": 2, "damage_dealt": 28000, "healing_done": 0},
-                {"id": "AOcr", "level": 3, "damage_dealt": 22000, "healing_done": 0},
-                {"id": "AOmi", "level": 1, "damage_dealt": 0, "healing_done": 0},
-                {"id": "AOwk", "level": 1, "damage_dealt": 0, "healing_done": 0}
+                { "id": "AOcr", "level": 1, "damage_dealt": 4200, "healing_done": 0 },
+                { "id": "AOwk", "level": 1, "damage_dealt": 0, "healing_done": 0 }
               ],
               "inventory": [
-                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-                {"id": "modt", "charges": 0}, {"id": "ckng", "charges": 0}
+                { "id": "stwp", "charges": 0 },
+                { "id": "phea", "charges": 0 }
               ]
             }
           ],
           "units": [
-            {"id":"opeo","alive":5,"trained":7}, {"id":"ogru","alive":8,"trained":11},
-            {"id":"ohun","alive":6,"trained":8}, {"id":"orai","alive":4,"trained":5},
-            {"id":"oshm","alive":3,"trained":4}, {"id":"odoc","alive":2,"trained":3},
-            {"id":"okod","alive":3,"trained":4}
+            { "id": "opeo", "alive": 5, "trained": 6 },
+            { "id": "ogru", "alive": 5, "trained": 6 }
           ],
           "upgrades": [
-            {"id":"Roar","level":2,"max_level":3}, {"id":"Rora","level":2,"max_level":3},
-            {"id":"Ropg","level":1,"max_level":1}, {"id":"Roen","level":1,"max_level":1},
-            {"id":"Robk","level":1,"max_level":1}, {"id":"Rosp","level":1,"max_level":2},
-            {"id":"Rowd","level":1,"max_level":2}
+            { "id": "Roar", "level": 1, "max_level": 3 },
+            { "id": "Ropg", "level": 1, "max_level": 1 }
+          ]
+        },
+        {
+          "time_ms": 600000,
+          "gold": 4600,
+          "gold_mined": 13000,
+          "gold_upkeep_lost": 250,
+          "lumber": 1050,
+          "lumber_mined": 2800,
+          "lumber_upkeep_lost": 0,
+          "food_used": 62,
+          "food_cap": 80,
+          "apm": 108,
+          "heroes": [
+            {
+              "id": "Obla",
+              "level": 7,
+              "xp": 2900,
+              "hp": 910,
+              "hp_max": 910,
+              "mp": 320,
+              "mp_max": 320,
+              "damage_dealt": 55000,
+              "damage_received": 8000,
+              "healing_done": 0,
+              "deaths": 1,
+              "kills": 95,
+              "hero_kills": 3,
+              "building_kills": 5,
+              "abilities": [
+                { "id": "AOww", "level": 2, "damage_dealt": 28000, "healing_done": 0 },
+                { "id": "AOcr", "level": 3, "damage_dealt": 22000, "healing_done": 0 },
+                { "id": "AOmi", "level": 1, "damage_dealt": 0, "healing_done": 0 },
+                { "id": "AOwk", "level": 1, "damage_dealt": 0, "healing_done": 0 }
+              ],
+              "inventory": [
+                { "id": "stwp", "charges": 0 },
+                { "id": "pghe", "charges": 0 },
+                { "id": "modt", "charges": 0 },
+                { "id": "ckng", "charges": 0 }
+              ]
+            }
+          ],
+          "units": [
+            { "id": "opeo", "alive": 5, "trained": 7 },
+            { "id": "ogru", "alive": 8, "trained": 11 },
+            { "id": "ohun", "alive": 6, "trained": 8 },
+            { "id": "orai", "alive": 4, "trained": 5 },
+            { "id": "oshm", "alive": 3, "trained": 4 },
+            { "id": "odoc", "alive": 2, "trained": 3 },
+            { "id": "okod", "alive": 3, "trained": 4 }
+          ],
+          "upgrades": [
+            { "id": "Roar", "level": 2, "max_level": 3 },
+            { "id": "Rora", "level": 2, "max_level": 3 },
+            { "id": "Ropg", "level": 1, "max_level": 1 },
+            { "id": "Roen", "level": 1, "max_level": 1 },
+            { "id": "Robk", "level": 1, "max_level": 1 },
+            { "id": "Rosp", "level": 1, "max_level": 2 },
+            { "id": "Rowd", "level": 1, "max_level": 2 }
           ]
         },
         {
           "time_ms": 1200000,
-          "gold": 6900, "gold_mined": 28000, "gold_upkeep_lost": 820,
-          "lumber": 2100, "lumber_mined": 7100, "lumber_upkeep_lost": 0,
-          "food_used": 80, "food_cap": 100, "apm": 115,
+          "gold": 6900,
+          "gold_mined": 28000,
+          "gold_upkeep_lost": 820,
+          "lumber": 2100,
+          "lumber_mined": 7100,
+          "lumber_upkeep_lost": 0,
+          "food_used": 80,
+          "food_cap": 100,
+          "apm": 115,
           "heroes": [
             {
-              "id": "Obla", "level": 10, "xp": 5400, "hp": 910, "hp_max": 910, "mp": 320, "mp_max": 320,
-              "damage_dealt": 165000, "damage_received": 28000, "healing_done": 0,
-              "deaths": 3, "kills": 285, "hero_kills": 8, "building_kills": 18,
+              "id": "Obla",
+              "level": 10,
+              "xp": 5400,
+              "hp": 910,
+              "hp_max": 910,
+              "mp": 320,
+              "mp_max": 320,
+              "damage_dealt": 165000,
+              "damage_received": 28000,
+              "healing_done": 0,
+              "deaths": 3,
+              "kills": 285,
+              "hero_kills": 8,
+              "building_kills": 18,
               "abilities": [
-                {"id": "AOww", "level": 3, "damage_dealt": 90000, "healing_done": 0},
-                {"id": "AOcr", "level": 3, "damage_dealt": 62000, "healing_done": 0},
-                {"id": "AOmi", "level": 2, "damage_dealt": 0, "healing_done": 0},
-                {"id": "AOwk", "level": 2, "damage_dealt": 0, "healing_done": 0}
+                { "id": "AOww", "level": 3, "damage_dealt": 90000, "healing_done": 0 },
+                { "id": "AOcr", "level": 3, "damage_dealt": 62000, "healing_done": 0 },
+                { "id": "AOmi", "level": 2, "damage_dealt": 0, "healing_done": 0 },
+                { "id": "AOwk", "level": 2, "damage_dealt": 0, "healing_done": 0 }
               ],
               "inventory": [
-                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-                {"id": "modt", "charges": 0}, {"id": "ckng", "charges": 0},
-                {"id": "bspd", "charges": 0}, {"id": "ofir", "charges": 0}
+                { "id": "stwp", "charges": 0 },
+                { "id": "pghe", "charges": 0 },
+                { "id": "modt", "charges": 0 },
+                { "id": "ckng", "charges": 0 },
+                { "id": "bspd", "charges": 0 },
+                { "id": "ofir", "charges": 0 }
               ]
             }
           ],
           "units": [
-            {"id":"opeo","alive":5,"trained":8}, {"id":"ogru","alive":10,"trained":16},
-            {"id":"ohun","alive":6,"trained":10}, {"id":"otbk","alive":4,"trained":7},
-            {"id":"oshm","alive":3,"trained":5}, {"id":"odoc","alive":3,"trained":5},
-            {"id":"orai","alive":4,"trained":7}, {"id":"ospw","alive":3,"trained":4},
-            {"id":"osw1","alive":2,"trained":6}, {"id":"otbr","alive":3,"trained":5},
-            {"id":"ocat","alive":2,"trained":3}, {"id":"okod","alive":3,"trained":5},
-            {"id":"owyv","alive":3,"trained":5}, {"id":"otau","alive":3,"trained":5},
-            {"id":"ngir","alive":1,"trained":2}, {"id":"ngsp","alive":1,"trained":1},
-            {"id":"nzep","alive":1,"trained":1}, {"id":"nass","alive":1,"trained":2},
-            {"id":"nfgb","alive":1,"trained":2}, {"id":"nbdw","alive":1,"trained":1},
-            {"id":"nskf","alive":1,"trained":2}, {"id":"ncea","alive":1,"trained":2},
-            {"id":"ncen","alive":1,"trained":2}, {"id":"ndtb","alive":1,"trained":2},
-            {"id":"ndtp","alive":1,"trained":1}, {"id":"ndrm","alive":1,"trained":1},
-            {"id":"nftb","alive":1,"trained":2}, {"id":"nfsh","alive":1,"trained":1},
-            {"id":"nfsp","alive":1,"trained":1}, {"id":"nrvs","alive":1,"trained":2},
-            {"id":"nwlg","alive":1,"trained":2}, {"id":"ngnb","alive":1,"trained":2},
-            {"id":"ngnw","alive":1,"trained":1}, {"id":"nhrw","alive":1,"trained":2},
-            {"id":"nits","alive":1,"trained":2}, {"id":"nitp","alive":1,"trained":1},
-            {"id":"nkog","alive":1,"trained":1}, {"id":"nkol","alive":1,"trained":1},
-            {"id":"nkot","alive":1,"trained":2}, {"id":"nmbg","alive":1,"trained":2},
-            {"id":"nmsn","alive":1,"trained":1}, {"id":"ngrk","alive":1,"trained":2},
-            {"id":"nmfs","alive":1,"trained":2}, {"id":"nnwr","alive":1,"trained":1},
-            {"id":"nnwa","alive":1,"trained":2}, {"id":"nomg","alive":1,"trained":1},
-            {"id":"nogm","alive":1,"trained":1}, {"id":"nqbh","alive":1,"trained":2},
-            {"id":"nrog","alive":1,"trained":2}, {"id":"nsts","alive":1,"trained":2},
-            {"id":"nsog","alive":1,"trained":1}, {"id":"nsln","alive":1,"trained":1},
-            {"id":"nssp","alive":1,"trained":2}, {"id":"nsrh","alive":1,"trained":1},
-            {"id":"ntkh","alive":1,"trained":1}, {"id":"nubw","alive":1,"trained":1},
-            {"id":"nvdw","alive":1,"trained":2}, {"id":"nowb","alive":1,"trained":2}
+            { "id": "opeo", "alive": 5, "trained": 8 },
+            { "id": "ogru", "alive": 10, "trained": 16 },
+            { "id": "ohun", "alive": 6, "trained": 10 },
+            { "id": "otbk", "alive": 4, "trained": 7 },
+            { "id": "oshm", "alive": 3, "trained": 5 },
+            { "id": "odoc", "alive": 3, "trained": 5 },
+            { "id": "orai", "alive": 4, "trained": 7 },
+            { "id": "ospw", "alive": 3, "trained": 4 },
+            { "id": "osw1", "alive": 2, "trained": 6 },
+            { "id": "otbr", "alive": 3, "trained": 5 },
+            { "id": "ocat", "alive": 2, "trained": 3 },
+            { "id": "okod", "alive": 3, "trained": 5 },
+            { "id": "owyv", "alive": 3, "trained": 5 },
+            { "id": "otau", "alive": 3, "trained": 5 },
+            { "id": "ngir", "alive": 1, "trained": 2 },
+            { "id": "ngsp", "alive": 1, "trained": 1 },
+            { "id": "nzep", "alive": 1, "trained": 1 },
+            { "id": "nass", "alive": 1, "trained": 2 },
+            { "id": "nfgb", "alive": 1, "trained": 2 },
+            { "id": "nbdw", "alive": 1, "trained": 1 },
+            { "id": "nskf", "alive": 1, "trained": 2 },
+            { "id": "ncea", "alive": 1, "trained": 2 },
+            { "id": "ncen", "alive": 1, "trained": 2 },
+            { "id": "ndtb", "alive": 1, "trained": 2 },
+            { "id": "ndtp", "alive": 1, "trained": 1 },
+            { "id": "ndrm", "alive": 1, "trained": 1 },
+            { "id": "nftb", "alive": 1, "trained": 2 },
+            { "id": "nfsh", "alive": 1, "trained": 1 },
+            { "id": "nfsp", "alive": 1, "trained": 1 },
+            { "id": "nrvs", "alive": 1, "trained": 2 },
+            { "id": "nwlg", "alive": 1, "trained": 2 },
+            { "id": "ngnb", "alive": 1, "trained": 2 },
+            { "id": "ngnw", "alive": 1, "trained": 1 },
+            { "id": "nhrw", "alive": 1, "trained": 2 },
+            { "id": "nits", "alive": 1, "trained": 2 },
+            { "id": "nitp", "alive": 1, "trained": 1 },
+            { "id": "nkog", "alive": 1, "trained": 1 },
+            { "id": "nkol", "alive": 1, "trained": 1 },
+            { "id": "nkot", "alive": 1, "trained": 2 },
+            { "id": "nmbg", "alive": 1, "trained": 2 },
+            { "id": "nmsn", "alive": 1, "trained": 1 },
+            { "id": "ngrk", "alive": 1, "trained": 2 },
+            { "id": "nmfs", "alive": 1, "trained": 2 },
+            { "id": "nnwr", "alive": 1, "trained": 1 },
+            { "id": "nnwa", "alive": 1, "trained": 2 },
+            { "id": "nomg", "alive": 1, "trained": 1 },
+            { "id": "nogm", "alive": 1, "trained": 1 },
+            { "id": "nqbh", "alive": 1, "trained": 2 },
+            { "id": "nrog", "alive": 1, "trained": 2 },
+            { "id": "nsts", "alive": 1, "trained": 2 },
+            { "id": "nsog", "alive": 1, "trained": 1 },
+            { "id": "nsln", "alive": 1, "trained": 1 },
+            { "id": "nssp", "alive": 1, "trained": 2 },
+            { "id": "nsrh", "alive": 1, "trained": 1 },
+            { "id": "ntkh", "alive": 1, "trained": 1 },
+            { "id": "nubw", "alive": 1, "trained": 1 },
+            { "id": "nvdw", "alive": 1, "trained": 2 },
+            { "id": "nowb", "alive": 1, "trained": 2 }
           ],
           "upgrades": [
-            {"id":"Roar","level":3,"max_level":3}, {"id":"Rora","level":3,"max_level":3},
-            {"id":"Rorb","level":2,"max_level":2}, {"id":"Ropg","level":1,"max_level":1},
-            {"id":"Roen","level":1,"max_level":1}, {"id":"Robf","level":1,"max_level":1},
-            {"id":"Robk","level":1,"max_level":1}, {"id":"Robs","level":1,"max_level":1},
-            {"id":"Rolf","level":1,"max_level":1}, {"id":"Rome","level":2,"max_level":2},
-            {"id":"Ropm","level":1,"max_level":1}, {"id":"Rosp","level":2,"max_level":2},
-            {"id":"Rost","level":2,"max_level":2}, {"id":"Rotr","level":1,"max_level":1},
-            {"id":"Rovs","level":2,"max_level":2}, {"id":"Rowd","level":2,"max_level":2},
-            {"id":"Rows","level":2,"max_level":2}, {"id":"Rowt","level":2,"max_level":2},
-            {"id":"Rwdm","level":1,"max_level":1}
+            { "id": "Roar", "level": 3, "max_level": 3 },
+            { "id": "Rora", "level": 3, "max_level": 3 },
+            { "id": "Rorb", "level": 2, "max_level": 2 },
+            { "id": "Ropg", "level": 1, "max_level": 1 },
+            { "id": "Roen", "level": 1, "max_level": 1 },
+            { "id": "Robf", "level": 1, "max_level": 1 },
+            { "id": "Robk", "level": 1, "max_level": 1 },
+            { "id": "Robs", "level": 1, "max_level": 1 },
+            { "id": "Rolf", "level": 1, "max_level": 1 },
+            { "id": "Rome", "level": 2, "max_level": 2 },
+            { "id": "Ropm", "level": 1, "max_level": 1 },
+            { "id": "Rosp", "level": 2, "max_level": 2 },
+            { "id": "Rost", "level": 2, "max_level": 2 },
+            { "id": "Rotr", "level": 1, "max_level": 1 },
+            { "id": "Rovs", "level": 2, "max_level": 2 },
+            { "id": "Rowd", "level": 2, "max_level": 2 },
+            { "id": "Rows", "level": 2, "max_level": 2 },
+            { "id": "Rowt", "level": 2, "max_level": 2 },
+            { "id": "Rwdm", "level": 1, "max_level": 1 }
           ]
         }
       ],
       "summary": {
         "heroes": [
           {
-            "id": "Obla", "level": 10, "xp": 5400, "deaths": 3, "total_kills": 285,
-            "hero_kills": 8, "building_kills": 18, "damage_dealt": 165000,
-            "damage_received": 28000, "healing_done": 0, "time_alive_ms": 1140000,
+            "id": "Obla",
+            "level": 10,
+            "xp": 5400,
+            "deaths": 3,
+            "total_kills": 285,
+            "hero_kills": 8,
+            "building_kills": 18,
+            "damage_dealt": 165000,
+            "damage_received": 28000,
+            "healing_done": 0,
+            "time_alive_ms": 1140000,
             "abilities": [
-              {"id": "AOww", "level": 3, "damage_dealt": 90000, "healing_done": 0},
-              {"id": "AOcr", "level": 3, "damage_dealt": 62000, "healing_done": 0},
-              {"id": "AOmi", "level": 2, "damage_dealt": 0, "healing_done": 0},
-              {"id": "AOwk", "level": 2, "damage_dealt": 0, "healing_done": 0}
+              { "id": "AOww", "level": 3, "damage_dealt": 90000, "healing_done": 0 },
+              { "id": "AOcr", "level": 3, "damage_dealt": 62000, "healing_done": 0 },
+              { "id": "AOmi", "level": 2, "damage_dealt": 0, "healing_done": 0 },
+              { "id": "AOwk", "level": 2, "damage_dealt": 0, "healing_done": 0 }
             ],
             "inventory": [
-              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-              {"id": "modt", "charges": 0}, {"id": "ckng", "charges": 0},
-              {"id": "bspd", "charges": 0}, {"id": "ofir", "charges": 0}
+              { "id": "stwp", "charges": 0 },
+              { "id": "pghe", "charges": 0 },
+              { "id": "modt", "charges": 0 },
+              { "id": "ckng", "charges": 0 },
+              { "id": "bspd", "charges": 0 },
+              { "id": "ofir", "charges": 0 }
             ]
           }
         ],
         "units": [
-          {"id":"opeo","alive":5,"trained":8,"damage_dealt":0,"damage_received":0,"healing_done":0},
-          {"id":"ogru","alive":10,"trained":16,"damage_dealt":110000,"damage_received":72000,"healing_done":0},
-          {"id":"ohun","alive":6,"trained":10,"damage_dealt":65000,"damage_received":28000,"healing_done":0},
-          {"id":"otbk","alive":4,"trained":7,"damage_dealt":42000,"damage_received":18000,"healing_done":0},
-          {"id":"oshm","alive":3,"trained":5,"damage_dealt":12000,"damage_received":8000,"healing_done":38000},
-          {"id":"odoc","alive":3,"trained":5,"damage_dealt":18000,"damage_received":10000,"healing_done":0},
-          {"id":"orai","alive":4,"trained":7,"damage_dealt":48000,"damage_received":22000,"healing_done":0},
-          {"id":"ospw","alive":3,"trained":4,"damage_dealt":22000,"damage_received":12000,"healing_done":28000},
-          {"id":"osw1","alive":2,"trained":6,"damage_dealt":15000,"damage_received":8000,"healing_done":0},
-          {"id":"otbr","alive":3,"trained":5,"damage_dealt":28000,"damage_received":15000,"healing_done":0},
-          {"id":"ocat","alive":2,"trained":3,"damage_dealt":38000,"damage_received":10000,"healing_done":0},
-          {"id":"okod","alive":3,"trained":5,"damage_dealt":35000,"damage_received":18000,"healing_done":0},
-          {"id":"owyv","alive":3,"trained":5,"damage_dealt":55000,"damage_received":20000,"healing_done":0},
-          {"id":"otau","alive":3,"trained":5,"damage_dealt":72000,"damage_received":30000,"healing_done":0},
-          {"id":"ngir","alive":1,"trained":2,"damage_dealt":22000,"damage_received":8000,"healing_done":0},
-          {"id":"ngsp","alive":1,"trained":1,"damage_dealt":8000,"damage_received":4000,"healing_done":0},
-          {"id":"nzep","alive":1,"trained":1,"damage_dealt":0,"damage_received":2000,"healing_done":0},
-          {"id":"nass","alive":1,"trained":2,"damage_dealt":18000,"damage_received":6000,"healing_done":0},
-          {"id":"nfgb","alive":1,"trained":2,"damage_dealt":15000,"damage_received":5000,"healing_done":0},
-          {"id":"nbdw","alive":1,"trained":1,"damage_dealt":22000,"damage_received":8000,"healing_done":0},
-          {"id":"nskf","alive":1,"trained":2,"damage_dealt":12000,"damage_received":5000,"healing_done":0},
-          {"id":"ncea","alive":1,"trained":2,"damage_dealt":8000,"damage_received":4000,"healing_done":0},
-          {"id":"ncen","alive":1,"trained":2,"damage_dealt":14000,"damage_received":6000,"healing_done":0},
-          {"id":"ndtb","alive":1,"trained":2,"damage_dealt":16000,"damage_received":7000,"healing_done":0},
-          {"id":"ndtp","alive":1,"trained":1,"damage_dealt":6000,"damage_received":3000,"healing_done":10000},
-          {"id":"ndrm","alive":1,"trained":1,"damage_dealt":5000,"damage_received":3000,"healing_done":8000},
-          {"id":"nftb","alive":1,"trained":2,"damage_dealt":16000,"damage_received":7000,"healing_done":0},
-          {"id":"nfsh","alive":1,"trained":1,"damage_dealt":8000,"damage_received":4000,"healing_done":12000},
-          {"id":"nfsp","alive":1,"trained":1,"damage_dealt":7000,"damage_received":3000,"healing_done":0},
-          {"id":"nrvs","alive":1,"trained":2,"damage_dealt":18000,"damage_received":8000,"healing_done":0},
-          {"id":"nwlg","alive":1,"trained":2,"damage_dealt":14000,"damage_received":6000,"healing_done":0},
-          {"id":"ngnb","alive":1,"trained":2,"damage_dealt":10000,"damage_received":5000,"healing_done":0},
-          {"id":"ngnw","alive":1,"trained":1,"damage_dealt":9000,"damage_received":4000,"healing_done":0},
-          {"id":"nhrw","alive":1,"trained":2,"damage_dealt":15000,"damage_received":6000,"healing_done":0},
-          {"id":"nits","alive":1,"trained":2,"damage_dealt":16000,"damage_received":7000,"healing_done":0},
-          {"id":"nitp","alive":1,"trained":1,"damage_dealt":5000,"damage_received":3000,"healing_done":9000},
-          {"id":"nkog","alive":1,"trained":1,"damage_dealt":12000,"damage_received":5000,"healing_done":0},
-          {"id":"nkol","alive":1,"trained":1,"damage_dealt":20000,"damage_received":8000,"healing_done":0},
-          {"id":"nkot","alive":1,"trained":2,"damage_dealt":9000,"damage_received":4000,"healing_done":0},
-          {"id":"nmbg","alive":1,"trained":2,"damage_dealt":11000,"damage_received":5000,"healing_done":0},
-          {"id":"nmsn","alive":1,"trained":1,"damage_dealt":16000,"damage_received":7000,"healing_done":0},
-          {"id":"ngrk","alive":1,"trained":2,"damage_dealt":9000,"damage_received":4000,"healing_done":0},
-          {"id":"nmfs","alive":1,"trained":2,"damage_dealt":8000,"damage_received":4000,"healing_done":0},
-          {"id":"nnwr","alive":1,"trained":1,"damage_dealt":20000,"damage_received":8000,"healing_done":0},
-          {"id":"nnwa","alive":1,"trained":2,"damage_dealt":12000,"damage_received":5000,"healing_done":0},
-          {"id":"nomg","alive":1,"trained":1,"damage_dealt":20000,"damage_received":8000,"healing_done":0},
-          {"id":"nogm","alive":1,"trained":1,"damage_dealt":18000,"damage_received":8000,"healing_done":0},
-          {"id":"nqbh","alive":1,"trained":2,"damage_dealt":12000,"damage_received":5000,"healing_done":0},
-          {"id":"nrog","alive":1,"trained":2,"damage_dealt":9000,"damage_received":4000,"healing_done":0},
-          {"id":"nsts","alive":1,"trained":2,"damage_dealt":11000,"damage_received":5000,"healing_done":0},
-          {"id":"nsog","alive":1,"trained":1,"damage_dealt":18000,"damage_received":7000,"healing_done":0},
-          {"id":"nsln","alive":1,"trained":1,"damage_dealt":20000,"damage_received":8000,"healing_done":0},
-          {"id":"nssp","alive":1,"trained":2,"damage_dealt":14000,"damage_received":6000,"healing_done":0},
-          {"id":"nsrh","alive":1,"trained":1,"damage_dealt":11000,"damage_received":5000,"healing_done":0},
-          {"id":"ntkh","alive":1,"trained":1,"damage_dealt":12000,"damage_received":5000,"healing_done":8000},
-          {"id":"nubw","alive":1,"trained":1,"damage_dealt":20000,"damage_received":8000,"healing_done":0},
-          {"id":"nvdw","alive":1,"trained":2,"damage_dealt":14000,"damage_received":6000,"healing_done":0},
-          {"id":"nowb","alive":1,"trained":2,"damage_dealt":12000,"damage_received":5000,"healing_done":0}
+          {
+            "id": "opeo",
+            "alive": 5,
+            "trained": 8,
+            "damage_dealt": 0,
+            "damage_received": 0,
+            "healing_done": 0
+          },
+          {
+            "id": "ogru",
+            "alive": 10,
+            "trained": 16,
+            "damage_dealt": 110000,
+            "damage_received": 72000,
+            "healing_done": 0
+          },
+          {
+            "id": "ohun",
+            "alive": 6,
+            "trained": 10,
+            "damage_dealt": 65000,
+            "damage_received": 28000,
+            "healing_done": 0
+          },
+          {
+            "id": "otbk",
+            "alive": 4,
+            "trained": 7,
+            "damage_dealt": 42000,
+            "damage_received": 18000,
+            "healing_done": 0
+          },
+          {
+            "id": "oshm",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 12000,
+            "damage_received": 8000,
+            "healing_done": 38000
+          },
+          {
+            "id": "odoc",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 18000,
+            "damage_received": 10000,
+            "healing_done": 0
+          },
+          {
+            "id": "orai",
+            "alive": 4,
+            "trained": 7,
+            "damage_dealt": 48000,
+            "damage_received": 22000,
+            "healing_done": 0
+          },
+          {
+            "id": "ospw",
+            "alive": 3,
+            "trained": 4,
+            "damage_dealt": 22000,
+            "damage_received": 12000,
+            "healing_done": 28000
+          },
+          {
+            "id": "osw1",
+            "alive": 2,
+            "trained": 6,
+            "damage_dealt": 15000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "otbr",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 28000,
+            "damage_received": 15000,
+            "healing_done": 0
+          },
+          {
+            "id": "ocat",
+            "alive": 2,
+            "trained": 3,
+            "damage_dealt": 38000,
+            "damage_received": 10000,
+            "healing_done": 0
+          },
+          {
+            "id": "okod",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 35000,
+            "damage_received": 18000,
+            "healing_done": 0
+          },
+          {
+            "id": "owyv",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 55000,
+            "damage_received": 20000,
+            "healing_done": 0
+          },
+          {
+            "id": "otau",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 72000,
+            "damage_received": 30000,
+            "healing_done": 0
+          },
+          {
+            "id": "ngir",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 22000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "ngsp",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 8000,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "nzep",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 2000,
+            "healing_done": 0
+          },
+          {
+            "id": "nass",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 18000,
+            "damage_received": 6000,
+            "healing_done": 0
+          },
+          {
+            "id": "nfgb",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 15000,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "nbdw",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 22000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "nskf",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 12000,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "ncea",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 8000,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "ncen",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 14000,
+            "damage_received": 6000,
+            "healing_done": 0
+          },
+          {
+            "id": "ndtb",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 16000,
+            "damage_received": 7000,
+            "healing_done": 0
+          },
+          {
+            "id": "ndtp",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 6000,
+            "damage_received": 3000,
+            "healing_done": 10000
+          },
+          {
+            "id": "ndrm",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 5000,
+            "damage_received": 3000,
+            "healing_done": 8000
+          },
+          {
+            "id": "nftb",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 16000,
+            "damage_received": 7000,
+            "healing_done": 0
+          },
+          {
+            "id": "nfsh",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 8000,
+            "damage_received": 4000,
+            "healing_done": 12000
+          },
+          {
+            "id": "nfsp",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 7000,
+            "damage_received": 3000,
+            "healing_done": 0
+          },
+          {
+            "id": "nrvs",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 18000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "nwlg",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 14000,
+            "damage_received": 6000,
+            "healing_done": 0
+          },
+          {
+            "id": "ngnb",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 10000,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "ngnw",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 9000,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "nhrw",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 15000,
+            "damage_received": 6000,
+            "healing_done": 0
+          },
+          {
+            "id": "nits",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 16000,
+            "damage_received": 7000,
+            "healing_done": 0
+          },
+          {
+            "id": "nitp",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 5000,
+            "damage_received": 3000,
+            "healing_done": 9000
+          },
+          {
+            "id": "nkog",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 12000,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "nkol",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 20000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "nkot",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 9000,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "nmbg",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 11000,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "nmsn",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 16000,
+            "damage_received": 7000,
+            "healing_done": 0
+          },
+          {
+            "id": "ngrk",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 9000,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "nmfs",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 8000,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "nnwr",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 20000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "nnwa",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 12000,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "nomg",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 20000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "nogm",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 18000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "nqbh",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 12000,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "nrog",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 9000,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "nsts",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 11000,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "nsog",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 18000,
+            "damage_received": 7000,
+            "healing_done": 0
+          },
+          {
+            "id": "nsln",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 20000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "nssp",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 14000,
+            "damage_received": 6000,
+            "healing_done": 0
+          },
+          {
+            "id": "nsrh",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 11000,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "ntkh",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 12000,
+            "damage_received": 5000,
+            "healing_done": 8000
+          },
+          {
+            "id": "nubw",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 20000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "nvdw",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 14000,
+            "damage_received": 6000,
+            "healing_done": 0
+          },
+          {
+            "id": "nowb",
+            "alive": 1,
+            "trained": 2,
+            "damage_dealt": 12000,
+            "damage_received": 5000,
+            "healing_done": 0
+          }
         ],
         "upgrades": [
-          {"id":"Roar","level":3,"max_level":3}, {"id":"Rora","level":3,"max_level":3},
-          {"id":"Rorb","level":2,"max_level":2}, {"id":"Ropg","level":1,"max_level":1},
-          {"id":"Roen","level":1,"max_level":1}, {"id":"Robf","level":1,"max_level":1},
-          {"id":"Robk","level":1,"max_level":1}, {"id":"Robs","level":1,"max_level":1},
-          {"id":"Rolf","level":1,"max_level":1}, {"id":"Rome","level":2,"max_level":2},
-          {"id":"Ropm","level":1,"max_level":1}, {"id":"Rosp","level":2,"max_level":2},
-          {"id":"Rost","level":2,"max_level":2}, {"id":"Rotr","level":1,"max_level":1},
-          {"id":"Rovs","level":2,"max_level":2}, {"id":"Rowd","level":2,"max_level":2},
-          {"id":"Rows","level":2,"max_level":2}, {"id":"Rowt","level":2,"max_level":2},
-          {"id":"Rwdm","level":1,"max_level":1}
+          { "id": "Roar", "level": 3, "max_level": 3 },
+          { "id": "Rora", "level": 3, "max_level": 3 },
+          { "id": "Rorb", "level": 2, "max_level": 2 },
+          { "id": "Ropg", "level": 1, "max_level": 1 },
+          { "id": "Roen", "level": 1, "max_level": 1 },
+          { "id": "Robf", "level": 1, "max_level": 1 },
+          { "id": "Robk", "level": 1, "max_level": 1 },
+          { "id": "Robs", "level": 1, "max_level": 1 },
+          { "id": "Rolf", "level": 1, "max_level": 1 },
+          { "id": "Rome", "level": 2, "max_level": 2 },
+          { "id": "Ropm", "level": 1, "max_level": 1 },
+          { "id": "Rosp", "level": 2, "max_level": 2 },
+          { "id": "Rost", "level": 2, "max_level": 2 },
+          { "id": "Rotr", "level": 1, "max_level": 1 },
+          { "id": "Rovs", "level": 2, "max_level": 2 },
+          { "id": "Rowd", "level": 2, "max_level": 2 },
+          { "id": "Rows", "level": 2, "max_level": 2 },
+          { "id": "Rowt", "level": 2, "max_level": 2 },
+          { "id": "Rwdm", "level": 1, "max_level": 1 }
         ]
       }
     },
@@ -396,150 +1140,351 @@
       "new_samples": [
         {
           "time_ms": 120000,
-          "gold": 1700, "gold_mined": 2700, "gold_upkeep_lost": 0,
-          "lumber": 340, "lumber_mined": 490, "lumber_upkeep_lost": 0,
-          "food_used": 10, "food_cap": 30, "apm": 70,
+          "gold": 1700,
+          "gold_mined": 2700,
+          "gold_upkeep_lost": 0,
+          "lumber": 340,
+          "lumber_mined": 490,
+          "lumber_upkeep_lost": 0,
+          "food_used": 10,
+          "food_cap": 30,
+          "apm": 70,
           "heroes": [
             {
-              "id": "Udea", "level": 2, "xp": 300, "hp": 620, "hp_max": 620, "mp": 300, "mp_max": 300,
-              "damage_dealt": 4800, "damage_received": 1000, "healing_done": 0,
-              "deaths": 0, "kills": 12, "hero_kills": 0, "building_kills": 0,
+              "id": "Udea",
+              "level": 2,
+              "xp": 300,
+              "hp": 620,
+              "hp_max": 620,
+              "mp": 300,
+              "mp_max": 300,
+              "damage_dealt": 4800,
+              "damage_received": 1000,
+              "healing_done": 0,
+              "deaths": 0,
+              "kills": 12,
+              "hero_kills": 0,
+              "building_kills": 0,
               "abilities": [
-                {"id": "AUdc", "level": 1, "damage_dealt": 3500, "healing_done": 0},
-                {"id": "AUau", "level": 1, "damage_dealt": 0, "healing_done": 0}
+                { "id": "AUdc", "level": 1, "damage_dealt": 3500, "healing_done": 0 },
+                { "id": "AUau", "level": 1, "damage_dealt": 0, "healing_done": 0 }
               ],
-              "inventory": [{"id": "stwp", "charges": 0}]
+              "inventory": [{ "id": "stwp", "charges": 0 }]
             }
           ],
           "units": [
-            {"id":"uaco","alive":4,"trained":5}, {"id":"ugho","alive":5,"trained":6}
+            { "id": "uaco", "alive": 4, "trained": 5 },
+            { "id": "ugho", "alive": 5, "trained": 6 }
           ],
-          "upgrades": [{"id":"Rume","level":1,"max_level":3}]
+          "upgrades": [{ "id": "Rume", "level": 1, "max_level": 3 }]
         },
         {
           "time_ms": 600000,
-          "gold": 4400, "gold_mined": 12500, "gold_upkeep_lost": 220,
-          "lumber": 980, "lumber_mined": 2600, "lumber_upkeep_lost": 0,
-          "food_used": 55, "food_cap": 80, "apm": 102,
+          "gold": 4400,
+          "gold_mined": 12500,
+          "gold_upkeep_lost": 220,
+          "lumber": 980,
+          "lumber_mined": 2600,
+          "lumber_upkeep_lost": 0,
+          "food_used": 55,
+          "food_cap": 80,
+          "apm": 102,
           "heroes": [
             {
-              "id": "Udea", "level": 6, "xp": 2000, "hp": 740, "hp_max": 740, "mp": 400, "mp_max": 400,
-              "damage_dealt": 36000, "damage_received": 7000, "healing_done": 0,
-              "deaths": 1, "kills": 62, "hero_kills": 2, "building_kills": 3,
+              "id": "Udea",
+              "level": 6,
+              "xp": 2000,
+              "hp": 740,
+              "hp_max": 740,
+              "mp": 400,
+              "mp_max": 400,
+              "damage_dealt": 36000,
+              "damage_received": 7000,
+              "healing_done": 0,
+              "deaths": 1,
+              "kills": 62,
+              "hero_kills": 2,
+              "building_kills": 3,
               "abilities": [
-                {"id": "AUdc", "level": 3, "damage_dealt": 25000, "healing_done": 0},
-                {"id": "AUau", "level": 2, "damage_dealt": 0, "healing_done": 0},
-                {"id": "AUdp", "level": 1, "damage_dealt": 0, "healing_done": 8000}
+                { "id": "AUdc", "level": 3, "damage_dealt": 25000, "healing_done": 0 },
+                { "id": "AUau", "level": 2, "damage_dealt": 0, "healing_done": 0 },
+                { "id": "AUdp", "level": 1, "damage_dealt": 0, "healing_done": 8000 }
               ],
               "inventory": [
-                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-                {"id": "pman", "charges": 0}, {"id": "ckng", "charges": 0}
+                { "id": "stwp", "charges": 0 },
+                { "id": "pghe", "charges": 0 },
+                { "id": "pman", "charges": 0 },
+                { "id": "ckng", "charges": 0 }
               ]
             }
           ],
           "units": [
-            {"id":"uaco","alive":4,"trained":7}, {"id":"ugho","alive":8,"trained":12},
-            {"id":"ugar","alive":4,"trained":5}, {"id":"unec","alive":3,"trained":4},
-            {"id":"ucry","alive":4,"trained":5}, {"id":"uobs","alive":3,"trained":4}
+            { "id": "uaco", "alive": 4, "trained": 7 },
+            { "id": "ugho", "alive": 8, "trained": 12 },
+            { "id": "ugar", "alive": 4, "trained": 5 },
+            { "id": "unec", "alive": 3, "trained": 4 },
+            { "id": "ucry", "alive": 4, "trained": 5 },
+            { "id": "uobs", "alive": 3, "trained": 4 }
           ],
           "upgrades": [
-            {"id":"Rume","level":2,"max_level":3}, {"id":"Ruar","level":2,"max_level":3},
-            {"id":"Rura","level":1,"max_level":3}, {"id":"Ruex","level":1,"max_level":1},
-            {"id":"Rune","level":1,"max_level":2}
+            { "id": "Rume", "level": 2, "max_level": 3 },
+            { "id": "Ruar", "level": 2, "max_level": 3 },
+            { "id": "Rura", "level": 1, "max_level": 3 },
+            { "id": "Ruex", "level": 1, "max_level": 1 },
+            { "id": "Rune", "level": 1, "max_level": 2 }
           ]
         },
         {
           "time_ms": 1200000,
-          "gold": 7100, "gold_mined": 27000, "gold_upkeep_lost": 760,
-          "lumber": 2000, "lumber_mined": 6800, "lumber_upkeep_lost": 0,
-          "food_used": 80, "food_cap": 100, "apm": 118,
+          "gold": 7100,
+          "gold_mined": 27000,
+          "gold_upkeep_lost": 760,
+          "lumber": 2000,
+          "lumber_mined": 6800,
+          "lumber_upkeep_lost": 0,
+          "food_used": 80,
+          "food_cap": 100,
+          "apm": 118,
           "heroes": [
             {
-              "id": "Udea", "level": 10, "xp": 5400, "hp": 740, "hp_max": 740, "mp": 400, "mp_max": 400,
-              "damage_dealt": 118000, "damage_received": 22000, "healing_done": 0,
-              "deaths": 2, "kills": 198, "hero_kills": 5, "building_kills": 10,
+              "id": "Udea",
+              "level": 10,
+              "xp": 5400,
+              "hp": 740,
+              "hp_max": 740,
+              "mp": 400,
+              "mp_max": 400,
+              "damage_dealt": 118000,
+              "damage_received": 22000,
+              "healing_done": 0,
+              "deaths": 2,
+              "kills": 198,
+              "hero_kills": 5,
+              "building_kills": 10,
               "abilities": [
-                {"id": "AUdc", "level": 3, "damage_dealt": 82000, "healing_done": 0},
-                {"id": "AUau", "level": 3, "damage_dealt": 0, "healing_done": 0},
-                {"id": "AUdp", "level": 2, "damage_dealt": 0, "healing_done": 22000},
-                {"id": "AUan", "level": 2, "damage_dealt": 0, "healing_done": 0}
+                { "id": "AUdc", "level": 3, "damage_dealt": 82000, "healing_done": 0 },
+                { "id": "AUau", "level": 3, "damage_dealt": 0, "healing_done": 0 },
+                { "id": "AUdp", "level": 2, "damage_dealt": 0, "healing_done": 22000 },
+                { "id": "AUan", "level": 2, "damage_dealt": 0, "healing_done": 0 }
               ],
               "inventory": [
-                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-                {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
-                {"id": "modt", "charges": 0}, {"id": "odef", "charges": 0}
+                { "id": "stwp", "charges": 0 },
+                { "id": "pghe", "charges": 0 },
+                { "id": "ankh", "charges": 0 },
+                { "id": "ckng", "charges": 0 },
+                { "id": "modt", "charges": 0 },
+                { "id": "odef", "charges": 0 }
               ]
             }
           ],
           "units": [
-            {"id":"uaco","alive":4,"trained":8}, {"id":"ushd","alive":2,"trained":4},
-            {"id":"ugho","alive":10,"trained":16}, {"id":"ugar","alive":4,"trained":7},
-            {"id":"uban","alive":3,"trained":5}, {"id":"unec","alive":3,"trained":5},
-            {"id":"ucry","alive":4,"trained":6}, {"id":"uobs","alive":3,"trained":5},
-            {"id":"uabo","alive":3,"trained":5}, {"id":"umtw","alive":2,"trained":3},
-            {"id":"ubsp","alive":2,"trained":4}, {"id":"ufro","alive":2,"trained":3},
-            {"id":"uskw","alive":4,"trained":12}, {"id":"uskm","alive":2,"trained":6},
-            {"id":"ucrb","alive":3,"trained":8}
+            { "id": "uaco", "alive": 4, "trained": 8 },
+            { "id": "ushd", "alive": 2, "trained": 4 },
+            { "id": "ugho", "alive": 10, "trained": 16 },
+            { "id": "ugar", "alive": 4, "trained": 7 },
+            { "id": "uban", "alive": 3, "trained": 5 },
+            { "id": "unec", "alive": 3, "trained": 5 },
+            { "id": "ucry", "alive": 4, "trained": 6 },
+            { "id": "uobs", "alive": 3, "trained": 5 },
+            { "id": "uabo", "alive": 3, "trained": 5 },
+            { "id": "umtw", "alive": 2, "trained": 3 },
+            { "id": "ubsp", "alive": 2, "trained": 4 },
+            { "id": "ufro", "alive": 2, "trained": 3 },
+            { "id": "uskw", "alive": 4, "trained": 12 },
+            { "id": "uskm", "alive": 2, "trained": 6 },
+            { "id": "ucrb", "alive": 3, "trained": 8 }
           ],
           "upgrades": [
-            {"id":"Rume","level":3,"max_level":3}, {"id":"Ruar","level":3,"max_level":3},
-            {"id":"Rura","level":3,"max_level":3}, {"id":"Ruac","level":1,"max_level":1},
-            {"id":"Ruba","level":2,"max_level":2}, {"id":"Rubu","level":2,"max_level":2},
-            {"id":"Rucr","level":1,"max_level":1}, {"id":"Ruex","level":1,"max_level":1},
-            {"id":"Rufb","level":1,"max_level":1}, {"id":"Rugf","level":1,"max_level":1},
-            {"id":"Rune","level":2,"max_level":2}, {"id":"Rupc","level":1,"max_level":1},
-            {"id":"Rupm","level":2,"max_level":2}, {"id":"Rusf","level":1,"max_level":1},
-            {"id":"Rusm","level":1,"max_level":1}, {"id":"Rusp","level":1,"max_level":1},
-            {"id":"Ruwb","level":1,"max_level":1}
+            { "id": "Rume", "level": 3, "max_level": 3 },
+            { "id": "Ruar", "level": 3, "max_level": 3 },
+            { "id": "Rura", "level": 3, "max_level": 3 },
+            { "id": "Ruac", "level": 1, "max_level": 1 },
+            { "id": "Ruba", "level": 2, "max_level": 2 },
+            { "id": "Rubu", "level": 2, "max_level": 2 },
+            { "id": "Rucr", "level": 1, "max_level": 1 },
+            { "id": "Ruex", "level": 1, "max_level": 1 },
+            { "id": "Rufb", "level": 1, "max_level": 1 },
+            { "id": "Rugf", "level": 1, "max_level": 1 },
+            { "id": "Rune", "level": 2, "max_level": 2 },
+            { "id": "Rupc", "level": 1, "max_level": 1 },
+            { "id": "Rupm", "level": 2, "max_level": 2 },
+            { "id": "Rusf", "level": 1, "max_level": 1 },
+            { "id": "Rusm", "level": 1, "max_level": 1 },
+            { "id": "Rusp", "level": 1, "max_level": 1 },
+            { "id": "Ruwb", "level": 1, "max_level": 1 }
           ]
         }
       ],
       "summary": {
         "heroes": [
           {
-            "id": "Udea", "level": 10, "xp": 5400, "deaths": 2, "total_kills": 198,
-            "hero_kills": 5, "building_kills": 10, "damage_dealt": 118000,
-            "damage_received": 22000, "healing_done": 0, "time_alive_ms": 1150000,
+            "id": "Udea",
+            "level": 10,
+            "xp": 5400,
+            "deaths": 2,
+            "total_kills": 198,
+            "hero_kills": 5,
+            "building_kills": 10,
+            "damage_dealt": 118000,
+            "damage_received": 22000,
+            "healing_done": 0,
+            "time_alive_ms": 1150000,
             "abilities": [
-              {"id": "AUdc", "level": 3, "damage_dealt": 82000, "healing_done": 0},
-              {"id": "AUau", "level": 3, "damage_dealt": 0, "healing_done": 0},
-              {"id": "AUdp", "level": 2, "damage_dealt": 0, "healing_done": 22000},
-              {"id": "AUan", "level": 2, "damage_dealt": 0, "healing_done": 0}
+              { "id": "AUdc", "level": 3, "damage_dealt": 82000, "healing_done": 0 },
+              { "id": "AUau", "level": 3, "damage_dealt": 0, "healing_done": 0 },
+              { "id": "AUdp", "level": 2, "damage_dealt": 0, "healing_done": 22000 },
+              { "id": "AUan", "level": 2, "damage_dealt": 0, "healing_done": 0 }
             ],
             "inventory": [
-              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-              {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
-              {"id": "modt", "charges": 0}, {"id": "odef", "charges": 0}
+              { "id": "stwp", "charges": 0 },
+              { "id": "pghe", "charges": 0 },
+              { "id": "ankh", "charges": 0 },
+              { "id": "ckng", "charges": 0 },
+              { "id": "modt", "charges": 0 },
+              { "id": "odef", "charges": 0 }
             ]
           }
         ],
         "units": [
-          {"id":"uaco","alive":4,"trained":8,"damage_dealt":0,"damage_received":0,"healing_done":0},
-          {"id":"ushd","alive":2,"trained":4,"damage_dealt":0,"damage_received":2000,"healing_done":0},
-          {"id":"ugho","alive":10,"trained":16,"damage_dealt":88000,"damage_received":55000,"healing_done":0},
-          {"id":"ugar","alive":4,"trained":7,"damage_dealt":48000,"damage_received":22000,"healing_done":0},
-          {"id":"uban","alive":3,"trained":5,"damage_dealt":15000,"damage_received":8000,"healing_done":0},
-          {"id":"unec","alive":3,"trained":5,"damage_dealt":12000,"damage_received":7000,"healing_done":35000},
-          {"id":"ucry","alive":4,"trained":6,"damage_dealt":52000,"damage_received":25000,"healing_done":0},
-          {"id":"uobs","alive":3,"trained":5,"damage_dealt":18000,"damage_received":10000,"healing_done":45000},
-          {"id":"uabo","alive":3,"trained":5,"damage_dealt":72000,"damage_received":35000,"healing_done":0},
-          {"id":"umtw","alive":2,"trained":3,"damage_dealt":35000,"damage_received":9000,"healing_done":0},
-          {"id":"ubsp","alive":2,"trained":4,"damage_dealt":42000,"damage_received":15000,"healing_done":0},
-          {"id":"ufro","alive":2,"trained":3,"damage_dealt":68000,"damage_received":20000,"healing_done":0},
-          {"id":"uskw","alive":4,"trained":12,"damage_dealt":22000,"damage_received":12000,"healing_done":0},
-          {"id":"uskm","alive":2,"trained":6,"damage_dealt":15000,"damage_received":8000,"healing_done":0},
-          {"id":"ucrb","alive":3,"trained":8,"damage_dealt":10000,"damage_received":5000,"healing_done":0}
+          {
+            "id": "uaco",
+            "alive": 4,
+            "trained": 8,
+            "damage_dealt": 0,
+            "damage_received": 0,
+            "healing_done": 0
+          },
+          {
+            "id": "ushd",
+            "alive": 2,
+            "trained": 4,
+            "damage_dealt": 0,
+            "damage_received": 2000,
+            "healing_done": 0
+          },
+          {
+            "id": "ugho",
+            "alive": 10,
+            "trained": 16,
+            "damage_dealt": 88000,
+            "damage_received": 55000,
+            "healing_done": 0
+          },
+          {
+            "id": "ugar",
+            "alive": 4,
+            "trained": 7,
+            "damage_dealt": 48000,
+            "damage_received": 22000,
+            "healing_done": 0
+          },
+          {
+            "id": "uban",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 15000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "unec",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 12000,
+            "damage_received": 7000,
+            "healing_done": 35000
+          },
+          {
+            "id": "ucry",
+            "alive": 4,
+            "trained": 6,
+            "damage_dealt": 52000,
+            "damage_received": 25000,
+            "healing_done": 0
+          },
+          {
+            "id": "uobs",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 18000,
+            "damage_received": 10000,
+            "healing_done": 45000
+          },
+          {
+            "id": "uabo",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 72000,
+            "damage_received": 35000,
+            "healing_done": 0
+          },
+          {
+            "id": "umtw",
+            "alive": 2,
+            "trained": 3,
+            "damage_dealt": 35000,
+            "damage_received": 9000,
+            "healing_done": 0
+          },
+          {
+            "id": "ubsp",
+            "alive": 2,
+            "trained": 4,
+            "damage_dealt": 42000,
+            "damage_received": 15000,
+            "healing_done": 0
+          },
+          {
+            "id": "ufro",
+            "alive": 2,
+            "trained": 3,
+            "damage_dealt": 68000,
+            "damage_received": 20000,
+            "healing_done": 0
+          },
+          {
+            "id": "uskw",
+            "alive": 4,
+            "trained": 12,
+            "damage_dealt": 22000,
+            "damage_received": 12000,
+            "healing_done": 0
+          },
+          {
+            "id": "uskm",
+            "alive": 2,
+            "trained": 6,
+            "damage_dealt": 15000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "ucrb",
+            "alive": 3,
+            "trained": 8,
+            "damage_dealt": 10000,
+            "damage_received": 5000,
+            "healing_done": 0
+          }
         ],
         "upgrades": [
-          {"id":"Rume","level":3,"max_level":3}, {"id":"Ruar","level":3,"max_level":3},
-          {"id":"Rura","level":3,"max_level":3}, {"id":"Ruac","level":1,"max_level":1},
-          {"id":"Ruba","level":2,"max_level":2}, {"id":"Rubu","level":2,"max_level":2},
-          {"id":"Rucr","level":1,"max_level":1}, {"id":"Ruex","level":1,"max_level":1},
-          {"id":"Rufb","level":1,"max_level":1}, {"id":"Rugf","level":1,"max_level":1},
-          {"id":"Rune","level":2,"max_level":2}, {"id":"Rupc","level":1,"max_level":1},
-          {"id":"Rupm","level":2,"max_level":2}, {"id":"Rusf","level":1,"max_level":1},
-          {"id":"Rusm","level":1,"max_level":1}, {"id":"Rusp","level":1,"max_level":1},
-          {"id":"Ruwb","level":1,"max_level":1}
+          { "id": "Rume", "level": 3, "max_level": 3 },
+          { "id": "Ruar", "level": 3, "max_level": 3 },
+          { "id": "Rura", "level": 3, "max_level": 3 },
+          { "id": "Ruac", "level": 1, "max_level": 1 },
+          { "id": "Ruba", "level": 2, "max_level": 2 },
+          { "id": "Rubu", "level": 2, "max_level": 2 },
+          { "id": "Rucr", "level": 1, "max_level": 1 },
+          { "id": "Ruex", "level": 1, "max_level": 1 },
+          { "id": "Rufb", "level": 1, "max_level": 1 },
+          { "id": "Rugf", "level": 1, "max_level": 1 },
+          { "id": "Rune", "level": 2, "max_level": 2 },
+          { "id": "Rupc", "level": 1, "max_level": 1 },
+          { "id": "Rupm", "level": 2, "max_level": 2 },
+          { "id": "Rusf", "level": 1, "max_level": 1 },
+          { "id": "Rusm", "level": 1, "max_level": 1 },
+          { "id": "Rusp", "level": 1, "max_level": 1 },
+          { "id": "Ruwb", "level": 1, "max_level": 1 }
         ]
       }
     },
@@ -551,169 +1496,449 @@
       "new_samples": [
         {
           "time_ms": 120000,
-          "gold": 1550, "gold_mined": 2500, "gold_upkeep_lost": 0,
-          "lumber": 420, "lumber_mined": 580, "lumber_upkeep_lost": 0,
-          "food_used": 11, "food_cap": 30, "apm": 82,
+          "gold": 1550,
+          "gold_mined": 2500,
+          "gold_upkeep_lost": 0,
+          "lumber": 420,
+          "lumber_mined": 580,
+          "lumber_upkeep_lost": 0,
+          "food_used": 11,
+          "food_cap": 30,
+          "apm": 82,
           "heroes": [
             {
-              "id": "Ekee", "level": 2, "xp": 260, "hp": 700, "hp_max": 700, "mp": 340, "mp_max": 340,
-              "damage_dealt": 4200, "damage_received": 800, "healing_done": 2000,
-              "deaths": 0, "kills": 10, "hero_kills": 0, "building_kills": 0,
+              "id": "Ekee",
+              "level": 2,
+              "xp": 260,
+              "hp": 700,
+              "hp_max": 700,
+              "mp": 340,
+              "mp_max": 340,
+              "damage_dealt": 4200,
+              "damage_received": 800,
+              "healing_done": 2000,
+              "deaths": 0,
+              "kills": 10,
+              "hero_kills": 0,
+              "building_kills": 0,
               "abilities": [
-                {"id": "AEer", "level": 1, "damage_dealt": 0, "healing_done": 0},
-                {"id": "AEfn", "level": 1, "damage_dealt": 3800, "healing_done": 0}
-              ],
-              "inventory": [{"id": "stwp", "charges": 0}, {"id": "phea", "charges": 0}]
-            }
-          ],
-          "units": [
-            {"id":"ewsp","alive":5,"trained":6}, {"id":"earc","alive":5,"trained":6}
-          ],
-          "upgrades": [{"id":"Resm","level":1,"max_level":3}, {"id":"Repb","level":1,"max_level":1}]
-        },
-        {
-          "time_ms": 600000,
-          "gold": 4200, "gold_mined": 11500, "gold_upkeep_lost": 200,
-          "lumber": 1300, "lumber_mined": 3400, "lumber_upkeep_lost": 0,
-          "food_used": 60, "food_cap": 80, "apm": 112,
-          "heroes": [
-            {
-              "id": "Ekee", "level": 7, "xp": 3000, "hp": 850, "hp_max": 850, "mp": 440, "mp_max": 440,
-              "damage_dealt": 48000, "damage_received": 7500, "healing_done": 18000,
-              "deaths": 0, "kills": 82, "hero_kills": 3, "building_kills": 4,
-              "abilities": [
-                {"id": "AEer", "level": 2, "damage_dealt": 0, "healing_done": 0},
-                {"id": "AEfn", "level": 3, "damage_dealt": 35000, "healing_done": 0},
-                {"id": "AEah", "level": 2, "damage_dealt": 0, "healing_done": 0}
+                { "id": "AEer", "level": 1, "damage_dealt": 0, "healing_done": 0 },
+                { "id": "AEfn", "level": 1, "damage_dealt": 3800, "healing_done": 0 }
               ],
               "inventory": [
-                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-                {"id": "pman", "charges": 0}, {"id": "ckng", "charges": 0},
-                {"id": "evtl", "charges": 0}
+                { "id": "stwp", "charges": 0 },
+                { "id": "phea", "charges": 0 }
               ]
             }
           ],
           "units": [
-            {"id":"ewsp","alive":5,"trained":8}, {"id":"earc","alive":8,"trained":12},
-            {"id":"edot","alive":3,"trained":4}, {"id":"esen","alive":5,"trained":7},
-            {"id":"edry","alive":4,"trained":5}, {"id":"ehip","alive":3,"trained":4}
+            { "id": "ewsp", "alive": 5, "trained": 6 },
+            { "id": "earc", "alive": 5, "trained": 6 }
           ],
           "upgrades": [
-            {"id":"Resm","level":2,"max_level":3}, {"id":"Resw","level":1,"max_level":3},
-            {"id":"Rema","level":2,"max_level":3}, {"id":"Repb","level":1,"max_level":1},
-            {"id":"Rehs","level":1,"max_level":2}, {"id":"Redt","level":1,"max_level":2},
-            {"id":"Rerh","level":1,"max_level":1}
+            { "id": "Resm", "level": 1, "max_level": 3 },
+            { "id": "Repb", "level": 1, "max_level": 1 }
+          ]
+        },
+        {
+          "time_ms": 600000,
+          "gold": 4200,
+          "gold_mined": 11500,
+          "gold_upkeep_lost": 200,
+          "lumber": 1300,
+          "lumber_mined": 3400,
+          "lumber_upkeep_lost": 0,
+          "food_used": 60,
+          "food_cap": 80,
+          "apm": 112,
+          "heroes": [
+            {
+              "id": "Ekee",
+              "level": 7,
+              "xp": 3000,
+              "hp": 850,
+              "hp_max": 850,
+              "mp": 440,
+              "mp_max": 440,
+              "damage_dealt": 48000,
+              "damage_received": 7500,
+              "healing_done": 18000,
+              "deaths": 0,
+              "kills": 82,
+              "hero_kills": 3,
+              "building_kills": 4,
+              "abilities": [
+                { "id": "AEer", "level": 2, "damage_dealt": 0, "healing_done": 0 },
+                { "id": "AEfn", "level": 3, "damage_dealt": 35000, "healing_done": 0 },
+                { "id": "AEah", "level": 2, "damage_dealt": 0, "healing_done": 0 }
+              ],
+              "inventory": [
+                { "id": "stwp", "charges": 0 },
+                { "id": "pghe", "charges": 0 },
+                { "id": "pman", "charges": 0 },
+                { "id": "ckng", "charges": 0 },
+                { "id": "evtl", "charges": 0 }
+              ]
+            }
+          ],
+          "units": [
+            { "id": "ewsp", "alive": 5, "trained": 8 },
+            { "id": "earc", "alive": 8, "trained": 12 },
+            { "id": "edot", "alive": 3, "trained": 4 },
+            { "id": "esen", "alive": 5, "trained": 7 },
+            { "id": "edry", "alive": 4, "trained": 5 },
+            { "id": "ehip", "alive": 3, "trained": 4 }
+          ],
+          "upgrades": [
+            { "id": "Resm", "level": 2, "max_level": 3 },
+            { "id": "Resw", "level": 1, "max_level": 3 },
+            { "id": "Rema", "level": 2, "max_level": 3 },
+            { "id": "Repb", "level": 1, "max_level": 1 },
+            { "id": "Rehs", "level": 1, "max_level": 2 },
+            { "id": "Redt", "level": 1, "max_level": 2 },
+            { "id": "Rerh", "level": 1, "max_level": 1 }
           ]
         },
         {
           "time_ms": 1200000,
-          "gold": 6800, "gold_mined": 26000, "gold_upkeep_lost": 800,
-          "lumber": 2800, "lumber_mined": 9200, "lumber_upkeep_lost": 0,
-          "food_used": 80, "food_cap": 100, "apm": 125,
+          "gold": 6800,
+          "gold_mined": 26000,
+          "gold_upkeep_lost": 800,
+          "lumber": 2800,
+          "lumber_mined": 9200,
+          "lumber_upkeep_lost": 0,
+          "food_used": 80,
+          "food_cap": 100,
+          "apm": 125,
           "heroes": [
             {
-              "id": "Ekee", "level": 10, "xp": 5400, "hp": 850, "hp_max": 850, "mp": 440, "mp_max": 440,
-              "damage_dealt": 142000, "damage_received": 19000, "healing_done": 62000,
-              "deaths": 1, "kills": 245, "hero_kills": 7, "building_kills": 15,
+              "id": "Ekee",
+              "level": 10,
+              "xp": 5400,
+              "hp": 850,
+              "hp_max": 850,
+              "mp": 440,
+              "mp_max": 440,
+              "damage_dealt": 142000,
+              "damage_received": 19000,
+              "healing_done": 62000,
+              "deaths": 1,
+              "kills": 245,
+              "hero_kills": 7,
+              "building_kills": 15,
               "abilities": [
-                {"id": "AEer", "level": 3, "damage_dealt": 0, "healing_done": 0},
-                {"id": "AEfn", "level": 3, "damage_dealt": 98000, "healing_done": 0},
-                {"id": "AEah", "level": 2, "damage_dealt": 0, "healing_done": 0},
-                {"id": "AEtq", "level": 2, "damage_dealt": 0, "healing_done": 55000}
+                { "id": "AEer", "level": 3, "damage_dealt": 0, "healing_done": 0 },
+                { "id": "AEfn", "level": 3, "damage_dealt": 98000, "healing_done": 0 },
+                { "id": "AEah", "level": 2, "damage_dealt": 0, "healing_done": 0 },
+                { "id": "AEtq", "level": 2, "damage_dealt": 0, "healing_done": 55000 }
               ],
               "inventory": [
-                {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-                {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
-                {"id": "evtl", "charges": 0}, {"id": "totw", "charges": 0}
+                { "id": "stwp", "charges": 0 },
+                { "id": "pghe", "charges": 0 },
+                { "id": "ankh", "charges": 0 },
+                { "id": "ckng", "charges": 0 },
+                { "id": "evtl", "charges": 0 },
+                { "id": "totw", "charges": 0 }
               ]
             }
           ],
           "units": [
-            {"id":"ewsp","alive":5,"trained":9}, {"id":"earc","alive":10,"trained":16},
-            {"id":"edot","alive":3,"trained":5}, {"id":"ehip","alive":3,"trained":5},
-            {"id":"efdr","alive":2,"trained":4}, {"id":"esen","alive":6,"trained":10},
-            {"id":"edry","alive":4,"trained":7}, {"id":"ebal","alive":2,"trained":4},
-            {"id":"edoc","alive":3,"trained":5}, {"id":"ehir","alive":2,"trained":4},
-            {"id":"echm","alive":3,"trained":5}, {"id":"emtg","alive":2,"trained":3},
-            {"id":"ensw","alive":3,"trained":8}, {"id":"etrt","alive":3,"trained":9},
-            {"id":"eaow","alive":1,"trained":1}, {"id":"eaol","alive":1,"trained":1},
-            {"id":"eawn","alive":1,"trained":1}, {"id":"etol","alive":1,"trained":1},
-            {"id":"etoa","alive":1,"trained":1}, {"id":"etoe","alive":1,"trained":1},
-            {"id":"emwl","alive":4,"trained":4}, {"id":"ehhl","alive":1,"trained":1},
-            {"id":"eale","alive":1,"trained":1}, {"id":"eawo","alive":1,"trained":1}
+            { "id": "ewsp", "alive": 5, "trained": 9 },
+            { "id": "earc", "alive": 10, "trained": 16 },
+            { "id": "edot", "alive": 3, "trained": 5 },
+            { "id": "ehip", "alive": 3, "trained": 5 },
+            { "id": "efdr", "alive": 2, "trained": 4 },
+            { "id": "esen", "alive": 6, "trained": 10 },
+            { "id": "edry", "alive": 4, "trained": 7 },
+            { "id": "ebal", "alive": 2, "trained": 4 },
+            { "id": "edoc", "alive": 3, "trained": 5 },
+            { "id": "ehir", "alive": 2, "trained": 4 },
+            { "id": "echm", "alive": 3, "trained": 5 },
+            { "id": "emtg", "alive": 2, "trained": 3 },
+            { "id": "ensw", "alive": 3, "trained": 8 },
+            { "id": "etrt", "alive": 3, "trained": 9 },
+            { "id": "eaow", "alive": 1, "trained": 1 },
+            { "id": "eaol", "alive": 1, "trained": 1 },
+            { "id": "eawn", "alive": 1, "trained": 1 },
+            { "id": "etol", "alive": 1, "trained": 1 },
+            { "id": "etoa", "alive": 1, "trained": 1 },
+            { "id": "etoe", "alive": 1, "trained": 1 },
+            { "id": "emwl", "alive": 4, "trained": 4 },
+            { "id": "ehhl", "alive": 1, "trained": 1 },
+            { "id": "eale", "alive": 1, "trained": 1 },
+            { "id": "eawo", "alive": 1, "trained": 1 }
           ],
           "upgrades": [
-            {"id":"Resm","level":3,"max_level":3}, {"id":"Resw","level":3,"max_level":3},
-            {"id":"Rema","level":3,"max_level":3}, {"id":"Repb","level":1,"max_level":1},
-            {"id":"Recb","level":1,"max_level":1}, {"id":"Redc","level":2,"max_level":2},
-            {"id":"Redt","level":2,"max_level":2}, {"id":"Reeb","level":1,"max_level":1},
-            {"id":"Reec","level":2,"max_level":2}, {"id":"Rehs","level":2,"max_level":2},
-            {"id":"Reib","level":2,"max_level":2}, {"id":"Remg","level":1,"max_level":1},
-            {"id":"Remk","level":1,"max_level":1}, {"id":"Renb","level":1,"max_level":1},
-            {"id":"Repm","level":2,"max_level":2}, {"id":"Rerh","level":1,"max_level":1},
-            {"id":"Rers","level":1,"max_level":1}, {"id":"Resc","level":1,"max_level":1},
-            {"id":"Resi","level":1,"max_level":1}, {"id":"Reuv","level":1,"max_level":1},
-            {"id":"Rews","level":1,"max_level":1}
+            { "id": "Resm", "level": 3, "max_level": 3 },
+            { "id": "Resw", "level": 3, "max_level": 3 },
+            { "id": "Rema", "level": 3, "max_level": 3 },
+            { "id": "Repb", "level": 1, "max_level": 1 },
+            { "id": "Recb", "level": 1, "max_level": 1 },
+            { "id": "Redc", "level": 2, "max_level": 2 },
+            { "id": "Redt", "level": 2, "max_level": 2 },
+            { "id": "Reeb", "level": 1, "max_level": 1 },
+            { "id": "Reec", "level": 2, "max_level": 2 },
+            { "id": "Rehs", "level": 2, "max_level": 2 },
+            { "id": "Reib", "level": 2, "max_level": 2 },
+            { "id": "Remg", "level": 1, "max_level": 1 },
+            { "id": "Remk", "level": 1, "max_level": 1 },
+            { "id": "Renb", "level": 1, "max_level": 1 },
+            { "id": "Repm", "level": 2, "max_level": 2 },
+            { "id": "Rerh", "level": 1, "max_level": 1 },
+            { "id": "Rers", "level": 1, "max_level": 1 },
+            { "id": "Resc", "level": 1, "max_level": 1 },
+            { "id": "Resi", "level": 1, "max_level": 1 },
+            { "id": "Reuv", "level": 1, "max_level": 1 },
+            { "id": "Rews", "level": 1, "max_level": 1 }
           ]
         }
       ],
       "summary": {
         "heroes": [
           {
-            "id": "Ekee", "level": 10, "xp": 5400, "deaths": 1, "total_kills": 245,
-            "hero_kills": 7, "building_kills": 15, "damage_dealt": 142000,
-            "damage_received": 19000, "healing_done": 62000, "time_alive_ms": 1180000,
+            "id": "Ekee",
+            "level": 10,
+            "xp": 5400,
+            "deaths": 1,
+            "total_kills": 245,
+            "hero_kills": 7,
+            "building_kills": 15,
+            "damage_dealt": 142000,
+            "damage_received": 19000,
+            "healing_done": 62000,
+            "time_alive_ms": 1180000,
             "abilities": [
-              {"id": "AEer", "level": 3, "damage_dealt": 0, "healing_done": 0},
-              {"id": "AEfn", "level": 3, "damage_dealt": 98000, "healing_done": 0},
-              {"id": "AEah", "level": 2, "damage_dealt": 0, "healing_done": 0},
-              {"id": "AEtq", "level": 2, "damage_dealt": 0, "healing_done": 55000}
+              { "id": "AEer", "level": 3, "damage_dealt": 0, "healing_done": 0 },
+              { "id": "AEfn", "level": 3, "damage_dealt": 98000, "healing_done": 0 },
+              { "id": "AEah", "level": 2, "damage_dealt": 0, "healing_done": 0 },
+              { "id": "AEtq", "level": 2, "damage_dealt": 0, "healing_done": 55000 }
             ],
             "inventory": [
-              {"id": "stwp", "charges": 0}, {"id": "pghe", "charges": 0},
-              {"id": "ankh", "charges": 0}, {"id": "ckng", "charges": 0},
-              {"id": "evtl", "charges": 0}, {"id": "totw", "charges": 0}
+              { "id": "stwp", "charges": 0 },
+              { "id": "pghe", "charges": 0 },
+              { "id": "ankh", "charges": 0 },
+              { "id": "ckng", "charges": 0 },
+              { "id": "evtl", "charges": 0 },
+              { "id": "totw", "charges": 0 }
             ]
           }
         ],
         "units": [
-          {"id":"ewsp","alive":5,"trained":9,"damage_dealt":0,"damage_received":0,"healing_done":0},
-          {"id":"earc","alive":10,"trained":16,"damage_dealt":72000,"damage_received":38000,"healing_done":0},
-          {"id":"edot","alive":3,"trained":5,"damage_dealt":18000,"damage_received":9000,"healing_done":0},
-          {"id":"ehip","alive":3,"trained":5,"damage_dealt":25000,"damage_received":12000,"healing_done":0},
-          {"id":"efdr","alive":2,"trained":4,"damage_dealt":20000,"damage_received":8000,"healing_done":0},
-          {"id":"esen","alive":6,"trained":10,"damage_dealt":58000,"damage_received":28000,"healing_done":0},
-          {"id":"edry","alive":4,"trained":7,"damage_dealt":28000,"damage_received":14000,"healing_done":0},
-          {"id":"ebal","alive":2,"trained":4,"damage_dealt":42000,"damage_received":12000,"healing_done":0},
-          {"id":"edoc","alive":3,"trained":5,"damage_dealt":45000,"damage_received":20000,"healing_done":0},
-          {"id":"ehir","alive":2,"trained":4,"damage_dealt":35000,"damage_received":15000,"healing_done":0},
-          {"id":"echm","alive":3,"trained":5,"damage_dealt":65000,"damage_received":22000,"healing_done":0},
-          {"id":"emtg","alive":2,"trained":3,"damage_dealt":78000,"damage_received":28000,"healing_done":0},
-          {"id":"ensw","alive":3,"trained":8,"damage_dealt":0,"damage_received":0,"healing_done":0},
-          {"id":"etrt","alive":3,"trained":9,"damage_dealt":22000,"damage_received":8000,"healing_done":0},
-          {"id":"eaow","alive":1,"trained":1,"damage_dealt":0,"damage_received":5000,"healing_done":0},
-          {"id":"eaol","alive":1,"trained":1,"damage_dealt":0,"damage_received":4000,"healing_done":0},
-          {"id":"eawn","alive":1,"trained":1,"damage_dealt":0,"damage_received":4000,"healing_done":0},
-          {"id":"etol","alive":1,"trained":1,"damage_dealt":0,"damage_received":6000,"healing_done":0},
-          {"id":"etoa","alive":1,"trained":1,"damage_dealt":0,"damage_received":5000,"healing_done":0},
-          {"id":"etoe","alive":1,"trained":1,"damage_dealt":0,"damage_received":4000,"healing_done":0},
-          {"id":"emwl","alive":4,"trained":4,"damage_dealt":0,"damage_received":8000,"healing_done":0},
-          {"id":"ehhl","alive":1,"trained":1,"damage_dealt":0,"damage_received":3000,"healing_done":0},
-          {"id":"eale","alive":1,"trained":1,"damage_dealt":0,"damage_received":3000,"healing_done":0},
-          {"id":"eawo","alive":1,"trained":1,"damage_dealt":0,"damage_received":3000,"healing_done":0}
+          {
+            "id": "ewsp",
+            "alive": 5,
+            "trained": 9,
+            "damage_dealt": 0,
+            "damage_received": 0,
+            "healing_done": 0
+          },
+          {
+            "id": "earc",
+            "alive": 10,
+            "trained": 16,
+            "damage_dealt": 72000,
+            "damage_received": 38000,
+            "healing_done": 0
+          },
+          {
+            "id": "edot",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 18000,
+            "damage_received": 9000,
+            "healing_done": 0
+          },
+          {
+            "id": "ehip",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 25000,
+            "damage_received": 12000,
+            "healing_done": 0
+          },
+          {
+            "id": "efdr",
+            "alive": 2,
+            "trained": 4,
+            "damage_dealt": 20000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "esen",
+            "alive": 6,
+            "trained": 10,
+            "damage_dealt": 58000,
+            "damage_received": 28000,
+            "healing_done": 0
+          },
+          {
+            "id": "edry",
+            "alive": 4,
+            "trained": 7,
+            "damage_dealt": 28000,
+            "damage_received": 14000,
+            "healing_done": 0
+          },
+          {
+            "id": "ebal",
+            "alive": 2,
+            "trained": 4,
+            "damage_dealt": 42000,
+            "damage_received": 12000,
+            "healing_done": 0
+          },
+          {
+            "id": "edoc",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 45000,
+            "damage_received": 20000,
+            "healing_done": 0
+          },
+          {
+            "id": "ehir",
+            "alive": 2,
+            "trained": 4,
+            "damage_dealt": 35000,
+            "damage_received": 15000,
+            "healing_done": 0
+          },
+          {
+            "id": "echm",
+            "alive": 3,
+            "trained": 5,
+            "damage_dealt": 65000,
+            "damage_received": 22000,
+            "healing_done": 0
+          },
+          {
+            "id": "emtg",
+            "alive": 2,
+            "trained": 3,
+            "damage_dealt": 78000,
+            "damage_received": 28000,
+            "healing_done": 0
+          },
+          {
+            "id": "ensw",
+            "alive": 3,
+            "trained": 8,
+            "damage_dealt": 0,
+            "damage_received": 0,
+            "healing_done": 0
+          },
+          {
+            "id": "etrt",
+            "alive": 3,
+            "trained": 9,
+            "damage_dealt": 22000,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "eaow",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "eaol",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "eawn",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "etol",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 6000,
+            "healing_done": 0
+          },
+          {
+            "id": "etoa",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 5000,
+            "healing_done": 0
+          },
+          {
+            "id": "etoe",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 4000,
+            "healing_done": 0
+          },
+          {
+            "id": "emwl",
+            "alive": 4,
+            "trained": 4,
+            "damage_dealt": 0,
+            "damage_received": 8000,
+            "healing_done": 0
+          },
+          {
+            "id": "ehhl",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 3000,
+            "healing_done": 0
+          },
+          {
+            "id": "eale",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 3000,
+            "healing_done": 0
+          },
+          {
+            "id": "eawo",
+            "alive": 1,
+            "trained": 1,
+            "damage_dealt": 0,
+            "damage_received": 3000,
+            "healing_done": 0
+          }
         ],
         "upgrades": [
-          {"id":"Resm","level":3,"max_level":3}, {"id":"Resw","level":3,"max_level":3},
-          {"id":"Rema","level":3,"max_level":3}, {"id":"Repb","level":1,"max_level":1},
-          {"id":"Recb","level":1,"max_level":1}, {"id":"Redc","level":2,"max_level":2},
-          {"id":"Redt","level":2,"max_level":2}, {"id":"Reeb","level":1,"max_level":1},
-          {"id":"Reec","level":2,"max_level":2}, {"id":"Rehs","level":2,"max_level":2},
-          {"id":"Reib","level":2,"max_level":2}, {"id":"Remg","level":1,"max_level":1},
-          {"id":"Remk","level":1,"max_level":1}, {"id":"Renb","level":1,"max_level":1},
-          {"id":"Repm","level":2,"max_level":2}, {"id":"Rerh","level":1,"max_level":1},
-          {"id":"Rers","level":1,"max_level":1}, {"id":"Resc","level":1,"max_level":1},
-          {"id":"Resi","level":1,"max_level":1}, {"id":"Reuv","level":1,"max_level":1},
-          {"id":"Rews","level":1,"max_level":1}
+          { "id": "Resm", "level": 3, "max_level": 3 },
+          { "id": "Resw", "level": 3, "max_level": 3 },
+          { "id": "Rema", "level": 3, "max_level": 3 },
+          { "id": "Repb", "level": 1, "max_level": 1 },
+          { "id": "Recb", "level": 1, "max_level": 1 },
+          { "id": "Redc", "level": 2, "max_level": 2 },
+          { "id": "Redt", "level": 2, "max_level": 2 },
+          { "id": "Reeb", "level": 1, "max_level": 1 },
+          { "id": "Reec", "level": 2, "max_level": 2 },
+          { "id": "Rehs", "level": 2, "max_level": 2 },
+          { "id": "Reib", "level": 2, "max_level": 2 },
+          { "id": "Remg", "level": 1, "max_level": 1 },
+          { "id": "Remk", "level": 1, "max_level": 1 },
+          { "id": "Renb", "level": 1, "max_level": 1 },
+          { "id": "Repm", "level": 2, "max_level": 2 },
+          { "id": "Rerh", "level": 1, "max_level": 1 },
+          { "id": "Rers", "level": 1, "max_level": 1 },
+          { "id": "Resc", "level": 1, "max_level": 1 },
+          { "id": "Resi", "level": 1, "max_level": 1 },
+          { "id": "Reuv", "level": 1, "max_level": 1 },
+          { "id": "Rews", "level": 1, "max_level": 1 }
         ]
       }
     }

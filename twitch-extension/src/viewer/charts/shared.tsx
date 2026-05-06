@@ -1,5 +1,10 @@
 ﻿import { useState, useRef } from 'react'
-import { HERO_OBSERVER_BY_ID, UNIT_NAME_BY_ID, UNIT_GOLD_BY_ID, UNIT_LUMBER_BY_ID } from '@magic-sentry/shared'
+import {
+  HERO_OBSERVER_BY_ID,
+  UNIT_NAME_BY_ID,
+  UNIT_GOLD_BY_ID,
+  UNIT_LUMBER_BY_ID,
+} from '@magic-sentry/shared'
 import { heroSupply, fmtTime, UNIT_COLORS } from '@magic-sentry/shared'
 
 // ---------------------------------------------------------------------------
