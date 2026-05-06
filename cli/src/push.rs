@@ -1,3 +1,4 @@
+use std::io::Write;
 use std::sync::mpsc::{self, Receiver, TryRecvError};
 use std::time::Instant;
 
@@ -182,15 +183,24 @@ impl Pusher {
 // ---------------------------------------------------------------------------
 
 fn post_patch(endpoint: &str, patch: &GamePatch, secret: Option<&str>) -> Result<usize, String> {
-    let body = serde_json::to_string(patch).map_err(|e| e.to_string())?;
-    let bytes = body.len();
-    let request = ureq::post(endpoint).set("Content-Type", "application/json");
+    let json = serde_json::to_vec(patch).map_err(|e| e.to_string())?;
+
+    let mut compressed = Vec::new();
+    {
+        let mut encoder = brotli::CompressorWriter::new(&mut compressed, 4096, 4, 20);
+        encoder.write_all(&json).map_err(|e| e.to_string())?;
+    }
+
+    let wire_bytes = compressed.len();
+    let request = ureq::post(endpoint)
+        .set("Content-Type", "application/json")
+        .set("Content-Encoding", "br");
     let request = match secret {
         Some(s) => request.set("Authorization", &format!("Bearer {s}")),
         None => request,
     };
-    request.send_string(&body).map_err(|e| e.to_string())?;
-    Ok(bytes)
+    request.send_bytes(&compressed).map_err(|e| e.to_string())?;
+    Ok(wire_bytes)
 }
 
 // ---------------------------------------------------------------------------
@@ -240,7 +250,8 @@ mod tests {
     }
 
     /// Starts a `tiny_http` server on an OS-assigned port and returns its port
-    /// along with a channel that receives the raw body of each incoming request.
+    /// along with a channel that receives the decoded body of each incoming request.
+    /// Brotli-compressed bodies (`Content-Encoding: br`) are transparently decompressed.
     /// The server thread exits once the `Sender` is dropped (channel disconnected).
     fn start_server() -> (u16, std::sync::mpsc::Receiver<String>) {
         let server = Server::http("127.0.0.1:0").unwrap();
@@ -251,8 +262,19 @@ mod tests {
             loop {
                 match server.recv_timeout(Duration::from_secs(10)) {
                     Ok(Some(mut req)) => {
-                        let mut body = String::new();
-                        req.as_reader().read_to_string(&mut body).unwrap();
+                        let is_brotli = req
+                            .headers()
+                            .iter()
+                            .any(|h| h.field.equiv("Content-Encoding") && h.value == "br");
+                        let mut raw = Vec::new();
+                        req.as_reader().read_to_end(&mut raw).unwrap();
+                        let body = if is_brotli {
+                            let mut out = Vec::new();
+                            brotli::BrotliDecompress(&mut raw.as_slice(), &mut out).unwrap();
+                            String::from_utf8(out).unwrap()
+                        } else {
+                            String::from_utf8(raw).unwrap()
+                        };
                         req.respond(Response::empty(200)).ok();
                         if tx.send(body).is_err() {
                             break; // all receivers dropped — stop serving
@@ -458,6 +480,52 @@ mod tests {
             .recv_timeout(Duration::from_secs(5))
             .expect("no request received");
         assert_eq!(auth_header, "Bearer supersecret");
+    }
+
+    /// Every push sends `Content-Encoding: br` and the body decompresses to valid JSON.
+    #[test]
+    fn push_uses_brotli_compression() {
+        let server = Server::http("127.0.0.1:0").unwrap();
+        let port = server.server_addr().to_ip().unwrap().port();
+        let url = format!("http://127.0.0.1:{port}/ingest");
+
+        let (tx, rx) = std::sync::mpsc::channel::<(String, Vec<u8>)>();
+        std::thread::spawn(move || {
+            if let Ok(Some(mut req)) = server.recv_timeout(Duration::from_secs(10)) {
+                let encoding = req
+                    .headers()
+                    .iter()
+                    .find(|h| h.field.equiv("Content-Encoding"))
+                    .map(|h| h.value.as_str().to_string())
+                    .unwrap_or_default();
+                let mut body = Vec::new();
+                req.as_reader().read_to_end(&mut body).unwrap();
+                req.respond(Response::empty(200)).ok();
+                let _ = tx.send((encoding, body));
+            }
+        });
+
+        let players = vec![make_player("Foo", "Human")];
+        let mut pusher = Pusher::new(&url, "game-brotli", 1, None);
+        pusher.push(&players, "LostTemple", "TestGame", false);
+        wait_for_push(&mut pusher);
+
+        let (encoding, compressed) = rx
+            .recv_timeout(Duration::from_secs(5))
+            .expect("no request received");
+
+        assert_eq!(encoding, "br", "Content-Encoding header must be 'br'");
+
+        let mut decompressed = Vec::new();
+        brotli::BrotliDecompress(&mut compressed.as_slice(), &mut decompressed).unwrap();
+        let patch: serde_json::Value = serde_json::from_slice(&decompressed).unwrap();
+        assert_eq!(patch["game_id"], "game-brotli");
+
+        // Returned byte count is the compressed wire size, not the raw JSON size.
+        assert!(
+            matches!(pusher.status, PushStatus::Ok(_, bytes) if bytes == compressed.len()),
+            "PushStatus should carry the compressed wire byte count"
+        );
     }
 
     /// Without a secret, no Authorization header is sent.

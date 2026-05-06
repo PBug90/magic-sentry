@@ -321,9 +321,11 @@ function PublicTokenSection({ user }: { user: TwitchUser }) {
 interface TrafficRow {
   day: string
   ingestCount: number
-  ingestBytes: number
+  ingestBytesRaw: number
+  ingestBytesWire: number
   fetchCount: number
-  fetchBytes: number
+  fetchBytesRaw: number
+  fetchBytesWire: number
 }
 
 function fmtBytes(n: number): string {
@@ -346,8 +348,8 @@ function DataUsageSection({ user }: { user: TwitchUser }) {
       .catch(() => setRows([]))
   }, [user.id])
 
-  const totalIngest = rows?.reduce((s, r) => s + r.ingestBytes, 0) ?? 0
-  const totalFetch = rows?.reduce((s, r) => s + r.fetchBytes, 0) ?? 0
+  const totalIngest = rows?.reduce((s, r) => s + r.ingestBytesWire, 0) ?? 0
+  const totalFetch = rows?.reduce((s, r) => s + r.fetchBytesWire, 0) ?? 0
 
   return (
     <section className="section">
@@ -426,7 +428,7 @@ function DataUsageSection({ user }: { user: TwitchUser }) {
                     fontSize: '0.82rem',
                   }}
                 >
-                  {fmtBytes(r.ingestBytes)}
+                  {fmtBytes(r.ingestBytesWire)}
                 </span>
                 <span
                   style={{
@@ -436,7 +438,7 @@ function DataUsageSection({ user }: { user: TwitchUser }) {
                     fontSize: '0.82rem',
                   }}
                 >
-                  {fmtBytes(r.fetchBytes)}
+                  {fmtBytes(r.fetchBytesWire)}
                 </span>
                 <span
                   style={{

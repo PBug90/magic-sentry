@@ -1,12 +1,15 @@
+import { brotliCompressSync } from 'node:zlib'
 import { beforeAll, beforeEach, afterAll, describe, it, expect } from 'vitest'
 import { migrate, sql } from '../db.js'
 import { authStore } from '../authStore.js'
+import { trafficStore } from '../trafficStore.js'
 import { createApp } from '../app.js'
 import {
   resetAll,
   seedUserWithToken,
   seedUnapprovedUserWithToken,
   makePatch,
+  makePlayer,
   TEST_USER,
 } from './helpers.js'
 
@@ -62,6 +65,50 @@ describe('POST /api/ingest', () => {
     const body = (await res.json()) as Record<string, unknown>
     expect(body.ok).toBe(true)
     expect(body.game_id).toBe('test-game-1')
+  })
+
+  it('accepts a Brotli-compressed patch', async () => {
+    const token = await seedUserWithToken()
+    const json = Buffer.from(JSON.stringify(makePatch()))
+    const compressed = brotliCompressSync(json)
+    const res = await app.request('/api/ingest', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Content-Encoding': 'br',
+        'Content-Length': String(compressed.byteLength),
+      },
+      body: compressed,
+    })
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as Record<string, unknown>
+    expect(body.ok).toBe(true)
+    expect(body.game_id).toBe('test-game-1')
+  })
+
+  it('records wire and raw bytes correctly for a Brotli-compressed ingest', async () => {
+    const token = await seedUserWithToken()
+    const json = Buffer.from(JSON.stringify(makePatch()))
+    const compressed = brotliCompressSync(json)
+    await app.request('/api/ingest', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Content-Encoding': 'br',
+        'Content-Length': String(compressed.byteLength),
+      },
+      body: compressed,
+    })
+    await trafficStore.flush()
+    const rows = await sql<{ ingest_bytes_raw: string; ingest_bytes_wire: string }[]>`
+      SELECT ingest_bytes_raw, ingest_bytes_wire FROM traffic_stats WHERE token = ${token}
+    `
+    expect(rows).toHaveLength(1)
+    expect(Number(rows[0].ingest_bytes_raw)).toBe(json.byteLength)
+    expect(Number(rows[0].ingest_bytes_wire)).toBe(compressed.byteLength)
+    expect(Number(rows[0].ingest_bytes_wire)).toBeLessThan(Number(rows[0].ingest_bytes_raw))
   })
 })
 
@@ -299,5 +346,85 @@ describe('token management', () => {
   it('token endpoints return 401 without a session', async () => {
     const res = await app.request('/api/tokens')
     expect(res.status).toBe(401)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Traffic tracking — compressed byte counts
+// ---------------------------------------------------------------------------
+
+describe('traffic tracking', () => {
+  it('fetch_bytes reflects compressed wire size, not raw JSON size', async () => {
+    const cliToken = await seedUserWithToken()
+    await authStore.ensurePublicToken(TEST_USER.id)
+
+    // Build a patch with enough repetitive content to be meaningfully compressible.
+    const makeSample = (t: number) => ({
+      time_ms: t * 2000,
+      gold: 1000,
+      gold_mined: 1000,
+      gold_upkeep_lost: 0,
+      lumber: 200,
+      lumber_mined: 200,
+      lumber_upkeep_lost: 0,
+      food_used: 40,
+      food_cap: 80,
+      apm: 120,
+      heroes: [],
+      units: [],
+    })
+    const players = Array.from({ length: 8 }, (_, i) =>
+      makePlayer({
+        name: `Player${i}`,
+        new_samples: Array.from({ length: 50 }, (__, t) => makeSample(t)),
+      }),
+    )
+    await app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${cliToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch({ players })),
+    })
+
+    // Measure raw (uncompressed) response size — no Accept-Encoding so body is plain JSON.
+    const rawRes = await app.request('/api/back2warcraft/live/delta?since=0')
+    const rawBytes = new TextEncoder().encode(await rawRes.text()).byteLength
+
+    // Discard traffic recorded by the raw measurement before we start the real assertion.
+    await trafficStore.flush()
+    await sql`TRUNCATE traffic_stats`
+
+    // Fetch with gzip so the compress middleware compresses the body.
+    const compRes = await app.request('/api/back2warcraft/live/delta?since=0', {
+      headers: { 'Accept-Encoding': 'gzip' },
+    })
+    // Consume the body — this drains the TransformStream and triggers its flush callback.
+    const compressedBytes = (await compRes.arrayBuffer()).byteLength
+
+    // Persist pending buckets to the DB.
+    await trafficStore.flush()
+
+    const publicToken = await authStore.getPublicTokenForUser(TEST_USER.id)
+    const rows = await sql<
+      {
+        fetch_count: string
+        fetch_bytes_raw: string
+        fetch_bytes_wire: string
+      }[]
+    >`
+      SELECT fetch_count, fetch_bytes_raw, fetch_bytes_wire FROM traffic_stats WHERE token = ${publicToken}
+    `
+
+    expect(rows).toHaveLength(1)
+    const fetchCount = Number(rows[0].fetch_count)
+    const fetchBytesRaw = Number(rows[0].fetch_bytes_raw)
+    const fetchBytesWire = Number(rows[0].fetch_bytes_wire)
+
+    expect(fetchCount).toBe(1)
+    // Wire bytes must exactly match the compressed response body the client received.
+    expect(fetchBytesWire).toBe(compressedBytes)
+    expect(compressedBytes).toBe(1224)
+    // Raw bytes must match the uncompressed JSON body.
+    expect(fetchBytesRaw).toBe(rawBytes)
+    expect(rawBytes).toBe(75139)
   })
 })

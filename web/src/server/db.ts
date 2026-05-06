@@ -70,12 +70,14 @@ export async function migrate(): Promise<void> {
 
   await sql`
     CREATE TABLE IF NOT EXISTS traffic_stats (
-      token        TEXT   NOT NULL,
-      day          DATE   NOT NULL,
-      ingest_count BIGINT NOT NULL DEFAULT 0,
-      ingest_bytes BIGINT NOT NULL DEFAULT 0,
-      fetch_count  BIGINT NOT NULL DEFAULT 0,
-      fetch_bytes  BIGINT NOT NULL DEFAULT 0,
+      token             TEXT   NOT NULL,
+      day               DATE   NOT NULL,
+      ingest_count      BIGINT NOT NULL DEFAULT 0,
+      ingest_bytes_raw  BIGINT NOT NULL DEFAULT 0,
+      ingest_bytes_wire BIGINT NOT NULL DEFAULT 0,
+      fetch_count       BIGINT NOT NULL DEFAULT 0,
+      fetch_bytes_raw   BIGINT NOT NULL DEFAULT 0,
+      fetch_bytes_wire  BIGINT NOT NULL DEFAULT 0,
       PRIMARY KEY (token, day)
     )
   `
@@ -83,4 +85,27 @@ export async function migrate(): Promise<void> {
   await sql`
     CREATE INDEX IF NOT EXISTS traffic_stats_token_idx ON traffic_stats (token)
   `
+
+  // Rename legacy single-column byte fields to the wire variants if they exist.
+  await sql`
+    DO $$ BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'traffic_stats' AND column_name = 'ingest_bytes'
+      ) THEN
+        ALTER TABLE traffic_stats RENAME COLUMN ingest_bytes TO ingest_bytes_wire;
+      END IF;
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'traffic_stats' AND column_name = 'fetch_bytes'
+      ) THEN
+        ALTER TABLE traffic_stats RENAME COLUMN fetch_bytes TO fetch_bytes_wire;
+      END IF;
+    END $$
+  `
+
+  await sql`ALTER TABLE traffic_stats ADD COLUMN IF NOT EXISTS ingest_bytes_raw  BIGINT NOT NULL DEFAULT 0`
+  await sql`ALTER TABLE traffic_stats ADD COLUMN IF NOT EXISTS ingest_bytes_wire BIGINT NOT NULL DEFAULT 0`
+  await sql`ALTER TABLE traffic_stats ADD COLUMN IF NOT EXISTS fetch_bytes_raw   BIGINT NOT NULL DEFAULT 0`
+  await sql`ALTER TABLE traffic_stats ADD COLUMN IF NOT EXISTS fetch_bytes_wire  BIGINT NOT NULL DEFAULT 0`
 }

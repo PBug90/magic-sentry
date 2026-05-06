@@ -1,7 +1,9 @@
 import { Hono } from 'hono'
+import type { MiddlewareHandler } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { gameStore } from '../store.js'
 import { authStore } from '../authStore.js'
+import { trafficStore } from '../trafficStore.js'
 import { sql } from '../db.js'
 import {
   validatePatch,
@@ -11,6 +13,35 @@ import {
   CHANNEL_RE,
   MAX_TOKEN_LABEL,
 } from '../validate.js'
+
+export const trackChannelFetch: MiddlewareHandler = async (c, next) => {
+  const channel = c.req.param('channel')
+  const token = channel ? await authStore.getPublicTokenByLogin(channel) : null
+  await next()
+  if (!token) return
+  const rawBytes = rawFetchBytesStore.get(c.req.raw) ?? 0
+  rawFetchBytesStore.delete(c.req.raw)
+  let wireBytes = 0
+  const src = c.res
+  const { readable, writable } = new TransformStream({
+    transform(chunk: Uint8Array, controller: TransformStreamDefaultController) {
+      wireBytes += chunk.byteLength
+      controller.enqueue(chunk)
+    },
+    flush: () => trafficStore.record(token, 'fetch', rawBytes, wireBytes),
+  })
+  src.body!.pipeTo(writable)
+  c.res = new Response(readable, src)
+}
+
+/** Measures the raw (pre-compression) response byte size and parks it for trackChannelFetch. */
+const measureRawFetchBytes: MiddlewareHandler = async (c, next) => {
+  await next()
+  rawFetchBytesStore.set(c.req.raw, (await c.res.clone().arrayBuffer()).byteLength)
+}
+
+/** Shared store: inner measureRawFetchBytes writes here; outer trackChannelFetch reads it. */
+export const rawFetchBytesStore = new WeakMap<Request, number>()
 
 const api = new Hono()
 
@@ -110,9 +141,11 @@ api.get('/traffic', async (c) => {
     {
       day: string
       ingest_count: string
-      ingest_bytes: string
+      ingest_bytes_raw: string
+      ingest_bytes_wire: string
       fetch_count: string
-      fetch_bytes: string
+      fetch_bytes_raw: string
+      fetch_bytes_wire: string
     }[]
   >`
     WITH user_tokens AS (
@@ -121,11 +154,13 @@ api.get('/traffic', async (c) => {
       SELECT token FROM public_tokens WHERE user_id = ${user.id}
     )
     SELECT
-      ts.day::text                        AS day,
-      SUM(ts.ingest_count)::bigint::text  AS ingest_count,
-      SUM(ts.ingest_bytes)::bigint::text  AS ingest_bytes,
-      SUM(ts.fetch_count)::bigint::text   AS fetch_count,
-      SUM(ts.fetch_bytes)::bigint::text   AS fetch_bytes
+      ts.day::text                              AS day,
+      SUM(ts.ingest_count)::bigint::text        AS ingest_count,
+      SUM(ts.ingest_bytes_raw)::bigint::text    AS ingest_bytes_raw,
+      SUM(ts.ingest_bytes_wire)::bigint::text   AS ingest_bytes_wire,
+      SUM(ts.fetch_count)::bigint::text         AS fetch_count,
+      SUM(ts.fetch_bytes_raw)::bigint::text     AS fetch_bytes_raw,
+      SUM(ts.fetch_bytes_wire)::bigint::text    AS fetch_bytes_wire
     FROM traffic_stats ts
     JOIN user_tokens ut ON ut.token = ts.token
     WHERE ts.day >= CURRENT_DATE - INTERVAL '29 days'
@@ -137,9 +172,11 @@ api.get('/traffic', async (c) => {
     rows.map((r) => ({
       day: r.day,
       ingestCount: Number(r.ingest_count),
-      ingestBytes: Number(r.ingest_bytes),
+      ingestBytesRaw: Number(r.ingest_bytes_raw),
+      ingestBytesWire: Number(r.ingest_bytes_wire),
       fetchCount: Number(r.fetch_count),
-      fetchBytes: Number(r.fetch_bytes),
+      fetchBytesRaw: Number(r.fetch_bytes_raw),
+      fetchBytesWire: Number(r.fetch_bytes_wire),
     })),
   )
 })
@@ -188,7 +225,7 @@ api.get('/game', (c) => {
 // GET /api/:channel/live/delta?since=0
 // ---------------------------------------------------------------------------
 
-api.get('/:channel/live/full', (c) => {
+api.get('/:channel/live/full', measureRawFetchBytes, (c) => {
   const channel = c.req.param('channel')
   if (!CHANNEL_RE.test(channel)) return c.json({ error: 'invalid channel' }, 400)
   const gameId = gameStore.getChannelGameId(channel)
@@ -198,7 +235,7 @@ api.get('/:channel/live/full', (c) => {
   return c.json(record)
 })
 
-api.get('/:channel/live/delta', (c) => {
+api.get('/:channel/live/delta', measureRawFetchBytes, (c) => {
   const channel = c.req.param('channel')
   if (!CHANNEL_RE.test(channel)) return c.json({ error: 'invalid channel' }, 400)
   const gameId = gameStore.getChannelGameId(channel)

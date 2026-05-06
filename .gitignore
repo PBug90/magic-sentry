@@ -9,6 +9,7 @@ node_modules/
 
 # Web server
 /web/.env
+/web/.env.test
 /web/dist/
 
 # Shared package compiled output

@@ -199,6 +199,17 @@ class AuthStore {
     return rows.length > 0 ? rows[0].token : null
   }
 
+  async getPublicTokenByLogin(login: string): Promise<string | null> {
+    const rows = await sql<{ token: string }[]>`
+      SELECT pt.token
+      FROM public_tokens pt
+      JOIN users u ON u.id = pt.user_id
+      WHERE u.login = ${login.toLowerCase()}
+      LIMIT 1
+    `
+    return rows.length > 0 ? rows[0].token : null
+  }
+
   private async getUserByPublicToken(token: string): Promise<TwitchUser | null> {
     const rows = await sql<
       {
