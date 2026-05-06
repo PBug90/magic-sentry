@@ -1,10 +1,9 @@
-use std::ptr;
-
 use warcraft3_stats_observer::ObserverData;
 
 use crate::display::redraw;
 use crate::types::{GameState, HeroSummary, PlayerState, PlayerSummary, UnitSummary};
 use crate::util::result_name;
+use crate::vread;
 
 pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSummary> {
     player_slots
@@ -12,43 +11,43 @@ pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSum
         .map(|&slot| {
             let p = &od.players[slot];
 
-            let hero_count = ({ p.hero_count } as usize).min(999);
+            let hero_count = (vread!(p.hero_count) as usize).min(999);
             let heroes = p
                 .heroes
                 .iter()
                 .take(hero_count)
                 .map(|h| HeroSummary {
                     name: h.name.to_string(),
-                    level: { h.level },
-                    xp: { h.experience },
-                    deaths: { h.number_of_deaths },
-                    total_kills: { h.total_kills },
-                    hero_kills: { h.hero_kills },
-                    building_kills: { h.building_kills },
-                    damage_dealt: { h.damage_dealt },
-                    damage_received: { h.damage_received },
-                    healing_done: { h.healing_done },
-                    time_alive_ms: { h.time_alive_ms },
+                    level: vread!(h.level),
+                    xp: vread!(h.experience),
+                    deaths: vread!(h.number_of_deaths),
+                    total_kills: vread!(h.total_kills),
+                    hero_kills: vread!(h.hero_kills),
+                    building_kills: vread!(h.building_kills),
+                    damage_dealt: vread!(h.damage_dealt),
+                    damage_received: vread!(h.damage_received),
+                    healing_done: vread!(h.healing_done),
+                    time_alive_ms: vread!(h.time_alive_ms),
                 })
                 .collect();
 
-            let unit_count = ({ p.unit_count } as usize).min(999);
+            let unit_count = (vread!(p.unit_count) as usize).min(999);
             let units = p
                 .units
                 .iter()
                 .take(unit_count)
                 .filter_map(|u| {
-                    let trained = { u.total_amount };
+                    let trained = vread!(u.total_amount);
                     if trained == 0 {
                         return None;
                     }
                     Some(UnitSummary {
                         name: u.name.to_string(),
                         trained,
-                        alive: { u.current_amount },
-                        damage_dealt: { u.damage_dealt },
-                        damage_received: { u.damage_received },
-                        healing_done: { u.healing_done },
+                        alive: vread!(u.current_amount),
+                        damage_dealt: vread!(u.damage_dealt),
+                        damage_received: vread!(u.damage_received),
+                        healing_done: vread!(u.healing_done),
                     })
                 })
                 .collect();
@@ -69,9 +68,7 @@ pub fn write_snapshot(
     let summaries = build_summary(od, player_slots);
     for (i, &slot) in player_slots.iter().enumerate() {
         let p = &od.players[slot];
-        players[i].result =
-            result_name(unsafe { ptr::read_unaligned(ptr::addr_of!(p.game_result)) } as u8)
-                .to_string();
+        players[i].result = result_name(vread!(p.game_result) as u8).to_string();
 
         let heroes = if !summaries[i].heroes.is_empty() {
             summaries[i].heroes.clone()

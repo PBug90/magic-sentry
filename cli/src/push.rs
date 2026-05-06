@@ -38,9 +38,7 @@ pub fn check_auth(endpoint: &str, secret: &str) -> Result<Option<String>, String
         .set("Authorization", &format!("Bearer {secret}"))
         .send_string("")
         .map_err(|e| match e {
-            ureq::Error::Status(401, _) => {
-                "invalid token — check your secret".to_string()
-            }
+            ureq::Error::Status(401, _) => "invalid token — check your secret".to_string(),
             other => format!("could not reach server: {other}"),
         })?;
     let body: AuthMeResponse = response.into_json().map_err(|e| e.to_string())?;
@@ -53,8 +51,8 @@ pub fn check_auth(endpoint: &str, secret: &str) -> Result<Option<String>, String
 
 pub enum PushStatus {
     Never,
-    /// Successful push: timestamp and byte size of the serialised payload.
-    Ok(Instant, usize),
+    /// Successful push: timestamp, compressed wire bytes, and raw JSON bytes.
+    Ok(Instant, usize, usize),
     Err(String, Instant),
 }
 
@@ -69,9 +67,10 @@ pub struct Pusher {
     /// Per-player index of the first sample not yet pushed.
     cursors: Vec<usize>,
     pub status: PushStatus,
-    pub total_bytes_sent: usize,
+    pub total_wire_bytes: usize,
+    pub total_raw_bytes: usize,
     /// Receives the result of the most recent background POST.
-    result_rx: Option<Receiver<Result<usize, String>>>,
+    result_rx: Option<Receiver<Result<(usize, usize), String>>>,
     secret: Option<String>,
 }
 
@@ -87,7 +86,8 @@ impl Pusher {
             seq: 0,
             cursors: vec![0; player_count],
             status: PushStatus::Never,
-            total_bytes_sent: 0,
+            total_wire_bytes: 0,
+            total_raw_bytes: 0,
             result_rx: None,
             secret,
         }
@@ -101,9 +101,10 @@ impl Pusher {
             None => return,
         };
         match rx.try_recv() {
-            Ok(Ok(bytes)) => {
-                self.total_bytes_sent += bytes;
-                self.status = PushStatus::Ok(Instant::now(), bytes);
+            Ok(Ok((raw, wire))) => {
+                self.total_raw_bytes += raw;
+                self.total_wire_bytes += wire;
+                self.status = PushStatus::Ok(Instant::now(), wire, raw);
             }
             Ok(Err(e)) => {
                 self.status = PushStatus::Err(e, Instant::now());
@@ -182,16 +183,21 @@ impl Pusher {
 // HTTP POST
 // ---------------------------------------------------------------------------
 
-fn post_patch(endpoint: &str, patch: &GamePatch, secret: Option<&str>) -> Result<usize, String> {
+fn post_patch(
+    endpoint: &str,
+    patch: &GamePatch,
+    secret: Option<&str>,
+) -> Result<(usize, usize), String> {
     let json = serde_json::to_vec(patch).map_err(|e| e.to_string())?;
+    let raw_bytes = json.len();
 
     let mut compressed = Vec::new();
     {
         let mut encoder = brotli::CompressorWriter::new(&mut compressed, 4096, 4, 20);
         encoder.write_all(&json).map_err(|e| e.to_string())?;
     }
-
     let wire_bytes = compressed.len();
+
     let request = ureq::post(endpoint)
         .set("Content-Type", "application/json")
         .set("Content-Encoding", "br");
@@ -200,7 +206,7 @@ fn post_patch(endpoint: &str, patch: &GamePatch, secret: Option<&str>) -> Result
         None => request,
     };
     request.send_bytes(&compressed).map_err(|e| e.to_string())?;
-    Ok(wire_bytes)
+    Ok((raw_bytes, wire_bytes))
 }
 
 // ---------------------------------------------------------------------------
@@ -521,11 +527,22 @@ mod tests {
         let patch: serde_json::Value = serde_json::from_slice(&decompressed).unwrap();
         assert_eq!(patch["game_id"], "game-brotli");
 
-        // Returned byte count is the compressed wire size, not the raw JSON size.
+        let raw_json_len = {
+            let mut out = Vec::new();
+            brotli::BrotliDecompress(&mut compressed.as_slice(), &mut out).unwrap();
+            out.len()
+        };
+
         assert!(
-            matches!(pusher.status, PushStatus::Ok(_, bytes) if bytes == compressed.len()),
-            "PushStatus should carry the compressed wire byte count"
+            matches!(pusher.status, PushStatus::Ok(_, wire, _) if wire == compressed.len()),
+            "PushStatus wire bytes should match compressed body size"
         );
+        assert!(
+            matches!(pusher.status, PushStatus::Ok(_, _, raw) if raw == raw_json_len),
+            "PushStatus raw bytes should match decompressed JSON size"
+        );
+        assert_eq!(pusher.total_wire_bytes, compressed.len());
+        assert_eq!(pusher.total_raw_bytes, raw_json_len);
     }
 
     /// Without a secret, no Authorization header is sent.

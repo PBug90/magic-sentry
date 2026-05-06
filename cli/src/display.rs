@@ -31,10 +31,11 @@ pub fn redraw(lines: &[String]) {
 pub fn fmt_push_status(status: &PushStatus) -> String {
     match status {
         PushStatus::Never => "waiting for first push...".to_string(),
-        PushStatus::Ok(at, bytes) => format!(
-            "ok  ({} ago)  ·  {}",
+        PushStatus::Ok(at, wire, raw) => format!(
+            "ok  ({} ago)  ·  {} wire  /  {} raw",
             fmt_elapsed(at.elapsed()),
-            fmt_bytes(*bytes)
+            fmt_bytes(*wire),
+            fmt_bytes(*raw),
         ),
         PushStatus::Err(msg, at) => format!("FAILED {}  ({})", fmt_elapsed(at.elapsed()), msg),
     }
@@ -64,7 +65,6 @@ pub fn build_game_lines(
     lines.push(format!("Sampling    {} ms", sample_interval_ms));
     lines.push(format!("Output      {output_file}"));
     if let Some(p) = pusher {
-        let game_total = p.total_bytes_sent;
         let user = authorized_as.unwrap_or("anonymous");
         lines.push(format!("Endpoint    {}", endpoint.unwrap_or("")));
         lines.push(format!("User        {user}"));
@@ -73,10 +73,14 @@ pub fn build_game_lines(
             fmt_push_status(&p.status),
             p.seq()
         ));
-        lines.push(format!("Game sent   {}", fmt_bytes(game_total)));
+        lines.push(format!(
+            "Game sent   {}  wire  /  {}  raw",
+            fmt_bytes(p.total_wire_bytes),
+            fmt_bytes(p.total_raw_bytes),
+        ));
         lines.push(format!(
             "Session     {}",
-            fmt_bytes(session_bytes + game_total)
+            fmt_bytes(session_bytes + p.total_wire_bytes)
         ));
     }
     lines.push(String::new());

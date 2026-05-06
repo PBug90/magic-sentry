@@ -17,6 +17,22 @@ use record::write_snapshot;
 use types::{HeroSnapshot, PlayerState, PlayerSummary, ResourceSample, UnitSnapshot};
 use util::{build_game_id, fmt_bytes, race_name, short_map_name};
 
+/// Read a field from shared memory without letting the compiler cache the result.
+///
+/// `ptr::read_volatile` requires pointer alignment, which packed struct fields
+/// don't guarantee. `compiler_fence` doesn't prevent LLVM's LICM pass from
+/// hoisting loads through a `noalias readonly` pointer.
+///
+/// `black_box` on the pointer tells LLVM the address has escaped to unknown code,
+/// stripping noalias/readonly alias information. LLVM must then re-read from
+/// memory on every call. No machine code is emitted on x86.
+#[macro_export]
+macro_rules! vread {
+    ($field:expr) => {
+        unsafe { std::ptr::read_unaligned(std::hint::black_box(std::ptr::addr_of!($field))) }
+    };
+}
+
 // ---------------------------------------------------------------------------
 // Player type constants
 // ---------------------------------------------------------------------------
@@ -80,7 +96,7 @@ fn find_player_slots(od: &ObserverData, player_count: usize) -> Vec<usize> {
         if slots.len() >= player_count {
             break;
         }
-        let pt = unsafe { ptr::read_unaligned(ptr::addr_of!(player.player_type)) } as u8;
+        let pt = vread!(player.player_type) as u8;
         if pt == PLAYER_TYPE_HUMAN || pt == PLAYER_TYPE_COMPUTER {
             slots.push(i);
         }
@@ -90,8 +106,7 @@ fn find_player_slots(od: &ObserverData, player_count: usize) -> Vec<usize> {
 
 fn is_game_over(od: &ObserverData, player_slots: &[usize]) -> bool {
     player_slots.iter().any(|&slot| {
-        let result =
-            unsafe { ptr::read_unaligned(ptr::addr_of!(od.players[slot].game_result)) } as u8;
+        let result = vread!(od.players[slot].game_result) as u8;
         matches!(result, 0..=2)
     })
 }
@@ -129,7 +144,7 @@ fn finish_game(
     if let Some(p) = pusher.as_mut() {
         p.push(players, map_name, game_name, true);
     }
-    pusher.as_ref().map_or(0, |p| p.total_bytes_sent)
+    pusher.as_ref().map_or(0, |p| p.total_wire_bytes)
 }
 
 // ---------------------------------------------------------------------------
@@ -198,7 +213,7 @@ fn main() {
             }
         };
 
-        if !{ od.game.in_game } {
+        if !vread!(od.game.in_game) {
             redraw(&[
                 "WC3 connected  ·  Waiting for a game to start...".to_string(),
                 auth_line,
@@ -208,7 +223,7 @@ fn main() {
             continue;
         }
 
-        let reported_player_count = { od.game.active_player_count } as usize;
+        let reported_player_count = vread!(od.game.active_player_count) as usize;
         let player_slots = find_player_slots(&od, reported_player_count);
         if is_game_over(&od, &player_slots) {
             sleep_or_exit(Duration::from_secs(2));
@@ -246,7 +261,7 @@ fn run_game(
 ) -> usize {
     let map_name = short_map_name(&od.game.map_name.to_string());
     let game_name = od.game.game_name.to_string();
-    let reported_player_count = { od.game.active_player_count } as usize;
+    let reported_player_count = vread!(od.game.active_player_count) as usize;
 
     // Scan all 24 slots and collect indices for real players (type Human=1 or Computer=2),
     // stopping once we have `reported_player_count` matches. Scanning all slots rather than
@@ -263,9 +278,8 @@ fn run_game(
             let p = &od.players[slot];
             PlayerState {
                 name: p.name.to_string(),
-                race: race_name(unsafe { ptr::read_unaligned(ptr::addr_of!(p.player_race)) } as u8)
-                    .to_string(),
-                team: { p.team_index },
+                race: race_name(vread!(p.player_race) as u8).to_string(),
+                team: vread!(p.team_index),
                 result: String::new(),
                 samples: Vec::new(),
                 summary: PlayerSummary {
@@ -298,7 +312,8 @@ fn run_game(
     let mut frozen_ticks: u32 = 0;
 
     loop {
-        let time_ms = unsafe { ptr::read_unaligned(od.game.time_ms_ptr()) } as u64;
+        let time_ms =
+            unsafe { ptr::read_unaligned(std::hint::black_box(od.game.time_ms_ptr())) } as u64;
 
         let clock_advanced = players[0]
             .samples
@@ -318,42 +333,42 @@ fn run_game(
                 .map(|&slot| {
                     let p = &od.players[slot];
 
-                    let hero_count = ({ p.hero_count } as usize).min(999);
+                    let hero_count = (vread!(p.hero_count) as usize).min(999);
                     let heroes: Vec<HeroSnapshot> = p
                         .heroes
                         .iter()
                         .take(hero_count)
                         .map(|h| HeroSnapshot {
                             name: h.name.to_string(),
-                            level: { h.level },
-                            xp: { h.experience },
-                            hp: { h.hit_points },
-                            hp_max: { h.max_hit_points },
-                            mp: { h.mana_points },
-                            mp_max: { h.max_mana_points },
-                            damage_dealt: { h.damage_dealt },
-                            damage_received: { h.damage_received },
-                            healing_done: { h.healing_done },
-                            deaths: { h.number_of_deaths },
-                            kills: { h.total_kills },
-                            hero_kills: { h.hero_kills },
-                            building_kills: { h.building_kills },
+                            level: vread!(h.level),
+                            xp: vread!(h.experience),
+                            hp: vread!(h.hit_points),
+                            hp_max: vread!(h.max_hit_points),
+                            mp: vread!(h.mana_points),
+                            mp_max: vread!(h.max_mana_points),
+                            damage_dealt: vread!(h.damage_dealt),
+                            damage_received: vread!(h.damage_received),
+                            healing_done: vread!(h.healing_done),
+                            deaths: vread!(h.number_of_deaths),
+                            kills: vread!(h.total_kills),
+                            hero_kills: vread!(h.hero_kills),
+                            building_kills: vread!(h.building_kills),
                         })
                         .collect();
 
-                    let unit_count = ({ p.unit_count } as usize).min(999);
+                    let unit_count = (vread!(p.unit_count) as usize).min(999);
                     let units: Vec<UnitSnapshot> = p
                         .units
                         .iter()
                         .take(unit_count)
                         .filter_map(|u| {
-                            let trained = { u.total_amount };
+                            let trained = vread!(u.total_amount);
                             if trained == 0 {
                                 return None;
                             }
                             Some(UnitSnapshot {
                                 name: u.name.to_string(),
-                                alive: { u.current_amount },
+                                alive: vread!(u.current_amount),
                                 trained,
                             })
                         })
@@ -362,15 +377,15 @@ fn run_game(
                     PlayerTickRead {
                         heroes,
                         units,
-                        gold: { p.gold },
-                        gold_mined: { p.gold_mined },
-                        gold_upkeep_lost: { p.gold_upkeep_lost },
-                        lumber: { p.lumber },
-                        lumber_mined: { p.lumber_mined },
-                        lumber_upkeep_lost: { p.lumber_upkeep_lost },
-                        food_used: { p.food_used },
-                        food_cap: { p.food_cap },
-                        apm: { p.actions_per_minute },
+                        gold: vread!(p.gold),
+                        gold_mined: vread!(p.gold_mined),
+                        gold_upkeep_lost: vread!(p.gold_upkeep_lost),
+                        lumber: vread!(p.lumber),
+                        lumber_mined: vread!(p.lumber_mined),
+                        lumber_upkeep_lost: vread!(p.lumber_upkeep_lost),
+                        food_used: vread!(p.food_used),
+                        food_cap: vread!(p.food_cap),
+                        apm: vread!(p.actions_per_minute),
                     }
                 })
                 .collect();

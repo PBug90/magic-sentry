@@ -86,9 +86,7 @@ pub fn build_game_id(players: &[(&str, &str)], map: &str) -> String {
 /// `"Maps\\(2)ConcealedHill1.09.w3x"` → `"ConcealedHill1"`
 pub fn short_map_name(raw: &str) -> String {
     // Take just the filename (after last path separator).
-    let filename = raw
-        .rfind(['/', '\\'])
-        .map_or(raw, |i| &raw[i + 1..]);
+    let filename = raw.rfind(['/', '\\']).map_or(raw, |i| &raw[i + 1..]);
 
     // Strip known WC3 file extensions.
     let base = ["w3x", "w3m", "w3n"]
