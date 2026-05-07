@@ -31,13 +31,3 @@ export function validateTokenLabel(label: unknown): string | null {
   return null
 }
 
-// ---------------------------------------------------------------------------
-// Query params
-// ---------------------------------------------------------------------------
-
-/** Parses the `?since=` query param safely; returns 0 on invalid input. */
-export function parseSince(raw: string | undefined): number {
-  const n = Number(raw ?? '0')
-  if (!Number.isFinite(n) || n < 0) return 0
-  return Math.floor(n)
-}

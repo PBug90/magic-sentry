@@ -129,11 +129,15 @@ export function Config() {
     setTesting(true)
     setTestResult(null)
     try {
-      const res = await fetch(`${cfg.endpointUrl}/delta?since=0`)
+      const res = await fetch(`${cfg.endpointUrl}/after/-1`)
+      if (res.status === 204) {
+        setTestResult({ ok: true, msg: 'OK — connected (no game in progress)' })
+        return
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`)
       const data = await res.json()
-      if (!Array.isArray(data.patches)) {
-        throw new Error('Response is not a valid Magic Sentry delta response')
+      if (!Array.isArray(data.patches) || typeof data.next !== 'string') {
+        throw new Error('Response is not a valid Magic Sentry chunk response')
       }
       setTestResult({
         ok: true,

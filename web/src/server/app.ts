@@ -21,6 +21,8 @@ export function createApp() {
   // Registered first → outermost → runs last on the response path, after compress
   // has already wrapped the body. This ensures byte counts reflect wire (compressed) size.
   app.use('/api/:channel/live/:type{full|delta}', trackChannelFetch)
+  app.use('/api/:channel/live/after/:from', trackChannelFetch)
+  app.use('/api/:channel/live/:gameId/after/:from', trackChannelFetch)
 
   app.use('*', compress())
 

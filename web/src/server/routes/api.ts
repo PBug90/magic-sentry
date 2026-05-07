@@ -11,13 +11,13 @@ import { sql } from '../db.js'
 import {
   validatePatch,
   validateTokenLabel,
-  parseSince,
   TOKEN_RE,
   CHANNEL_RE,
   MAX_TOKEN_LABEL,
 } from '../validate.js'
 
 const CC = 'public, max-age=4, stale-while-revalidate=2'
+const CC_IMMUTABLE = 'public, max-age=86400, immutable'
 
 export const trackChannelFetch: MiddlewareHandler = async (c, next) => {
   const channel = c.req.param('channel')
@@ -98,7 +98,8 @@ api.post('/load-example', (c) => {
   const patch = parsed.data
   gameStore.ingest(patch)
   gameStore.setChannelGame(EXAMPLE_CHANNEL, patch.game_id)
-  return c.json({ channel: EXAMPLE_CHANNEL })
+  const publicId = gameStore.getPublicId(patch.game_id)
+  return c.json({ channel: EXAMPLE_CHANNEL, game_id: publicId })
 })
 
 // ---------------------------------------------------------------------------
@@ -269,7 +270,6 @@ api.get('/game', (c) => {
 
 // ---------------------------------------------------------------------------
 // GET /api/:channel/live/full
-// GET /api/:channel/live/delta?since=0
 // ---------------------------------------------------------------------------
 
 api.get('/:channel/live/full', measureRawFetchBytes, (c) => {
@@ -285,18 +285,71 @@ api.get('/:channel/live/full', measureRawFetchBytes, (c) => {
   return c.json(record, 200, { 'Cache-Control': CC, ETag: etag })
 })
 
-api.get('/:channel/live/delta', measureRawFetchBytes, (c) => {
+// ---------------------------------------------------------------------------
+// GET /api/:channel/live/after/:from — game-agnostic entry point
+//
+// Not cached (no-store): the current game changes over time so the channel
+// URL is not stable. Returns `next` pointing at the game-specific immutable
+// URL so every subsequent request is CDN-cacheable.
+// ---------------------------------------------------------------------------
+
+api.get('/:channel/live/after/:from', measureRawFetchBytes, (c) => {
   const channel = c.req.param('channel')
   if (!CHANNEL_RE.test(channel)) return c.json({ error: 'invalid channel' }, 400)
-  const gameId = gameStore.getChannelGameId(channel)
-  if (!gameId) return c.json({ error: 'no game found for channel' }, 404)
-  const since = parseSince(c.req.query('since'))
-  const latestSeq = gameStore.getLatestSeq(gameId)
-  const etag = `"delta-${since}-${latestSeq}"`
+
+  const fromSeq = parseInt(c.req.param('from'), 10)
+  if (isNaN(fromSeq)) return c.json({ error: 'invalid from' }, 400)
+
+  const internalId = gameStore.getChannelGameId(channel)
+  if (!internalId) return c.json({ error: 'no game found for channel' }, 404)
+
+  const publicId = gameStore.getPublicId(internalId)
+  if (!publicId) return c.json({ error: 'no game found for channel' }, 404)
+
+  const latestSeq = gameStore.getLatestSeq(internalId)
+  if (latestSeq <= fromSeq) return c.newResponse(null, 204, { 'Cache-Control': 'no-store' })
+
+  const toSeq = gameStore.sealChunk(publicId, fromSeq, latestSeq)
+  const patches = gameStore.getChunk(internalId, fromSeq, toSeq)
+  const next = `/api/${channel}/live/${publicId}/after/${toSeq}`
+
+  return c.json({ patches, next }, 200, { 'Cache-Control': 'no-store' })
+})
+
+// ---------------------------------------------------------------------------
+// GET /api/:channel/live/:gameId/after/:from — sealed immutable chunk stream
+//
+// Each response covers patches (fromSeq, toSeq] where toSeq is locked to
+// latestSeq on the first request for that (gameId, fromSeq) pair
+// (first-write-wins seal). Including gameId in the URL ensures chunks from
+// different games never collide in the CDN cache.
+//
+// 204 no-store when no new patches exist yet — client should retry later.
+// ---------------------------------------------------------------------------
+
+api.get('/:channel/live/:gameId/after/:from', measureRawFetchBytes, (c) => {
+  const channel = c.req.param('channel')
+  if (!CHANNEL_RE.test(channel)) return c.json({ error: 'invalid channel' }, 400)
+
+  const publicId = c.req.param('gameId')
+  const internalId = gameStore.getInternalGameId(publicId)
+  if (!internalId) return c.newResponse(null, 204, { 'Cache-Control': 'no-store' })
+
+  const fromSeq = parseInt(c.req.param('from'), 10)
+  if (isNaN(fromSeq)) return c.json({ error: 'invalid from' }, 400)
+
+  const latestSeq = gameStore.getLatestSeq(internalId)
+  if (latestSeq <= fromSeq) return c.newResponse(null, 204, { 'Cache-Control': 'no-store' })
+
+  const toSeq = gameStore.sealChunk(publicId, fromSeq, latestSeq)
+  const patches = gameStore.getChunk(internalId, fromSeq, toSeq)
+  const next = `/api/${channel}/live/${publicId}/after/${toSeq}`
+  const etag = `"chunk-${fromSeq}-${toSeq}"`
+
   if (c.req.header('if-none-match') === etag)
-    return c.newResponse(null, 304, { ETag: etag, 'Cache-Control': CC })
-  const patches = gameStore.getPatches(gameId, since)
-  return c.json({ patches }, 200, { 'Cache-Control': CC, ETag: etag })
+    return c.newResponse(null, 304, { ETag: etag, 'Cache-Control': CC_IMMUTABLE })
+
+  return c.json({ patches, next }, 200, { 'Cache-Control': CC_IMMUTABLE, ETag: etag })
 })
 
 export default api

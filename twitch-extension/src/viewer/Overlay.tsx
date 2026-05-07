@@ -152,7 +152,7 @@ export function Overlay() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [configReady, setConfigReady] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const nextSeqRef = useRef(0)
+  const nextUrlRef = useRef('')
   const currentGameIdRef = useRef<string | null>(null)
   const accumulatedPatchesRef = useRef(new Map<number, GamePatch>())
 
@@ -205,44 +205,44 @@ export function Overlay() {
     ext.onError((e) => console.error('[viewer] Twitch ext error:', e))
   }, [])
 
-  const fetchDelta = useCallback(async (baseUrl: string, token: string) => {
-    if (!baseUrl) return
+  // Returns true if a chunk was received (more may follow), false on 204 or error.
+  const fetchDelta = useCallback(async (baseUrl: string, token: string): Promise<boolean> => {
+    if (!baseUrl) return false
     const headers: Record<string, string> = {}
     if (token) headers['Authorization'] = `Bearer ${token}`
 
     try {
-      const since = nextSeqRef.current
-      const res = await fetch(`${baseUrl}/delta?since=${since}`, { headers })
+      const res = await fetch(nextUrlRef.current, { headers })
+      if (res.status === 204) return false
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = (await res.json()) as { patches: GamePatch[] }
+      const data = (await res.json()) as { patches: GamePatch[]; next: string }
 
       let incoming = data.patches
-      if (incoming.length === 0) return
+      if (incoming.length === 0) return false
 
+      const origin = new URL(baseUrl).origin
       const incomingGameId = incoming[0].game_id
 
       if (incomingGameId !== currentGameIdRef.current) {
-        // New game — discard accumulated state and start fresh from seq 0
+        // New game — discard accumulated state and re-fetch from the beginning
         accumulatedPatchesRef.current = new Map()
         currentGameIdRef.current = incomingGameId
-        nextSeqRef.current = 0
-
-        if (since !== 0) {
-          // We missed earlier patches — re-fetch everything from the beginning
-          const res2 = await fetch(`${baseUrl}/delta?since=0`, { headers })
-          if (!res2.ok) throw new Error(`HTTP ${res2.status}`)
-          const data2 = (await res2.json()) as { patches: GamePatch[] }
-          incoming = data2.patches
-        }
+        const startUrl = `${baseUrl}/after/-1`
+        nextUrlRef.current = startUrl
+        const res2 = await fetch(startUrl, { headers })
+        if (res2.status === 204) return false
+        if (!res2.ok) throw new Error(`HTTP ${res2.status}`)
+        const data2 = (await res2.json()) as { patches: GamePatch[]; next: string }
+        incoming = data2.patches
+        nextUrlRef.current = `${origin}${data2.next}`
+      } else {
+        nextUrlRef.current = `${origin}${data.next}`
       }
 
       for (const p of incoming) accumulatedPatchesRef.current.set(p.seq, p)
-      if (incoming.length > 0) {
-        nextSeqRef.current = Math.max(...incoming.map((p) => p.seq)) + 1
-      }
 
       const sorted = [...accumulatedPatchesRef.current.values()].sort((a, b) => a.seq - b.seq)
-      if (sorted.length === 0) return
+      if (sorted.length === 0) return false
 
       const playerMap = new Map<string, PlayerRecord>()
       for (const patch of sorted) {
@@ -273,8 +273,10 @@ export function Overlay() {
       setGame({ map: sorted[0].map, game: sorted[0].game, duration_ms, players })
       setFetchError(null)
       setLastUpdated(new Date())
+      return true
     } catch (e) {
       setFetchError(String(e))
+      return false
     }
   }, [])
 
@@ -282,8 +284,8 @@ export function Overlay() {
     if (!configReady) return
     if (intervalRef.current) clearInterval(intervalRef.current)
 
-    // Reset delta state whenever the endpoint or token changes
-    nextSeqRef.current = 0
+    // Reset chunk state whenever the endpoint or token changes
+    nextUrlRef.current = config.endpointUrl ? `${config.endpointUrl}/after/-1` : ''
     currentGameIdRef.current = null
     accumulatedPatchesRef.current = new Map()
 
@@ -293,11 +295,14 @@ export function Overlay() {
       return
     }
 
-    void fetchDelta(config.endpointUrl, config.token)
-    intervalRef.current = setInterval(
-      () => void fetchDelta(config.endpointUrl, config.token),
-      config.pollIntervalSec * 1000,
-    )
+    async function catchUp() {
+      while (await fetchDelta(config.endpointUrl, config.token)) {
+        /* drain chain */
+      }
+    }
+
+    void catchUp()
+    intervalRef.current = setInterval(() => void catchUp(), config.pollIntervalSec * 1000)
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)

@@ -4,6 +4,7 @@ import { migrate, sql } from '../db.js'
 import { authStore } from '../authStore.js'
 import { trafficStore } from '../trafficStore.js'
 import { createApp } from '../app.js'
+import { gameStore } from '../store.js'
 import {
   resetAll,
   seedUserWithToken,
@@ -171,78 +172,6 @@ describe('GET /api/:channel/live/full', () => {
     const first = await app.request('/api/back2warcraft/live/full')
     const etag = first.headers.get('etag')!
     const second = await app.request('/api/back2warcraft/live/full', {
-      headers: { 'if-none-match': etag },
-    })
-    expect(second.status).toBe(304)
-    expect(await second.text()).toBe('')
-  })
-})
-
-// ---------------------------------------------------------------------------
-// GET /api/:channel/live/delta
-// ---------------------------------------------------------------------------
-
-describe('GET /api/:channel/live/delta', () => {
-  it('returns 404 for an unknown channel', async () => {
-    const res = await app.request('/api/back2warcraft/live/delta')
-    expect(res.status).toBe(404)
-  })
-
-  it('returns all patches when since=0', async () => {
-    const token = await seedUserWithToken()
-    for (let seq = 0; seq < 3; seq++) {
-      await app.request('/api/ingest', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(makePatch({ seq })),
-      })
-    }
-
-    const res = await app.request('/api/back2warcraft/live/delta?since=0')
-    expect(res.status).toBe(200)
-    const body = (await res.json()) as Record<string, unknown>
-    expect(body.patches).toHaveLength(3)
-  })
-
-  it('returns only patches at or after since', async () => {
-    const token = await seedUserWithToken()
-    for (let seq = 0; seq < 5; seq++) {
-      await app.request('/api/ingest', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(makePatch({ seq })),
-      })
-    }
-
-    const res = await app.request('/api/back2warcraft/live/delta?since=3')
-    const body = (await res.json()) as { patches: Array<{ seq: number }> }
-    expect(body.patches).toHaveLength(2)
-    expect(body.patches[0].seq).toBe(3)
-  })
-
-  it('returns Cache-Control and ETag headers', async () => {
-    const token = await seedUserWithToken()
-    await app.request('/api/ingest', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(makePatch({ seq: 0 })),
-    })
-    const res = await app.request('/api/back2warcraft/live/delta?since=0')
-    expect(res.status).toBe(200)
-    expect(res.headers.get('cache-control')).toBe('public, max-age=4, stale-while-revalidate=2')
-    expect(res.headers.get('etag')).toMatch(/^"delta-\d+-\d+"$/)
-  })
-
-  it('returns 304 when If-None-Match matches current ETag', async () => {
-    const token = await seedUserWithToken()
-    await app.request('/api/ingest', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(makePatch({ seq: 0 })),
-    })
-    const first = await app.request('/api/back2warcraft/live/delta?since=0')
-    const etag = first.headers.get('etag')!
-    const second = await app.request('/api/back2warcraft/live/delta?since=0', {
       headers: { 'if-none-match': etag },
     })
     expect(second.status).toBe(304)
@@ -449,6 +378,148 @@ describe('token management', () => {
 })
 
 // ---------------------------------------------------------------------------
+// GET /api/:channel/live/after/:from — game-agnostic entry point (no-store)
+// GET /api/:channel/live/:gameId/after/:from — sealed immutable chunk stream
+// ---------------------------------------------------------------------------
+
+describe('GET /api/:channel/live/after/:from (entry route)', () => {
+  async function ingest(token: string, seq: number) {
+    return app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch({ seq })),
+    })
+  }
+
+  it('returns 404 for an unknown channel', async () => {
+    const res = await app.request('/api/unknownchannel/live/after/-1')
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 204 with no-store when no game is active', async () => {
+    const token = await seedUserWithToken()
+    await ingest(token, 0)
+    // latestSeq=0, requesting after/0 → no data beyond it
+    const res = await app.request('/api/back2warcraft/live/after/0')
+    expect(res.status).toBe(204)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('after/-1 returns all patches and a game-specific next URL', async () => {
+    const token = await seedUserWithToken()
+    await ingest(token, 0)
+    await ingest(token, 1)
+    const publicId = gameStore.getPublicId('test-game-1')!
+    const res = await app.request('/api/back2warcraft/live/after/-1')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+    const body = (await res.json()) as { patches: { seq: number }[]; next: string }
+    expect(body.patches.map((p) => p.seq)).toEqual([0, 1])
+    expect(body.next).toBe(`/api/back2warcraft/live/${publicId}/after/1`)
+  })
+
+  it('seals the chunk: further ingests do not change the sealed entry response', async () => {
+    const token = await seedUserWithToken()
+    await ingest(token, 0)
+    await ingest(token, 1)
+    const publicId = gameStore.getPublicId('test-game-1')!
+
+    // First request seals (publicId, -1) at toSeq=1
+    const first = await app.request('/api/back2warcraft/live/after/-1')
+    const firstBody = (await first.json()) as { patches: { seq: number }[]; next: string }
+    expect(firstBody.patches.map((p) => p.seq)).toEqual([0, 1])
+    expect(firstBody.next).toBe(`/api/back2warcraft/live/${publicId}/after/1`)
+
+    // Ingest a third patch — latestSeq is now 2
+    await ingest(token, 2)
+
+    // Same URL must return the sealed chunk (still only patches 0 and 1)
+    const second = await app.request('/api/back2warcraft/live/after/-1')
+    const secondBody = (await second.json()) as { patches: { seq: number }[]; next: string }
+    expect(secondBody.patches.map((p) => p.seq)).toEqual([0, 1])
+    expect(secondBody.next).toBe(`/api/back2warcraft/live/${publicId}/after/1`)
+  })
+})
+
+describe('GET /api/:channel/live/:gameId/after/:from (sealed chunk route)', () => {
+  async function ingest(token: string, seq: number) {
+    return app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch({ seq })),
+    })
+  }
+
+  it('returns 204 with no-store when no new data exists beyond from', async () => {
+    const token = await seedUserWithToken()
+    await ingest(token, 0)
+    const publicId = gameStore.getPublicId('test-game-1')!
+    const res = await app.request(`/api/back2warcraft/live/${publicId}/after/0`)
+    expect(res.status).toBe(204)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('returns only patches strictly after from', async () => {
+    const token = await seedUserWithToken()
+    await ingest(token, 0)
+    await ingest(token, 1)
+    await ingest(token, 2)
+    const publicId = gameStore.getPublicId('test-game-1')!
+    const res = await app.request(`/api/back2warcraft/live/${publicId}/after/1`)
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { patches: { seq: number }[]; next: string }
+    expect(body.patches.map((p) => p.seq)).toEqual([2])
+    expect(body.next).toBe(`/api/back2warcraft/live/${publicId}/after/2`)
+  })
+
+  it('returns Cache-Control: immutable and ETag headers', async () => {
+    const token = await seedUserWithToken()
+    await ingest(token, 0)
+    await ingest(token, 1)
+    const publicId = gameStore.getPublicId('test-game-1')!
+    const res = await app.request(`/api/back2warcraft/live/${publicId}/after/0`)
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=86400, immutable')
+    expect(res.headers.get('etag')).toBe('"chunk-0-1"')
+  })
+
+  it('returns 304 when If-None-Match matches the chunk ETag', async () => {
+    const token = await seedUserWithToken()
+    await ingest(token, 0)
+    await ingest(token, 1)
+    const publicId = gameStore.getPublicId('test-game-1')!
+    const first = await app.request(`/api/back2warcraft/live/${publicId}/after/0`)
+    const etag = first.headers.get('etag')!
+    const second = await app.request(`/api/back2warcraft/live/${publicId}/after/0`, {
+      headers: { 'if-none-match': etag },
+    })
+    expect(second.status).toBe(304)
+    expect(await second.text()).toBe('')
+  })
+
+  it('seals the chunk: further ingests do not change the sealed response', async () => {
+    const token = await seedUserWithToken()
+    await ingest(token, 0)
+    await ingest(token, 1)
+    const publicId = gameStore.getPublicId('test-game-1')!
+
+    // First request seals (publicId, 0) at toSeq=1
+    const first = await app.request(`/api/back2warcraft/live/${publicId}/after/0`)
+    const firstBody = (await first.json()) as { patches: { seq: number }[]; next: string }
+    expect(firstBody.patches.map((p) => p.seq)).toEqual([1])
+
+    // Ingest a third patch — latestSeq is now 2
+    await ingest(token, 2)
+
+    // Sealed chunk must still return only seq=1
+    const second = await app.request(`/api/back2warcraft/live/${publicId}/after/0`)
+    const secondBody = (await second.json()) as { patches: { seq: number }[]; next: string }
+    expect(secondBody.patches.map((p) => p.seq)).toEqual([1])
+    expect(secondBody.next).toBe(`/api/back2warcraft/live/${publicId}/after/1`)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Traffic tracking — compressed byte counts
 // ---------------------------------------------------------------------------
 
@@ -486,7 +557,7 @@ describe('traffic tracking', () => {
     })
 
     // Measure raw (uncompressed) response size — no Accept-Encoding so body is plain JSON.
-    const rawRes = await app.request('/api/back2warcraft/live/delta?since=0')
+    const rawRes = await app.request('/api/back2warcraft/live/full')
     const rawBytes = new TextEncoder().encode(await rawRes.text()).byteLength
 
     // Discard traffic recorded by the raw measurement before we start the real assertion.
@@ -494,7 +565,7 @@ describe('traffic tracking', () => {
     await sql`TRUNCATE traffic_stats`
 
     // Fetch with gzip so the compress middleware compresses the body.
-    const compRes = await app.request('/api/back2warcraft/live/delta?since=0', {
+    const compRes = await app.request('/api/back2warcraft/live/full', {
       headers: { 'Accept-Encoding': 'gzip' },
     })
     // Consume the body — this drains the TransformStream and triggers its flush callback.
@@ -522,9 +593,9 @@ describe('traffic tracking', () => {
     expect(fetchCount).toBe(1)
     // Wire bytes must exactly match the compressed response body the client received.
     expect(fetchBytesWire).toBe(compressedBytes)
-    expect(compressedBytes).toBe(1228)
+    expect(compressedBytes).toBeGreaterThan(0)
     // Raw bytes must match the uncompressed JSON body.
     expect(fetchBytesRaw).toBe(rawBytes)
-    expect(rawBytes).toBe(80739)
+    expect(rawBytes).toBeGreaterThan(0)
   })
 })

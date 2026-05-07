@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use crossterm::{cursor, execute, terminal};
-use warcraft3_stats_observer::{ObserverData, PlayerInfo};
+use warcraft3_stats_observer::{ObserverData, ObserverHandle, PlayerInfo};
 
 use display::{build_game_lines, redraw};
 use push::{check_auth, Pusher};
@@ -188,7 +188,7 @@ fn main() {
             String::new()
         };
 
-        let od = match ObserverData::new_with_refresh_rate(SAMPLE_INTERVAL) {
+        let od = match ObserverHandle::new_with_refresh_rate(SAMPLE_INTERVAL) {
             Ok(od) => od,
             Err(_) => {
                 redraw(&[
@@ -215,8 +215,8 @@ fn main() {
         }
 
         let reported_player_count = od.game.active_player_count as usize;
-        let player_slots = find_player_slots(od, reported_player_count);
-        if is_game_over(od, &player_slots) {
+        let player_slots = find_player_slots(&od, reported_player_count);
+        if is_game_over(&od, &player_slots) {
             sleep_or_exit(Duration::from_secs(2));
             continue;
         }
@@ -330,7 +330,7 @@ fn main() {
                 p.poll();
             }
 
-            let game_over = is_game_over(od, &player_slots);
+            let game_over = is_game_over(&od, &player_slots);
 
             let has_combat_data = players.iter().any(|p| {
                 p.samples
@@ -361,7 +361,7 @@ fn main() {
                 &map_name,
                 &game_name,
                 &mut players,
-                od,
+                &od,
                 &player_slots,
             );
 
@@ -377,7 +377,7 @@ fn main() {
                     &map_name,
                     &game_name,
                     &mut players,
-                    od,
+                    &od,
                     &player_slots,
                 );
                 if let Some(p) = pusher.as_mut() {
@@ -399,7 +399,7 @@ fn main() {
                                 &map_name,
                                 &game_name,
                                 &mut players,
-                                od,
+                                &od,
                                 &player_slots,
                             );
                             if let Some(p) = pusher.as_mut() {

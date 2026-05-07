@@ -535,7 +535,13 @@ function SettingsPage({
 // Game list
 // ---------------------------------------------------------------------------
 
-function GameCard({ game, onView }: { game: GameSummary; onView: (channel: string) => void }) {
+function GameCard({
+  game,
+  onView,
+}: {
+  game: GameSummary
+  onView: (channel: string, gameId: string) => void
+}) {
   const age = Math.floor((Date.now() - new Date(game.updated_at).getTime()) / 1000)
   const ageLabel =
     age < 60
@@ -561,7 +567,7 @@ function GameCard({ game, onView }: { game: GameSummary; onView: (channel: strin
       <div className="game-actions">
         <button
           className="btn btn-sm"
-          onClick={() => onView(game.channel)}
+          onClick={() => onView(game.channel, game.game_id)}
           disabled={!game.channel}
         >
           View
@@ -579,7 +585,7 @@ function GameCard({ game, onView }: { game: GameSummary; onView: (channel: strin
   )
 }
 
-function GameList({ onView }: { onView: (channel: string) => void }) {
+function GameList({ onView }: { onView: (channel: string, gameId: string) => void }) {
   const [games, setGames] = useState<GameSummary[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loadingGame, setLoadingGame] = useState<string | null>(null)
@@ -611,8 +617,8 @@ function GameList({ onView }: { onView: (channel: string) => void }) {
     try {
       const res = await fetch(`/api/load-example?game=${game}`, { method: 'POST' })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const { channel } = await res.json()
-      onView(channel as string)
+      const { channel, game_id } = await res.json()
+      onView(channel as string, game_id as string)
     } catch (e) {
       console.error('Failed to load example:', e)
     } finally {
@@ -1056,7 +1062,7 @@ function LandingPage({
 }: {
   user: TwitchUser | null | undefined
   logout: () => void
-  onView: (id: string) => void
+  onView: (channel: string, gameId: string) => void
   onSettings: () => void
 }) {
   return (
@@ -1198,44 +1204,79 @@ function LandingPage({
 }
 
 // ---------------------------------------------------------------------------
+// Hash-based routing
+// ---------------------------------------------------------------------------
+
+type Route =
+  | { type: 'home' }
+  | { type: 'settings' }
+  | { type: 'game'; channel: string; gameId: string }
+
+function parseHash(hash: string): Route {
+  const path = hash.replace(/^#/, '')
+  if (path === '/settings') return { type: 'settings' }
+  const m = path.match(/^\/game\/([^/]+)\/(.+)$/)
+  if (m)
+    return { type: 'game', channel: decodeURIComponent(m[1]), gameId: decodeURIComponent(m[2]) }
+  return { type: 'home' }
+}
+
+function useRoute(): [Route, (r: Route) => void] {
+  const [route, setRoute] = useState<Route>(() => parseHash(window.location.hash))
+
+  useEffect(() => {
+    const onHashChange = () => setRoute(parseHash(window.location.hash))
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
+
+  const navigate = useCallback((r: Route) => {
+    if (r.type === 'home') window.location.hash = '/'
+    else if (r.type === 'settings') window.location.hash = '/settings'
+    else
+      window.location.hash = `/game/${encodeURIComponent(r.channel)}/${encodeURIComponent(r.gameId)}`
+  }, [])
+
+  return [route, navigate]
+}
+
+// ---------------------------------------------------------------------------
 // Root
 // ---------------------------------------------------------------------------
 
-type Page = 'home' | 'settings'
-
 export default function App() {
   const { user, logout } = useMe()
-  const [page, setPage] = useState<Page>('home')
-  const [selectedChannel, setSelectedChannel] = useState<string | null>(null)
+  const [route, navigate] = useRoute()
 
-  if (selectedChannel) {
+  if (route.type === 'game') {
     return (
       <div style={{ minHeight: '100vh', background: '#0d0d14' }}>
         <NavBar
           user={user}
           logout={logout}
-          onSettings={() => {
-            setSelectedChannel(null)
-            setPage('settings')
-          }}
-          onHome={() => setSelectedChannel(null)}
+          onSettings={() => navigate({ type: 'settings' })}
+          onHome={() => navigate({ type: 'home' })}
           showSettingsLink={true}
         />
-        <GameViewer channel={selectedChannel} onBack={() => setSelectedChannel(null)} />
+        <GameViewer
+          channel={route.channel}
+          gameId={route.gameId}
+          onBack={() => navigate({ type: 'home' })}
+        />
       </div>
     )
   }
 
-  if (page === 'settings') {
-    return <SettingsPage user={user} logout={logout} onHome={() => setPage('home')} />
+  if (route.type === 'settings') {
+    return <SettingsPage user={user} logout={logout} onHome={() => navigate({ type: 'home' })} />
   }
 
   return (
     <LandingPage
       user={user}
       logout={logout}
-      onView={setSelectedChannel}
-      onSettings={() => setPage('settings')}
+      onView={(channel, gameId) => navigate({ type: 'game', channel, gameId })}
+      onSettings={() => navigate({ type: 'settings' })}
     />
   )
 }

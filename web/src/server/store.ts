@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import type { GamePatch, GameRecord, PlayerRecord } from './types.js'
 
 // ---------------------------------------------------------------------------
@@ -41,8 +42,13 @@ class GameStore {
   private readonly channelMap = new Map<string, string>()
   /** Reverse map: game_id → Twitch login. */
   private readonly gameOwnerMap = new Map<string, string>()
+  /** Internal game_id → URL-safe public UUID. */
+  private readonly publicIds = new Map<string, string>()
+  /** Public UUID → internal game_id (reverse of publicIds). */
+  private readonly publicToInternal = new Map<string, string>()
   private version = 0
   private gameListCache: { json: string; version: number } | null = null
+  private chunkSeals = new Map<string, number>()
 
   setChannelGame(login: string, gameId: string): void {
     const lower = login.toLowerCase()
@@ -58,6 +64,9 @@ class GameStore {
   ingest(patch: GamePatch): void {
     let entry = this.games.get(patch.game_id)
     if (!entry) {
+      const publicId = randomUUID()
+      this.publicIds.set(patch.game_id, publicId)
+      this.publicToInternal.set(publicId, patch.game_id)
       entry = {
         gameId: patch.game_id,
         map: patch.map,
@@ -78,16 +87,6 @@ class GameStore {
     if (patch.is_final) entry.isFinal = true
     this.version++
     this.gameListCache = null
-  }
-
-  /**
-   * Returns all stored patches for `gameId` with seq >= `since`, sorted by seq.
-   * Returns an empty array when the game is unknown.
-   */
-  getPatches(gameId: string, since: number): GamePatch[] {
-    const entry = this.games.get(gameId)
-    if (!entry) return []
-    return [...entry.patches.values()].filter((p) => p.seq >= since).sort((a, b) => a.seq - b.seq)
   }
 
   /**
@@ -135,8 +134,21 @@ class GameStore {
     this.games.clear()
     this.channelMap.clear()
     this.gameOwnerMap.clear()
+    this.publicIds.clear()
+    this.publicToInternal.clear()
     this.version = 0
     this.gameListCache = null
+    this.chunkSeals.clear()
+  }
+
+  /** Returns the public UUID for a given internal game_id, or undefined if not found. */
+  getPublicId(internalGameId: string): string | undefined {
+    return this.publicIds.get(internalGameId)
+  }
+
+  /** Returns the internal game_id for a given public UUID, or undefined if not found. */
+  getInternalGameId(publicId: string): string | undefined {
+    return this.publicToInternal.get(publicId)
   }
 
   /** Returns all known games, most recently updated first. */
@@ -147,7 +159,7 @@ class GameStore {
         const seqs = [...e.patches.keys()]
         const latest_seq = seqs.length > 0 ? Math.max(...seqs) : -1
         return {
-          game_id: e.gameId,
+          game_id: this.publicIds.get(e.gameId) ?? e.gameId,
           channel: this.gameOwnerMap.get(e.gameId) ?? '',
           map: e.map,
           game: e.game,
@@ -168,6 +180,29 @@ class GameStore {
     const entry = this.games.get(gameId)
     if (!entry || entry.patches.size === 0) return -1
     return Math.max(...entry.patches.keys())
+  }
+
+  /**
+   * Seals the chunk starting after `fromSeq`. The first call locks the upper
+   * bound to `toSeq`; subsequent calls with higher `toSeq` are ignored.
+   * Returns the sealed upper bound.
+   */
+  sealChunk(gameId: string, fromSeq: number, toSeq: number): number {
+    const key = `${gameId}:${fromSeq}`
+    if (!this.chunkSeals.has(key)) this.chunkSeals.set(key, toSeq)
+    return this.chunkSeals.get(key)!
+  }
+
+  /**
+   * Returns patches with fromSeq < seq <= toSeq, sorted by seq.
+   * Used by the /after/:from endpoint to serve immutable sealed chunks.
+   */
+  getChunk(gameId: string, fromSeq: number, toSeq: number): GamePatch[] {
+    const entry = this.games.get(gameId)
+    if (!entry) return []
+    return [...entry.patches.values()]
+      .filter((p) => p.seq > fromSeq && p.seq <= toSeq)
+      .sort((a, b) => a.seq - b.seq)
   }
 
   getGameListJson(): string {

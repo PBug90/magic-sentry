@@ -112,30 +112,32 @@ function TeamsBar({ players }: { players: ChartPlayer[] }) {
 
 interface GameViewerProps {
   channel: string
+  gameId: string
   onBack: () => void
 }
 
-export function GameViewer({ channel, onBack }: GameViewerProps) {
+export function GameViewer({ channel, gameId, onBack }: GameViewerProps) {
   const [tab, setTab] = useState<TabKey>('heroes')
   const [game, setGame] = useState<GameRecord | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const nextSeqRef = useRef(0)
+  const nextUrlRef = useRef('')
   const accumulatedPatchesRef = useRef(new Map<number, GamePatch>())
 
-  const fetchDelta = useCallback(async () => {
+  // Returns true if a chunk was received (more may follow), false on 204 or error.
+  const fetchDelta = useCallback(async (): Promise<boolean> => {
     try {
-      const since = nextSeqRef.current
-      const res = await fetch(`/api/${channel}/live/delta?since=${since}`)
+      const res = await fetch(nextUrlRef.current)
+      if (res.status === 204) return false
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = (await res.json()) as { patches: GamePatch[] }
+      const data = (await res.json()) as { patches: GamePatch[]; next: string }
 
       const incoming = data.patches
-      if (incoming.length === 0) return
+      if (incoming.length === 0) return false
 
       for (const p of incoming) accumulatedPatchesRef.current.set(p.seq, p)
-      nextSeqRef.current = Math.max(...incoming.map((p) => p.seq)) + 1
+      nextUrlRef.current = data.next
 
       const sorted = [...accumulatedPatchesRef.current.values()].sort((a, b) => a.seq - b.seq)
 
@@ -168,20 +170,31 @@ export function GameViewer({ channel, onBack }: GameViewerProps) {
       setGame({ map: sorted[0].map, game: sorted[0].game, duration_ms, players })
       setFetchError(null)
       setLastUpdated(new Date())
+      return true
     } catch (e) {
       setFetchError(String(e))
+      return false
     }
-  }, [channel])
+  }, [])
 
   useEffect(() => {
-    nextSeqRef.current = 0
+    nextUrlRef.current = `/api/${channel}/live/${gameId}/after/-1`
     accumulatedPatchesRef.current = new Map()
-    void fetchDelta()
-    intervalRef.current = setInterval(() => void fetchDelta(), 5000)
+
+    // Drain the sealed chain as fast as possible until 204 (frontier), then
+    // the interval takes over for normal live polling.
+    async function catchUp() {
+      while (await fetchDelta()) {
+        /* follow next links until frontier */
+      }
+    }
+
+    void catchUp()
+    intervalRef.current = setInterval(() => void catchUp(), 5000)
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [fetchDelta])
+  }, [channel, gameId, fetchDelta])
 
   const playerData: ChartPlayer[] = (game?.players ?? []).map((p, i) => ({
     ...p,
