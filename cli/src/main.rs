@@ -7,24 +7,18 @@ mod util;
 
 use std::time::Duration;
 
-use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crossterm::{cursor, execute, terminal};
-use warcraft3_stats_observer::{ObserverData, ObserverHandle, PlayerInfo};
+use warcraft3_stats_observer::ObserverHandle;
 
-use display::{build_game_lines, redraw};
+use display::{build_game_lines, ctrl_c_exit, is_ctrl_c, redraw, sleep_or_exit};
 use push::{check_auth, Pusher};
 use record::write_snapshot;
-use sample::{read_player_tick, PlayerTickRead};
-use types::{PlayerState, PlayerSummary, ResourceSample};
-use util::{build_game_id, fmt_bytes, race_name, short_map_name};
-
-// ---------------------------------------------------------------------------
-// Player type constants
-// ---------------------------------------------------------------------------
-
-const PLAYER_TYPE_HUMAN: u8 = 1;
-const PLAYER_TYPE_COMPUTER: u8 = 2;
-const PLAYER_SLOT_COUNT: usize = 24;
+use sample::{
+    find_player_slots, init_player_state, is_game_over, read_player_tick, PlayerTickRead,
+};
+use types::{PlayerState, ResourceSample};
+use util::{build_game_id, fmt_bytes, short_map_name};
 
 const SAMPLE_INTERVAL: Duration = Duration::from_secs(2);
 /// Push every N samples. At 2s per sample this is a 10s push cadence.
@@ -62,78 +56,199 @@ impl Config {
 }
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Game session — owns od so the shared memory handle is released on return.
 // ---------------------------------------------------------------------------
 
-fn ctrl_c_exit() {
-    terminal::disable_raw_mode().ok();
-    std::process::exit(0);
-}
+fn run_game(
+    od: ObserverHandle,
+    player_slots: Vec<usize>,
+    config: &Config,
+    authorized_as: Option<&str>,
+    session_bytes: usize,
+) -> usize {
+    let map_name = short_map_name(&od.game.map_name.to_string());
+    let game_name = od.game.game_name.to_string();
+    let player_count = player_slots.len();
 
-fn is_ctrl_c(key: &event::KeyEvent) -> bool {
-    key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL)
-        || key.code == KeyCode::Char('\x03')
-}
+    let mut players: Vec<PlayerState> = player_slots
+        .iter()
+        .map(|&slot| init_player_state(&od.players[slot]))
+        .collect();
 
-fn find_player_slots(od: &ObserverData, player_count: usize) -> Vec<usize> {
-    let mut slots = Vec::with_capacity(player_count);
-    for (i, player) in od.players.iter().enumerate().take(PLAYER_SLOT_COUNT) {
-        if slots.len() >= player_count {
-            break;
-        }
-        let pt = unsafe {
-            std::ptr::read_unaligned(std::ptr::addr_of!(player.player_type) as *const u8)
-        };
-        if pt == PLAYER_TYPE_HUMAN || pt == PLAYER_TYPE_COMPUTER {
-            slots.push(i);
-        }
-    }
-    slots
-}
+    let name_race: Vec<(&str, &str)> = players
+        .iter()
+        .map(|p| (p.name.as_str(), p.race.as_str()))
+        .collect();
+    let game_id = build_game_id(&name_race, &map_name);
+    let filename = format!("{game_id}.json");
 
-fn is_game_over(od: &ObserverData, player_slots: &[usize]) -> bool {
-    player_slots.iter().any(|&slot| {
-        let result = unsafe {
-            std::ptr::read_unaligned(std::ptr::addr_of!(od.players[slot].game_result) as *const u8)
-        };
-        matches!(result, 0..=2)
-    })
-}
+    let mut pusher: Option<Pusher> = match (&config.endpoint, &config.secret) {
+        (Some(url), Some(secret)) => Some(Pusher::new(
+            url,
+            &game_id,
+            player_count,
+            Some(secret.clone()),
+        )),
+        _ => None,
+    };
 
-fn sleep_or_exit(duration: Duration) {
-    let deadline = std::time::Instant::now() + duration;
+    let mut ticks: u32 = 0;
+    let mut frozen_ticks: u32 = 0;
+
+    // od is local to this function, so LLVM cannot apply noalias/readonly
+    // to it and must re-read each iteration.
     loop {
-        let remaining = deadline.saturating_duration_since(std::time::Instant::now());
-        if remaining.is_zero() {
-            break;
+        let time_ms = od.game.clock_ms as u64;
+
+        let clock_advanced = players[0]
+            .samples
+            .last()
+            .is_none_or(|s| time_ms > s.time_ms);
+
+        if clock_advanced {
+            frozen_ticks = 0;
+        } else {
+            frozen_ticks += 1;
         }
-        if event::poll(remaining).unwrap_or(false) {
+
+        if clock_advanced {
+            // Collect raw reads for all players before committing any samples.
+            let tick_reads: Vec<PlayerTickRead> = player_slots
+                .iter()
+                .map(|&slot| read_player_tick(&od.players[slot]))
+                .collect();
+
+            // If every player returned empty heroes AND units this tick the frame
+            // is likely partially corrupted (dirty read during WC3's write window).
+            // Fall back to heroes/units from each player's most recent clean frame.
+            let dirty_frame = tick_reads
+                .iter()
+                .all(|r| r.heroes.is_empty() && r.units.is_empty());
+
+            for (i, r) in tick_reads.into_iter().enumerate() {
+                let (heroes, units) = if dirty_frame {
+                    let prev_heroes = players[i]
+                        .samples
+                        .iter()
+                        .rev()
+                        .find(|s| !s.heroes.is_empty())
+                        .map(|s| s.heroes.clone())
+                        .unwrap_or_default();
+                    let prev_units = players[i]
+                        .samples
+                        .iter()
+                        .rev()
+                        .find(|s| !s.units.is_empty())
+                        .map(|s| s.units.clone())
+                        .unwrap_or_default();
+                    (prev_heroes, prev_units)
+                } else {
+                    (r.heroes, r.units)
+                };
+
+                players[i].samples.push(ResourceSample {
+                    time_ms,
+                    gold: r.gold,
+                    gold_mined: r.gold_mined,
+                    gold_upkeep_lost: r.gold_upkeep_lost,
+                    lumber: r.lumber,
+                    lumber_mined: r.lumber_mined,
+                    lumber_upkeep_lost: r.lumber_upkeep_lost,
+                    food_used: r.food_used,
+                    food_cap: r.food_cap,
+                    apm: r.apm,
+                    heroes,
+                    units,
+                    upgrades: r.upgrades,
+                });
+            }
+        }
+
+        // Poll for background push result before redrawing.
+        if let Some(p) = &mut pusher {
+            p.poll();
+        }
+
+        let game_over = is_game_over(&od, &player_slots);
+
+        let has_combat_data = players.iter().any(|p| {
+            p.samples
+                .last()
+                .is_some_and(|s| !s.heroes.is_empty() || !s.units.is_empty())
+        });
+
+        redraw(&build_game_lines(
+            &map_name,
+            &game_name,
+            time_ms,
+            &filename,
+            pusher.as_ref(),
+            authorized_as,
+            config.endpoint.as_deref(),
+            session_bytes,
+            &players,
+            has_combat_data,
+            game_over,
+            frozen_ticks,
+            ticks,
+            SAMPLE_INTERVAL.as_millis() as u64,
+        ));
+
+        ticks += 1;
+        write_snapshot(
+            &filename,
+            &map_name,
+            &game_name,
+            &mut players,
+            &od,
+            &player_slots,
+        );
+
+        if has_combat_data && ticks.is_multiple_of(PUSH_EVERY_N_SAMPLES) {
+            if let Some(p) = &mut pusher {
+                p.push(&players, &map_name, &game_name, false);
+            }
+        }
+
+        if game_over {
+            write_snapshot(
+                &filename,
+                &map_name,
+                &game_name,
+                &mut players,
+                &od,
+                &player_slots,
+            );
+            if let Some(p) = pusher.as_mut() {
+                p.push(&players, &map_name, &game_name, true);
+            }
+            // od is dropped here, releasing the shared memory handle.
+            return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
+        }
+
+        if event::poll(SAMPLE_INTERVAL).unwrap_or(false) {
             if let Ok(Event::Key(key)) = event::read() {
                 if is_ctrl_c(&key) {
                     ctrl_c_exit();
                 }
+                if key.kind == KeyEventKind::Press {
+                    if let KeyCode::Char('p') = key.code {
+                        write_snapshot(
+                            &filename,
+                            &map_name,
+                            &game_name,
+                            &mut players,
+                            &od,
+                            &player_slots,
+                        );
+                        if let Some(p) = pusher.as_mut() {
+                            p.push(&players, &map_name, &game_name, true);
+                        }
+                        return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
+                    }
+                }
             }
-        } else {
-            break;
         }
-    }
-}
-
-fn init_player_state(p: &PlayerInfo) -> PlayerState {
-    PlayerState {
-        name: p.name.to_string(),
-        race: race_name(unsafe {
-            std::ptr::read_unaligned(std::ptr::addr_of!(p.player_race) as *const u8)
-        })
-        .to_string(),
-        team: p.team_index,
-        result: String::new(),
-        samples: Vec::new(),
-        summary: PlayerSummary {
-            heroes: Vec::new(),
-            units: Vec::new(),
-            upgrades: Vec::new(),
-        },
     }
 }
 
@@ -221,198 +336,12 @@ fn main() {
             continue;
         }
 
-        // -----------------------------------------------------------------------
-        // Game setup — runs once per game, od is a local variable throughout.
-        // -----------------------------------------------------------------------
-
-        let map_name = short_map_name(&od.game.map_name.to_string());
-        let game_name = od.game.game_name.to_string();
-        let player_count = player_slots.len();
-
-        let mut players: Vec<PlayerState> = player_slots
-            .iter()
-            .map(|&slot| init_player_state(&od.players[slot]))
-            .collect();
-
-        let name_race: Vec<(&str, &str)> = players
-            .iter()
-            .map(|p| (p.name.as_str(), p.race.as_str()))
-            .collect();
-        let game_id = build_game_id(&name_race, &map_name);
-        let filename = format!("{game_id}.json");
-
-        let mut pusher: Option<Pusher> = match (&config.endpoint, &config.secret) {
-            (Some(url), Some(secret)) => Some(Pusher::new(
-                url,
-                &game_id,
-                player_count,
-                Some(secret.clone()),
-            )),
-            _ => None,
-        };
-
-        let mut ticks: u32 = 0;
-        let mut frozen_ticks: u32 = 0;
-
-        // -----------------------------------------------------------------------
-        // Game tick loop — od is local to main(), same as the example, so LLVM
-        // cannot apply noalias/readonly to it and must re-read each iteration.
-        // -----------------------------------------------------------------------
-        'game: loop {
-            let time_ms = od.game.clock_ms as u64;
-
-            let clock_advanced = players[0]
-                .samples
-                .last()
-                .is_none_or(|s| time_ms > s.time_ms);
-
-            if clock_advanced {
-                frozen_ticks = 0;
-            } else {
-                frozen_ticks += 1;
-            }
-
-            if clock_advanced {
-                // Collect raw reads for all players before committing any samples.
-                let tick_reads: Vec<PlayerTickRead> = player_slots
-                    .iter()
-                    .map(|&slot| read_player_tick(&od.players[slot]))
-                    .collect();
-
-                // If every player returned empty heroes AND units this tick the frame
-                // is likely partially corrupted (dirty read during WC3's write window).
-                // Fall back to heroes/units from each player's most recent clean frame.
-                let dirty_frame = tick_reads
-                    .iter()
-                    .all(|r| r.heroes.is_empty() && r.units.is_empty());
-
-                for (i, r) in tick_reads.into_iter().enumerate() {
-                    let (heroes, units) = if dirty_frame {
-                        let prev_heroes = players[i]
-                            .samples
-                            .iter()
-                            .rev()
-                            .find(|s| !s.heroes.is_empty())
-                            .map(|s| s.heroes.clone())
-                            .unwrap_or_default();
-                        let prev_units = players[i]
-                            .samples
-                            .iter()
-                            .rev()
-                            .find(|s| !s.units.is_empty())
-                            .map(|s| s.units.clone())
-                            .unwrap_or_default();
-                        (prev_heroes, prev_units)
-                    } else {
-                        (r.heroes, r.units)
-                    };
-
-                    players[i].samples.push(ResourceSample {
-                        time_ms,
-                        gold: r.gold,
-                        gold_mined: r.gold_mined,
-                        gold_upkeep_lost: r.gold_upkeep_lost,
-                        lumber: r.lumber,
-                        lumber_mined: r.lumber_mined,
-                        lumber_upkeep_lost: r.lumber_upkeep_lost,
-                        food_used: r.food_used,
-                        food_cap: r.food_cap,
-                        apm: r.apm,
-                        heroes,
-                        units,
-                        upgrades: r.upgrades,
-                    });
-                }
-            }
-
-            // Poll for background push result before redrawing.
-            if let Some(p) = &mut pusher {
-                p.poll();
-            }
-
-            let game_over = is_game_over(&od, &player_slots);
-
-            let has_combat_data = players.iter().any(|p| {
-                p.samples
-                    .last()
-                    .is_some_and(|s| !s.heroes.is_empty() || !s.units.is_empty())
-            });
-
-            redraw(&build_game_lines(
-                &map_name,
-                &game_name,
-                time_ms,
-                &filename,
-                pusher.as_ref(),
-                authorized_as.as_deref(),
-                config.endpoint.as_deref(),
-                session_bytes,
-                &players,
-                has_combat_data,
-                game_over,
-                frozen_ticks,
-                ticks,
-                SAMPLE_INTERVAL.as_millis() as u64,
-            ));
-
-            ticks += 1;
-            write_snapshot(
-                &filename,
-                &map_name,
-                &game_name,
-                &mut players,
-                &od,
-                &player_slots,
-            );
-
-            if has_combat_data && ticks.is_multiple_of(PUSH_EVERY_N_SAMPLES) {
-                if let Some(p) = &mut pusher {
-                    p.push(&players, &map_name, &game_name, false);
-                }
-            }
-
-            if game_over {
-                write_snapshot(
-                    &filename,
-                    &map_name,
-                    &game_name,
-                    &mut players,
-                    &od,
-                    &player_slots,
-                );
-                if let Some(p) = pusher.as_mut() {
-                    p.push(&players, &map_name, &game_name, true);
-                }
-                session_bytes += pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
-                break 'game;
-            }
-
-            if event::poll(SAMPLE_INTERVAL).unwrap_or(false) {
-                if let Ok(Event::Key(key)) = event::read() {
-                    if is_ctrl_c(&key) {
-                        ctrl_c_exit();
-                    }
-                    if key.kind == KeyEventKind::Press {
-                        if let KeyCode::Char('p') = key.code {
-                            write_snapshot(
-                                &filename,
-                                &map_name,
-                                &game_name,
-                                &mut players,
-                                &od,
-                                &player_slots,
-                            );
-                            if let Some(p) = pusher.as_mut() {
-                                p.push(&players, &map_name, &game_name, true);
-                            }
-                            session_bytes += pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
-                            break 'game;
-                        }
-                    }
-                }
-            }
-
-            // std::thread::sleep(Duration::from_millis(od.refresh_rate as u64));
-        }
+        session_bytes += run_game(
+            od,
+            player_slots,
+            &config,
+            authorized_as.as_deref(),
+            session_bytes,
+        );
     }
 }

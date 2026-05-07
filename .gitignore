@@ -22,3 +22,6 @@ node_modules/
 
 # Claude
 .claude
+
+# Superpowers brainstorm sessions
+.superpowers/

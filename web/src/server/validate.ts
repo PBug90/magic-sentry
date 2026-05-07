@@ -30,4 +30,3 @@ export function validateTokenLabel(label: unknown): string | null {
   if (label.length > MAX_TOKEN_LABEL) return `label too long (max ${MAX_TOKEN_LABEL} chars)`
   return null
 }
-

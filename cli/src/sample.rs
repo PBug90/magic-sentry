@@ -1,9 +1,59 @@
 use warcraft3_stats_observer::{
-    AbilityInfo, HeroInfo, ItemInfo, PlayerInfo, UnitInfo, UpgradeInfo,
+    AbilityInfo, HeroInfo, ItemInfo, ObserverData, PlayerInfo, UnitInfo, UpgradeInfo,
 };
 
-use crate::types::{AbilitySnapshot, HeroSnapshot, ItemSnapshot, UnitSnapshot, UpgradeSnapshot};
-use crate::util::fourcc;
+use crate::types::{
+    AbilitySnapshot, HeroSnapshot, ItemSnapshot, PlayerState, PlayerSummary, UnitSnapshot,
+    UpgradeSnapshot,
+};
+use crate::util::{fourcc, race_name};
+
+const PLAYER_TYPE_HUMAN: u8 = 1;
+const PLAYER_TYPE_COMPUTER: u8 = 2;
+const PLAYER_SLOT_COUNT: usize = 24;
+
+pub fn find_player_slots(od: &ObserverData, player_count: usize) -> Vec<usize> {
+    let mut slots = Vec::with_capacity(player_count);
+    for (i, player) in od.players.iter().enumerate().take(PLAYER_SLOT_COUNT) {
+        if slots.len() >= player_count {
+            break;
+        }
+        let pt = unsafe {
+            std::ptr::read_unaligned(std::ptr::addr_of!(player.player_type) as *const u8)
+        };
+        if pt == PLAYER_TYPE_HUMAN || pt == PLAYER_TYPE_COMPUTER {
+            slots.push(i);
+        }
+    }
+    slots
+}
+
+pub fn is_game_over(od: &ObserverData, player_slots: &[usize]) -> bool {
+    player_slots.iter().any(|&slot| {
+        let result = unsafe {
+            std::ptr::read_unaligned(std::ptr::addr_of!(od.players[slot].game_result) as *const u8)
+        };
+        matches!(result, 0..=2)
+    })
+}
+
+pub fn init_player_state(p: &PlayerInfo) -> PlayerState {
+    PlayerState {
+        name: p.name.to_string(),
+        race: race_name(unsafe {
+            std::ptr::read_unaligned(std::ptr::addr_of!(p.player_race) as *const u8)
+        })
+        .to_string(),
+        team: p.team_index,
+        result: String::new(),
+        samples: Vec::new(),
+        summary: PlayerSummary {
+            heroes: Vec::new(),
+            units: Vec::new(),
+            upgrades: Vec::new(),
+        },
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Per-player data read in one tick, before dirty-frame validation.

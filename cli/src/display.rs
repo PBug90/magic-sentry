@@ -1,5 +1,7 @@
 use std::io::Write;
+use std::time::Duration;
 
+use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use crossterm::{
     cursor, execute,
     terminal::{self, ClearType},
@@ -10,6 +12,35 @@ use crate::types::PlayerState;
 use crate::util::{fmt_bytes, fmt_elapsed, fmt_time};
 
 pub const DIVIDER: &str = "────────────────────────────────────────────────────";
+
+pub fn ctrl_c_exit() {
+    terminal::disable_raw_mode().ok();
+    std::process::exit(0);
+}
+
+pub fn is_ctrl_c(key: &event::KeyEvent) -> bool {
+    key.code == KeyCode::Char('c') && key.modifiers.contains(KeyModifiers::CONTROL)
+        || key.code == KeyCode::Char('\x03')
+}
+
+pub fn sleep_or_exit(duration: Duration) {
+    let deadline = std::time::Instant::now() + duration;
+    loop {
+        let remaining = deadline.saturating_duration_since(std::time::Instant::now());
+        if remaining.is_zero() {
+            break;
+        }
+        if event::poll(remaining).unwrap_or(false) {
+            if let Ok(Event::Key(key)) = event::read() {
+                if is_ctrl_c(&key) {
+                    ctrl_c_exit();
+                }
+            }
+        } else {
+            break;
+        }
+    }
+}
 
 pub fn redraw(lines: &[String]) {
     let mut stdout = std::io::stdout();
