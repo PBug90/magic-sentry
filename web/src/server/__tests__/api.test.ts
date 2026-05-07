@@ -147,6 +147,35 @@ describe('GET /api/:channel/live/full', () => {
     const res = await app.request('/api/BACK2WARCRAFT/live/full')
     expect(res.status).toBe(200)
   })
+
+  it('returns Cache-Control and ETag headers', async () => {
+    const token = await seedUserWithToken()
+    await app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch()),
+    })
+    const res = await app.request('/api/back2warcraft/live/full')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=4, stale-while-revalidate=2')
+    expect(res.headers.get('etag')).toMatch(/^"full-\d+"$/)
+  })
+
+  it('returns 304 when If-None-Match matches current ETag', async () => {
+    const token = await seedUserWithToken()
+    await app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch()),
+    })
+    const first = await app.request('/api/back2warcraft/live/full')
+    const etag = first.headers.get('etag')!
+    const second = await app.request('/api/back2warcraft/live/full', {
+      headers: { 'if-none-match': etag },
+    })
+    expect(second.status).toBe(304)
+    expect(await second.text()).toBe('')
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -189,6 +218,35 @@ describe('GET /api/:channel/live/delta', () => {
     const body = (await res.json()) as { patches: Array<{ seq: number }> }
     expect(body.patches).toHaveLength(2)
     expect(body.patches[0].seq).toBe(3)
+  })
+
+  it('returns Cache-Control and ETag headers', async () => {
+    const token = await seedUserWithToken()
+    await app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch({ seq: 0 })),
+    })
+    const res = await app.request('/api/back2warcraft/live/delta?since=0')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=4, stale-while-revalidate=2')
+    expect(res.headers.get('etag')).toMatch(/^"delta-\d+-\d+"$/)
+  })
+
+  it('returns 304 when If-None-Match matches current ETag', async () => {
+    const token = await seedUserWithToken()
+    await app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch({ seq: 0 })),
+    })
+    const first = await app.request('/api/back2warcraft/live/delta?since=0')
+    const etag = first.headers.get('etag')!
+    const second = await app.request('/api/back2warcraft/live/delta?since=0', {
+      headers: { 'if-none-match': etag },
+    })
+    expect(second.status).toBe(304)
+    expect(await second.text()).toBe('')
   })
 })
 
@@ -291,6 +349,47 @@ describe('GET /api/health', () => {
 })
 
 // ---------------------------------------------------------------------------
+// GET /api/game — caching headers
+// ---------------------------------------------------------------------------
+
+describe('GET /api/game', () => {
+  it('returns Cache-Control and ETag headers', async () => {
+    const res = await app.request('/api/game')
+    expect(res.status).toBe(200)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=4, stale-while-revalidate=2')
+    expect(res.headers.get('etag')).toMatch(/^"v\d+"$/)
+  })
+
+  it('returns 304 when If-None-Match matches current ETag', async () => {
+    const first = await app.request('/api/game')
+    const etag = first.headers.get('etag')!
+    const second = await app.request('/api/game', {
+      headers: { 'if-none-match': etag },
+    })
+    expect(second.status).toBe(304)
+    expect(await second.text()).toBe('')
+  })
+
+  it('returns 200 after an ingest changes the ETag', async () => {
+    const token = await seedUserWithToken()
+    const before = await app.request('/api/game')
+    const etagBefore = before.headers.get('etag')!
+
+    await app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch()),
+    })
+
+    const stale = await app.request('/api/game', {
+      headers: { 'if-none-match': etagBefore },
+    })
+    expect(stale.status).toBe(200)
+    expect(stale.headers.get('etag')).not.toBe(etagBefore)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // Token management (session-based)
 // ---------------------------------------------------------------------------
 
@@ -372,6 +471,7 @@ describe('traffic tracking', () => {
       apm: 120,
       heroes: [],
       units: [],
+      upgrades: [],
     })
     const players = Array.from({ length: 8 }, (_, i) =>
       makePlayer({
@@ -422,9 +522,9 @@ describe('traffic tracking', () => {
     expect(fetchCount).toBe(1)
     // Wire bytes must exactly match the compressed response body the client received.
     expect(fetchBytesWire).toBe(compressedBytes)
-    expect(compressedBytes).toBe(1224)
+    expect(compressedBytes).toBe(1228)
     // Raw bytes must match the uncompressed JSON body.
     expect(fetchBytesRaw).toBe(rawBytes)
-    expect(rawBytes).toBe(75139)
+    expect(rawBytes).toBe(80739)
   })
 })

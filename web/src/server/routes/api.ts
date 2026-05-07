@@ -17,6 +17,8 @@ import {
   MAX_TOKEN_LABEL,
 } from '../validate.js'
 
+const CC = 'public, max-age=4, stale-while-revalidate=2'
+
 export const trackChannelFetch: MiddlewareHandler = async (c, next) => {
   const channel = c.req.param('channel')
   const token = channel ? await authStore.getPublicTokenByLogin(channel) : null
@@ -26,6 +28,7 @@ export const trackChannelFetch: MiddlewareHandler = async (c, next) => {
   rawFetchBytesStore.delete(c.req.raw)
   let wireBytes = 0
   const src = c.res
+  if (!src.body) return
   const { readable, writable } = new TransformStream({
     transform(chunk: Uint8Array, controller: TransformStreamDefaultController) {
       wireBytes += chunk.byteLength
@@ -254,7 +257,14 @@ api.post('/ingest', async (c) => {
 // ---------------------------------------------------------------------------
 
 api.get('/game', (c) => {
-  return c.json(gameStore.listGames())
+  const etag = `"v${gameStore.getVersion()}"`
+  if (c.req.header('if-none-match') === etag)
+    return c.newResponse(null, 304, { ETag: etag, 'Cache-Control': CC })
+  return c.newResponse(gameStore.getGameListJson(), 200, {
+    'Content-Type': 'application/json',
+    'Cache-Control': CC,
+    ETag: etag,
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -269,7 +279,10 @@ api.get('/:channel/live/full', measureRawFetchBytes, (c) => {
   if (!gameId) return c.json({ error: 'no game found for channel' }, 404)
   const record = gameStore.buildFullRecord(gameId)
   if (!record) return c.json({ error: 'game not found' }, 404)
-  return c.json(record)
+  const etag = `"full-${gameStore.getLatestSeq(gameId)}"`
+  if (c.req.header('if-none-match') === etag)
+    return c.newResponse(null, 304, { ETag: etag, 'Cache-Control': CC })
+  return c.json(record, 200, { 'Cache-Control': CC, ETag: etag })
 })
 
 api.get('/:channel/live/delta', measureRawFetchBytes, (c) => {
@@ -278,8 +291,12 @@ api.get('/:channel/live/delta', measureRawFetchBytes, (c) => {
   const gameId = gameStore.getChannelGameId(channel)
   if (!gameId) return c.json({ error: 'no game found for channel' }, 404)
   const since = parseSince(c.req.query('since'))
+  const latestSeq = gameStore.getLatestSeq(gameId)
+  const etag = `"delta-${since}-${latestSeq}"`
+  if (c.req.header('if-none-match') === etag)
+    return c.newResponse(null, 304, { ETag: etag, 'Cache-Control': CC })
   const patches = gameStore.getPatches(gameId, since)
-  return c.json({ patches })
+  return c.json({ patches }, 200, { 'Cache-Control': CC, ETag: etag })
 })
 
 export default api

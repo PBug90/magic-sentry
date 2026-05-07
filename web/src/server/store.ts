@@ -41,6 +41,8 @@ class GameStore {
   private readonly channelMap = new Map<string, string>()
   /** Reverse map: game_id → Twitch login. */
   private readonly gameOwnerMap = new Map<string, string>()
+  private version = 0
+  private gameListCache: { json: string; version: number } | null = null
 
   setChannelGame(login: string, gameId: string): void {
     const lower = login.toLowerCase()
@@ -74,6 +76,8 @@ class GameStore {
 
     entry.updatedAt = new Date()
     if (patch.is_final) entry.isFinal = true
+    this.version++
+    this.gameListCache = null
   }
 
   /**
@@ -131,6 +135,8 @@ class GameStore {
     this.games.clear()
     this.channelMap.clear()
     this.gameOwnerMap.clear()
+    this.version = 0
+    this.gameListCache = null
   }
 
   /** Returns all known games, most recently updated first. */
@@ -152,6 +158,23 @@ class GameStore {
           updated_at: e.updatedAt.toISOString(),
         }
       })
+  }
+
+  getVersion(): number {
+    return this.version
+  }
+
+  getLatestSeq(gameId: string): number {
+    const entry = this.games.get(gameId)
+    if (!entry || entry.patches.size === 0) return -1
+    return Math.max(...entry.patches.keys())
+  }
+
+  getGameListJson(): string {
+    if (this.gameListCache?.version === this.version) return this.gameListCache.json
+    const json = JSON.stringify(this.listGames())
+    this.gameListCache = { json, version: this.version }
+    return json
   }
 }
 
