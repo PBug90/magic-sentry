@@ -238,6 +238,7 @@ mod tests {
             apm: 100,
             heroes: vec![],
             units: vec![],
+            upgrades: vec![],
         }
     }
 
@@ -251,6 +252,7 @@ mod tests {
             summary: PlayerSummary {
                 heroes: vec![],
                 units: vec![],
+                upgrades: vec![],
             },
         }
     }
