@@ -69,8 +69,8 @@ pub struct Pusher {
     pub status: PushStatus,
     pub total_wire_bytes: usize,
     pub total_raw_bytes: usize,
-    /// Receives the result of the most recent background POST.
-    result_rx: Option<Receiver<Result<(usize, usize), String>>>,
+    /// Receives results of all in-flight background POSTs.
+    result_rxs: Vec<Receiver<Result<(usize, usize), String>>>,
     secret: Option<String>,
 }
 
@@ -88,35 +88,35 @@ impl Pusher {
             status: PushStatus::Never,
             total_wire_bytes: 0,
             total_raw_bytes: 0,
-            result_rx: None,
+            result_rxs: Vec::new(),
             secret,
         }
     }
 
-    /// Non-blocking: checks if the background thread from a previous push has
-    /// finished and updates `self.status` accordingly. Call once per tick.
+    /// Non-blocking: drains all completed background POSTs and updates
+    /// `self.status` accordingly. Call once per tick.
     pub fn poll(&mut self) {
-        let rx = match self.result_rx.take() {
-            Some(rx) => rx,
-            None => return,
-        };
-        match rx.try_recv() {
-            Ok(Ok((raw, wire))) => {
-                self.total_raw_bytes += raw;
-                self.total_wire_bytes += wire;
-                self.status = PushStatus::Ok(Instant::now(), wire, raw);
-            }
-            Ok(Err(e)) => {
-                self.status = PushStatus::Err(e, Instant::now());
-            }
-            Err(TryRecvError::Empty) => {
-                // Still in-flight — put the receiver back.
-                self.result_rx = Some(rx);
-            }
-            Err(TryRecvError::Disconnected) => {
-                // Thread panicked without sending; treat as error.
-                self.status =
-                    PushStatus::Err("push thread disconnected".to_string(), Instant::now());
+        let mut i = 0;
+        while i < self.result_rxs.len() {
+            match self.result_rxs[i].try_recv() {
+                Ok(Ok((raw, wire))) => {
+                    self.total_raw_bytes += raw;
+                    self.total_wire_bytes += wire;
+                    self.status = PushStatus::Ok(Instant::now(), wire, raw);
+                    self.result_rxs.swap_remove(i);
+                }
+                Ok(Err(e)) => {
+                    self.status = PushStatus::Err(e, Instant::now());
+                    self.result_rxs.swap_remove(i);
+                }
+                Err(TryRecvError::Empty) => {
+                    i += 1;
+                }
+                Err(TryRecvError::Disconnected) => {
+                    self.status =
+                        PushStatus::Err("push thread disconnected".to_string(), Instant::now());
+                    self.result_rxs.swap_remove(i);
+                }
             }
         }
     }
@@ -170,7 +170,7 @@ impl Pusher {
         let endpoint = self.endpoint.clone();
         let secret = self.secret.clone();
         let (tx, rx) = mpsc::channel();
-        self.result_rx = Some(rx);
+        self.result_rxs.push(rx);
 
         std::thread::spawn(move || {
             let result = post_patch(&endpoint, &patch, secret.as_deref());

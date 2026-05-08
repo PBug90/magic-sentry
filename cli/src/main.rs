@@ -5,7 +5,7 @@ mod sample;
 mod types;
 mod util;
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crossterm::{cursor, execute, terminal};
@@ -226,27 +226,41 @@ fn run_game(
             return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
         }
 
-        if event::poll(SAMPLE_INTERVAL).unwrap_or(false) {
-            if let Ok(Event::Key(key)) = event::read() {
-                if is_ctrl_c(&key) {
-                    ctrl_c_exit();
-                }
-                if key.kind == KeyEventKind::Press {
-                    if let KeyCode::Char('p') = key.code {
-                        write_snapshot(
-                            &filename,
-                            &map_name,
-                            &game_name,
-                            &mut players,
-                            &od,
-                            &player_slots,
-                        );
-                        if let Some(p) = pusher.as_mut() {
-                            p.push(&players, &map_name, &game_name, true);
+        // Drain all pending events until SAMPLE_INTERVAL has elapsed.
+        // A single event::poll/read only consumes one event; non-key events
+        // (resize, focus, …) would return immediately and spin the loop at
+        // full speed in release builds, causing push() to fire so rapidly
+        // that result_rx is overwritten before the HTTP thread responds.
+        let deadline = Instant::now() + SAMPLE_INTERVAL;
+        loop {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                break;
+            }
+            if event::poll(remaining).unwrap_or(false) {
+                if let Ok(Event::Key(key)) = event::read() {
+                    if is_ctrl_c(&key) {
+                        ctrl_c_exit();
+                    }
+                    if key.kind == KeyEventKind::Press {
+                        if let KeyCode::Char('p') = key.code {
+                            write_snapshot(
+                                &filename,
+                                &map_name,
+                                &game_name,
+                                &mut players,
+                                &od,
+                                &player_slots,
+                            );
+                            if let Some(p) = pusher.as_mut() {
+                                p.push(&players, &map_name, &game_name, true);
+                            }
+                            return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
                         }
-                        return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
                     }
                 }
+            } else {
+                break;
             }
         }
     }
