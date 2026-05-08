@@ -1,5 +1,7 @@
 import type { Sample } from './types.js'
-import { WORKERS_BY_ID, HERO_OBSERVER_BY_ID, UNIT_SUPPLY_BY_ID } from './wc3data.js'
+import { WORKERS_BY_ID } from './workers.js'
+import { HERO_OBSERVER_IDS } from './heroes.js'
+import { UNIT_SUPPLY_BY_ID } from './enriched.js'
 
 export const PLAYER_COLORS = ['#58a6ff', '#ff7b72', '#3fb950', '#d2a8ff', '#ffa657']
 export const UNIT_COLORS = [
@@ -19,8 +21,6 @@ export const UNIT_COLORS = [
   '#a5d6ff',
   '#c9e0a0',
 ]
-
-export const HERO_OBSERVER_IDS = new Set(Object.keys(HERO_OBSERVER_BY_ID))
 
 /** Supply cost for a unit or hero id. Heroes cost 5 food in the army chart. */
 export function heroSupply(id: string): number {

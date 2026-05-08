@@ -8,9 +8,9 @@ import {
 } from '../shared/types'
 import {
   ABILITY_BY_ID,
-  HERO_OBSERVER_BY_ID,
   HERO_XP_THRESHOLDS,
   ITEM_BY_ID,
+  UNIT_NAME_BY_ID,
   UPGRADE_NAME_BY_ID,
   UPGRADE_GOLD_BY_ID,
   UPGRADE_LUMBER_BY_ID,
@@ -303,7 +303,7 @@ function HeroCard({
   player: ChartPlayer
   index: number
 }) {
-  const display = HERO_OBSERVER_BY_ID[hero.id]?.display ?? hero.id
+  const display = UNIT_NAME_BY_ID[hero.id] ?? hero.id
   return (
     <div
       style={{

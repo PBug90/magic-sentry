@@ -10,7 +10,8 @@
     }
   },
   "scripts": {
-    "test": "vitest run"
+    "test": "vitest run",
+    "generate": "tsx scripts/parse-unitbalance.ts && tsx scripts/parse-upgradedata.ts && tsx scripts/parse-itemdata.ts && tsx scripts/generate-units.ts && tsx scripts/generate-upgrades.ts && tsx scripts/generate-items.ts && prettier --write src/units.ts src/upgrades.ts src/items.ts"
   },
   "dependencies": {
     "zod": "^4.0.0"

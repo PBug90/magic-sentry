@@ -14,6 +14,14 @@ node_modules/
 
 # Shared package compiled output
 /shared/dist/
+
+# Shared — SLK game data files (place in shared/slk/ to regenerate pipeline)
+/shared/slk/*.slk
+
+# Shared — intermediate JSON generated from SLK files
+/shared/src/UnitBalance.json
+/shared/src/UpgradeBalance.json
+/shared/src/ItemBalance.json
 /web/public/favicon.ico
 
 # Twitch extension

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { Sample } from '../types.js'
+import type { Sample } from '../src/types.js'
 import {
   formatDuration,
   fmtTime,
@@ -13,8 +13,8 @@ import {
   buildAreas,
   PLAYER_COLORS,
   UNIT_COLORS,
-  HERO_OBSERVER_IDS,
-} from '../chartUtils.js'
+} from '../src/chartUtils.js'
+import { HERO_OBSERVER_IDS } from '../src/heroes.js'
 
 // ---------------------------------------------------------------------------
 // Helpers

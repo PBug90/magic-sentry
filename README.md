@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/magicsentry.png" alt="Magic Sentry" width="160" />
+  <img src="assets/magicsentry.webp" alt="Magic Sentry" width="160" />
 </p>
 
 # Magic Sentry

@@ -1,6 +1,6 @@
 ﻿import { useState, useRef } from 'react'
 import {
-  HERO_OBSERVER_BY_ID,
+  HERO_OBSERVER_IDS,
   UNIT_NAME_BY_ID,
   UNIT_GOLD_BY_ID,
   UNIT_LUMBER_BY_ID,
@@ -111,11 +111,11 @@ export function TooltipTime({ sec }: { sec: number }) {
 
 export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string; size?: number }) {
   const [hovered, setHovered] = useState(false)
-  const hero = HERO_OBSERVER_BY_ID[name]
-  const src = hero ? `./heroes/${name}.webp` : `./units/${name}.webp`
-  const displayName = hero?.display ?? UNIT_NAME_BY_ID[name] ?? name
-  const gold = !hero ? UNIT_GOLD_BY_ID[name] : undefined
-  const lumber = !hero ? UNIT_LUMBER_BY_ID[name] : undefined
+  const isHero = HERO_OBSERVER_IDS.has(name)
+  const src = isHero ? `./heroes/${name}.webp` : `./units/${name}.webp`
+  const displayName = UNIT_NAME_BY_ID[name] ?? name
+  const gold = !isHero ? UNIT_GOLD_BY_ID[name] : undefined
+  const lumber = !isHero ? UNIT_LUMBER_BY_ID[name] : undefined
   return (
     <div
       style={{
@@ -181,7 +181,7 @@ export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string
 
 export function UnitIconRow({ fill, name, count }: { fill: string; name: string; count: number }) {
   const sup = heroSupply(name)
-  const displayName = HERO_OBSERVER_BY_ID[name]?.display ?? UNIT_NAME_BY_ID[name] ?? name
+  const displayName = UNIT_NAME_BY_ID[name] ?? name
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
       <UnitIcon name={name} fill={fill} size={14} />
