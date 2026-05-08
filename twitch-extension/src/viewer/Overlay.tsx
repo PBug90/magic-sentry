@@ -11,16 +11,17 @@ import { PLAYER_COLORS, formatDuration } from '@magic-sentry/shared'
 import { HeroPanel } from './HeroPanel'
 import { EconomyChart, LumberChart, ApmChart } from './charts/ResourceChart'
 import { FoodChart } from './charts/FoodChart'
-import { ArmyChart } from './charts/ArmyChart'
+import { ArmyChart, CurrentArmies } from './charts/ArmyChart'
 
-type TabKey = 'heroes' | 'gold' | 'lumber' | 'food' | 'army' | 'apm'
+type TabKey = 'heroes' | 'gold' | 'lumber' | 'food' | 'armies' | 'army' | 'apm'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'heroes', label: 'Heroes' },
   { key: 'gold', label: 'Gold' },
   { key: 'lumber', label: 'Lumber' },
   { key: 'food', label: 'Food' },
-  { key: 'army', label: 'Army' },
+  { key: 'armies', label: 'Current Armies' },
+  { key: 'army', label: 'Army over time' },
   { key: 'apm', label: 'APM' },
 ]
 
@@ -420,6 +421,7 @@ export function Overlay() {
             {tab === 'gold' && <EconomyChart players={playerData} />}
             {tab === 'lumber' && <LumberChart players={playerData} />}
             {tab === 'food' && <FoodChart players={playerData} />}
+            {tab === 'armies' && <CurrentArmies players={playerData} />}
             {tab === 'army' && <ArmyChart players={playerData} />}
             {tab === 'apm' && <ApmChart players={playerData} />}
           </div>

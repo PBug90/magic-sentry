@@ -17,7 +17,7 @@ export const W = 640
 export const H = 200
 export const IW = W - CM.left - CM.right
 export const IH = H - CM.top - CM.bottom
-export const CH = 280 // taller army chart
+export const CH = 200
 export const CIH = CH - CM.top - CM.bottom
 
 // ---------------------------------------------------------------------------

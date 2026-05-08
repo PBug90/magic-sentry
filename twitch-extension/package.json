@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "zip": "node scripts/create-zip.mjs",
+    "build:release": "vite build && node scripts/create-zip.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

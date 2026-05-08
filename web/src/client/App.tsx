@@ -1053,6 +1053,92 @@ function ShowcaseFrame({
 // ---------------------------------------------------------------------------
 // Landing page
 // ---------------------------------------------------------------------------
+// Screenshot gallery with lightbox
+// ---------------------------------------------------------------------------
+
+const SCREENSHOTS = [
+  { src: '/screenshots/1.png', label: 'Gold economy over time' },
+  { src: '/screenshots/2.png', label: 'Hero builds and upgrades' },
+  { src: '/screenshots/3.png', label: 'Army composition comparison' },
+]
+
+function ScreenshotGallery() {
+  const [lightbox, setLightbox] = useState<string | null>(null)
+
+  return (
+    <>
+      <section className="section">
+        <h2 className="section-title">In Action</h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: 16,
+          }}
+        >
+          {SCREENSHOTS.map(({ src, label }) => (
+            <div key={src}>
+              <button
+                onClick={() => setLightbox(src)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: 0,
+                  background: 'none',
+                  border: '1px solid var(--border)',
+                  cursor: 'zoom-in',
+                  lineHeight: 0,
+                }}
+              >
+                <img src={src} alt={label} style={{ width: '100%', display: 'block' }} />
+              </button>
+              <div
+                style={{
+                  paddingTop: 8,
+                  fontSize: '0.78rem',
+                  color: 'var(--muted)',
+                  fontFamily: 'var(--font-data)',
+                }}
+              >
+                {label}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.88)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            cursor: 'zoom-out',
+            padding: 24,
+          }}
+        >
+          <img
+            src={lightbox}
+            alt=""
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              display: 'block',
+              boxShadow: '0 0 60px rgba(0,0,0,0.8)',
+            }}
+          />
+        </div>
+      )}
+    </>
+  )
+}
+
+// ---------------------------------------------------------------------------
 
 function LandingPage({
   user,
@@ -1188,6 +1274,9 @@ function LandingPage({
               </ShowcaseFrame>
             </div>
           </section>
+
+          {/* Screenshots */}
+          <ScreenshotGallery />
 
           {/* Games */}
           <section className="section" id="games">

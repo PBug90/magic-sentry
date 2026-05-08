@@ -95,6 +95,54 @@ function ArmySnapshotPanel({
   )
 }
 
+function buildSharedColorMap(playerLayers: string[][]): Record<string, string> {
+  const allUnitNames = [...new Set(playerLayers.flat())]
+  return Object.fromEntries(
+    allUnitNames.map((name, i) => [name, UNIT_COLORS[i % UNIT_COLORS.length]]),
+  )
+}
+
+export function CurrentArmies({ players }: { players: ChartPlayer[] }) {
+  if (players.length === 0) return null
+
+  const perPlayer = players.map((p) => ({
+    player: p,
+    layers: buildLayers(p.samples),
+    byTime: buildByTime(p.samples),
+  }))
+
+  const colorMap = buildSharedColorMap(perPlayer.map(({ layers }) => layers))
+  const colorOf = (name: string) => colorMap[name] ?? UNIT_COLORS[0]
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        gap: 16,
+        padding: '10px 12px',
+        background: '#12121a',
+        border: '1px solid #2a2a3a',
+        flexWrap: 'wrap',
+      }}
+    >
+      {perPlayer.map(({ player, layers, byTime }, i) => (
+        <>
+          {i > 0 && (
+            <div key={`sep-${i}`} style={{ width: 1, background: '#2a2a3a', flexShrink: 0 }} />
+          )}
+          <ArmySnapshotPanel
+            key={player.name}
+            player={player}
+            layers={layers}
+            lastByTime={byTime.length ? byTime[byTime.length - 1] : {}}
+            colorOf={colorOf}
+          />
+        </>
+      ))}
+    </div>
+  )
+}
+
 export function ArmyChart({ players }: { players: ChartPlayer[] }) {
   const { hover, wrapRef, onSvgMouseMove, onSvgMouseLeave } = useChartHover()
 
@@ -135,11 +183,8 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
   const yOf_up = (v: number) => center - (v / yMax) * center
   const yOf_dn = (v: number) => center + (v / yMax) * center
 
-  const allUnitNames = [...new Set([...layers1, ...layers2])]
-  const sharedColorMap = Object.fromEntries(
-    allUnitNames.map((name, i) => [name, UNIT_COLORS[i % UNIT_COLORS.length]]),
-  )
-  const colorOf = (name: string) => sharedColorMap[name] ?? UNIT_COLORS[0]
+  const colorMap = buildSharedColorMap([layers1, layers2])
+  const colorOf = (name: string) => colorMap[name] ?? UNIT_COLORS[0]
 
   const areas1 = buildAreas(p1.samples, layers1, byTime1, xOf, yOf_up, supply, colorOf)
   const areas2 = buildAreas(p2.samples, layers2, byTime2, xOf, yOf_dn, supply, colorOf)
@@ -156,31 +201,7 @@ export function ArmyChart({ players }: { players: ChartPlayer[] }) {
       ref={wrapRef}
       style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}
     >
-      <SectionLabel>Army Comparison</SectionLabel>
-      <div
-        style={{
-          display: 'flex',
-          gap: 16,
-          padding: '10px 12px',
-          background: '#12121a',
-          border: '1px solid #2a2a3a',
-          marginBottom: 4,
-        }}
-      >
-        <ArmySnapshotPanel
-          player={p1}
-          layers={layers1}
-          lastByTime={byTime1.length ? byTime1[byTime1.length - 1] : {}}
-          colorOf={colorOf}
-        />
-        <div style={{ width: 1, background: '#2a2a3a', flexShrink: 0 }} />
-        <ArmySnapshotPanel
-          player={p2}
-          layers={layers2}
-          lastByTime={byTime2.length ? byTime2[byTime2.length - 1] : {}}
-          colorOf={colorOf}
-        />
-      </div>
+      <SectionLabel>Army over time</SectionLabel>
       <svg
         viewBox={`0 0 ${W} ${CH}`}
         width="100%"
