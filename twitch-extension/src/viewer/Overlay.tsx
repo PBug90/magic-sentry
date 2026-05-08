@@ -228,95 +228,98 @@ export function Overlay() {
   }, [])
 
   // Returns true if a chunk was received (more may follow), false on 204 or error.
-  const fetchDelta = useCallback(async (baseUrl: string, token: string): Promise<boolean> => {
-    if (!baseUrl) return false
-    const headers: Record<string, string> = {}
-    if (token) headers['Authorization'] = `Bearer ${token}`
+  const fetchDelta = useCallback(
+    async (baseUrl: string, token: string): Promise<boolean> => {
+      if (!baseUrl) return false
+      const headers: Record<string, string> = {}
+      if (token) headers['Authorization'] = `Bearer ${token}`
 
-    try {
-      const res = await fetch(nextUrlRef.current, { headers })
-      if (res.status === 204) {
-        // Arm a one-shot check after 30s of silence so a new game is detected
-        // even when the previous game ended without an is_final signal.
-        if (currentGameIdRef.current && !newGameCheckTimeoutRef.current) {
-          newGameCheckTimeoutRef.current = setTimeout(() => {
-            newGameCheckTimeoutRef.current = null
-            void checkForNewGame(baseUrl, token)
-          }, 30_000)
+      try {
+        const res = await fetch(nextUrlRef.current, { headers })
+        if (res.status === 204) {
+          // Arm a one-shot check after 30s of silence so a new game is detected
+          // even when the previous game ended without an is_final signal.
+          if (currentGameIdRef.current && !newGameCheckTimeoutRef.current) {
+            newGameCheckTimeoutRef.current = setTimeout(() => {
+              newGameCheckTimeoutRef.current = null
+              void checkForNewGame(baseUrl, token)
+            }, 30_000)
+          }
+          return false
         }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = (await res.json()) as { patches: GamePatch[]; next: string }
+
+        let incoming = data.patches
+        if (incoming.length === 0) return false
+
+        // Patches are arriving — cancel any pending new-game check
+        if (newGameCheckTimeoutRef.current) {
+          clearTimeout(newGameCheckTimeoutRef.current)
+          newGameCheckTimeoutRef.current = null
+        }
+
+        const origin = new URL(baseUrl).origin
+        const incomingGameId = incoming[0].game_id
+
+        if (incomingGameId !== currentGameIdRef.current) {
+          // New game — discard accumulated state and re-fetch from the beginning
+          accumulatedPatchesRef.current = new Map()
+          currentGameIdRef.current = incomingGameId
+          const startUrl = `${baseUrl}/after/-1`
+          nextUrlRef.current = startUrl
+          const res2 = await fetch(startUrl, { headers })
+          if (res2.status === 204) return false
+          if (!res2.ok) throw new Error(`HTTP ${res2.status}`)
+          const data2 = (await res2.json()) as { patches: GamePatch[]; next: string }
+          incoming = data2.patches
+          nextUrlRef.current = `${origin}${data2.next}`
+        } else {
+          nextUrlRef.current = `${origin}${data.next}`
+        }
+
+        for (const p of incoming) accumulatedPatchesRef.current.set(p.seq, p)
+
+        const sorted = [...accumulatedPatchesRef.current.values()].sort((a, b) => a.seq - b.seq)
+        if (sorted.length === 0) return false
+
+        const playerMap = new Map<string, PlayerRecord>()
+        for (const patch of sorted) {
+          for (const pp of patch.players) {
+            let record = playerMap.get(pp.name)
+            if (!record) {
+              record = {
+                name: pp.name,
+                race: pp.race,
+                team: pp.team,
+                result: '',
+                samples: [],
+                summary: { heroes: [], units: [], upgrades: [] },
+              }
+              playerMap.set(pp.name, record)
+            }
+            record.samples.push(...pp.new_samples)
+            if (pp.result) record.result = pp.result
+            if (pp.summary) record.summary = pp.summary
+          }
+        }
+
+        const players = [...playerMap.values()]
+        const duration_ms = players
+          .flatMap((p) => p.samples)
+          .reduce((max, s) => Math.max(max, s.time_ms), 0)
+
+        setGame({ map: sorted[0].map, game: sorted[0].game, duration_ms, players })
+        setFetchError(null)
+        setLastUpdated(new Date())
+        return true
+      } catch (e) {
+        setFetchError(String(e))
         return false
       }
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const data = (await res.json()) as { patches: GamePatch[]; next: string }
-
-      let incoming = data.patches
-      if (incoming.length === 0) return false
-
-      // Patches are arriving — cancel any pending new-game check
-      if (newGameCheckTimeoutRef.current) {
-        clearTimeout(newGameCheckTimeoutRef.current)
-        newGameCheckTimeoutRef.current = null
-      }
-
-      const origin = new URL(baseUrl).origin
-      const incomingGameId = incoming[0].game_id
-
-      if (incomingGameId !== currentGameIdRef.current) {
-        // New game — discard accumulated state and re-fetch from the beginning
-        accumulatedPatchesRef.current = new Map()
-        currentGameIdRef.current = incomingGameId
-        const startUrl = `${baseUrl}/after/-1`
-        nextUrlRef.current = startUrl
-        const res2 = await fetch(startUrl, { headers })
-        if (res2.status === 204) return false
-        if (!res2.ok) throw new Error(`HTTP ${res2.status}`)
-        const data2 = (await res2.json()) as { patches: GamePatch[]; next: string }
-        incoming = data2.patches
-        nextUrlRef.current = `${origin}${data2.next}`
-      } else {
-        nextUrlRef.current = `${origin}${data.next}`
-      }
-
-      for (const p of incoming) accumulatedPatchesRef.current.set(p.seq, p)
-
-      const sorted = [...accumulatedPatchesRef.current.values()].sort((a, b) => a.seq - b.seq)
-      if (sorted.length === 0) return false
-
-      const playerMap = new Map<string, PlayerRecord>()
-      for (const patch of sorted) {
-        for (const pp of patch.players) {
-          let record = playerMap.get(pp.name)
-          if (!record) {
-            record = {
-              name: pp.name,
-              race: pp.race,
-              team: pp.team,
-              result: '',
-              samples: [],
-              summary: { heroes: [], units: [], upgrades: [] },
-            }
-            playerMap.set(pp.name, record)
-          }
-          record.samples.push(...pp.new_samples)
-          if (pp.result) record.result = pp.result
-          if (pp.summary) record.summary = pp.summary
-        }
-      }
-
-      const players = [...playerMap.values()]
-      const duration_ms = players
-        .flatMap((p) => p.samples)
-        .reduce((max, s) => Math.max(max, s.time_ms), 0)
-
-      setGame({ map: sorted[0].map, game: sorted[0].game, duration_ms, players })
-      setFetchError(null)
-      setLastUpdated(new Date())
-      return true
-    } catch (e) {
-      setFetchError(String(e))
-      return false
-    }
-  }, [checkForNewGame])
+    },
+    [checkForNewGame],
+  )
 
   useEffect(() => {
     if (!configReady) return
@@ -350,7 +353,14 @@ export function Overlay() {
       if (intervalRef.current) clearInterval(intervalRef.current)
       if (newGameCheckTimeoutRef.current) clearTimeout(newGameCheckTimeoutRef.current)
     }
-  }, [config.endpointUrl, config.pollIntervalSec, config.token, configReady, fetchDelta, refreshKey])
+  }, [
+    config.endpointUrl,
+    config.pollIntervalSec,
+    config.token,
+    configReady,
+    fetchDelta,
+    refreshKey,
+  ])
 
   const playerData: ChartPlayer[] = (game?.players ?? []).map((p, i) => ({
     ...p,
