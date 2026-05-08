@@ -122,6 +122,7 @@ export function GameViewer({ channel, gameId, onBack }: GameViewerProps) {
   const [game, setGame] = useState<GameRecord | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const nextUrlRef = useRef('')
   const accumulatedPatchesRef = useRef(new Map<number, GamePatch>())
@@ -195,7 +196,7 @@ export function GameViewer({ channel, gameId, onBack }: GameViewerProps) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [channel, gameId, fetchDelta])
+  }, [channel, gameId, fetchDelta, refreshKey])
 
   const playerData: ChartPlayer[] = (game?.players ?? []).map((p, i) => ({
     ...p,
@@ -258,18 +259,28 @@ export function GameViewer({ channel, gameId, onBack }: GameViewerProps) {
             <TeamsBar players={playerData} />
           </>
         )}
-        {lastUpdated && (
-          <span
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+          {lastUpdated && (
+            <span style={{ fontSize: '.6em', color: '#777', fontFamily: 'monospace' }}>
+              updated {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={() => setRefreshKey((k) => k + 1)}
+            title="Refresh"
             style={{
-              marginLeft: 'auto',
-              fontSize: '.6em',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
               color: '#777',
-              fontFamily: 'monospace',
+              fontSize: '.85em',
+              padding: '2px 4px',
+              lineHeight: 1,
             }}
           >
-            updated {lastUpdated.toLocaleTimeString()}
-          </span>
-        )}
+            ↺
+          </button>
+        </div>
       </div>
 
       {/* Error / loading */}

@@ -152,7 +152,9 @@ export function Overlay() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [configReady, setConfigReady] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const newGameCheckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const nextUrlRef = useRef('')
   const currentGameIdRef = useRef<string | null>(null)
   const accumulatedPatchesRef = useRef(new Map<number, GamePatch>())
@@ -206,6 +208,25 @@ export function Overlay() {
     ext.onError((e) => console.error('[viewer] Twitch ext error:', e))
   }, [])
 
+  // Checks the channel-level endpoint once for a new game. Resets nextUrlRef if
+  // a different game_id is found so the next regular poll picks it up.
+  const checkForNewGame = useCallback(async (baseUrl: string, token: string) => {
+    if (!baseUrl || !currentGameIdRef.current) return
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    try {
+      const res = await fetch(`${baseUrl}/after/-1`, { headers })
+      if (!res.ok || res.status === 204) return
+      const data = (await res.json()) as { patches: GamePatch[]; next: string }
+      if (!data.patches.length) return
+      if (data.patches[0].game_id !== currentGameIdRef.current) {
+        nextUrlRef.current = `${baseUrl}/after/-1`
+      }
+    } catch {
+      // ignore — next check will retry
+    }
+  }, [])
+
   // Returns true if a chunk was received (more may follow), false on 204 or error.
   const fetchDelta = useCallback(async (baseUrl: string, token: string): Promise<boolean> => {
     if (!baseUrl) return false
@@ -214,12 +235,28 @@ export function Overlay() {
 
     try {
       const res = await fetch(nextUrlRef.current, { headers })
-      if (res.status === 204) return false
+      if (res.status === 204) {
+        // Arm a one-shot check after 30s of silence so a new game is detected
+        // even when the previous game ended without an is_final signal.
+        if (currentGameIdRef.current && !newGameCheckTimeoutRef.current) {
+          newGameCheckTimeoutRef.current = setTimeout(() => {
+            newGameCheckTimeoutRef.current = null
+            void checkForNewGame(baseUrl, token)
+          }, 30_000)
+        }
+        return false
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = (await res.json()) as { patches: GamePatch[]; next: string }
 
       let incoming = data.patches
       if (incoming.length === 0) return false
+
+      // Patches are arriving — cancel any pending new-game check
+      if (newGameCheckTimeoutRef.current) {
+        clearTimeout(newGameCheckTimeoutRef.current)
+        newGameCheckTimeoutRef.current = null
+      }
 
       const origin = new URL(baseUrl).origin
       const incomingGameId = incoming[0].game_id
@@ -279,11 +316,15 @@ export function Overlay() {
       setFetchError(String(e))
       return false
     }
-  }, [])
+  }, [checkForNewGame])
 
   useEffect(() => {
     if (!configReady) return
     if (intervalRef.current) clearInterval(intervalRef.current)
+    if (newGameCheckTimeoutRef.current) {
+      clearTimeout(newGameCheckTimeoutRef.current)
+      newGameCheckTimeoutRef.current = null
+    }
 
     // Reset chunk state whenever the endpoint or token changes
     nextUrlRef.current = config.endpointUrl ? `${config.endpointUrl}/after/-1` : ''
@@ -307,8 +348,9 @@ export function Overlay() {
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
+      if (newGameCheckTimeoutRef.current) clearTimeout(newGameCheckTimeoutRef.current)
     }
-  }, [config.endpointUrl, config.pollIntervalSec, config.token, configReady, fetchDelta])
+  }, [config.endpointUrl, config.pollIntervalSec, config.token, configReady, fetchDelta, refreshKey])
 
   const playerData: ChartPlayer[] = (game?.players ?? []).map((p, i) => ({
     ...p,
@@ -365,18 +407,28 @@ export function Overlay() {
             <TeamsBar players={playerData} />
           </>
         )}
-        {lastUpdated && (
-          <span
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+          {lastUpdated && (
+            <span style={{ fontSize: '.6em', color: '#444', fontFamily: 'monospace' }}>
+              updated {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={() => setRefreshKey((k) => k + 1)}
+            title="Refresh"
             style={{
-              marginLeft: 'auto',
-              fontSize: '.6em',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
               color: '#444',
-              fontFamily: 'monospace',
+              fontSize: '.85em',
+              padding: '2px 4px',
+              lineHeight: 1,
             }}
           >
-            updated {lastUpdated.toLocaleTimeString()}
-          </span>
-        )}
+            ↺
+          </button>
+        </div>
       </div>
 
       {/* Status when no game data yet */}

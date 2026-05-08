@@ -39,6 +39,7 @@ export default defineConfig({
     },
   },
   build: {
+    minify: false,
     rollupOptions: {
       input: {
         viewer: resolve(__dirname, 'viewer.html'),
