@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { GameViewer } from './viewer/GameViewer'
+import { FAQPage } from './FAQ'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -67,12 +68,14 @@ function NavBar({
   logout,
   onSettings,
   onHome,
+  onFaq,
   showSettingsLink,
 }: {
   user: TwitchUser | null | undefined
   logout: () => void
   onSettings: () => void
   onHome: () => void
+  onFaq: () => void
   showSettingsLink: boolean
 }) {
   return (
@@ -100,6 +103,10 @@ function NavBar({
       </button>
 
       <div style={{ flex: 1 }} />
+
+      <button className="btn btn-ghost btn-sm" onClick={onFaq}>
+        FAQ
+      </button>
 
       {showSettingsLink && user && (
         <button className="btn btn-ghost btn-sm" onClick={onSettings}>
@@ -495,10 +502,12 @@ function SettingsPage({
   user,
   logout,
   onHome,
+  onFaq,
 }: {
   user: TwitchUser | null | undefined
   logout: () => void
   onHome: () => void
+  onFaq: () => void
 }) {
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -507,6 +516,7 @@ function SettingsPage({
         logout={logout}
         onSettings={() => {}}
         onHome={onHome}
+        onFaq={onFaq}
         showSettingsLink={false}
       />
       <div className="app" style={{ paddingTop: 48 }}>
@@ -1145,11 +1155,13 @@ function LandingPage({
   logout,
   onView,
   onSettings,
+  onFaq,
 }: {
   user: TwitchUser | null | undefined
   logout: () => void
   onView: (channel: string, gameId: string) => void
   onSettings: () => void
+  onFaq: () => void
 }) {
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -1158,6 +1170,7 @@ function LandingPage({
         logout={logout}
         onSettings={onSettings}
         onHome={() => {}}
+        onFaq={onFaq}
         showSettingsLink={true}
       />
       <div className="app">
@@ -1220,11 +1233,12 @@ function LandingPage({
               </div>
               <div className="pillar">
                 <div className="pillar-icon">🖥</div>
-                <h3>Local Analysis</h3>
+                <h3>Local Reports</h3>
                 <p>
-                  Run the Magic Sentry app locally to analyze your own games without streaming.
-                  Browse hero builds, resource efficiency, and army composition from any match
-                  played on your machine.
+                  Run the Magic Sentry app locally and get a self-contained HTML report at the end
+                  of every game — no server required. Open it in any browser to browse hero builds,
+                  resource curves, item stats, and army composition from any match played on your
+                  machine.
                 </p>
               </div>
             </div>
@@ -1299,11 +1313,13 @@ function LandingPage({
 type Route =
   | { type: 'home' }
   | { type: 'settings' }
+  | { type: 'faq' }
   | { type: 'game'; channel: string; gameId: string }
 
 function parseHash(hash: string): Route {
   const path = hash.replace(/^#/, '')
   if (path === '/settings') return { type: 'settings' }
+  if (path === '/faq') return { type: 'faq' }
   const m = path.match(/^\/game\/([^/]+)\/(.+)$/)
   if (m)
     return { type: 'game', channel: decodeURIComponent(m[1]), gameId: decodeURIComponent(m[2]) }
@@ -1322,6 +1338,7 @@ function useRoute(): [Route, (r: Route) => void] {
   const navigate = useCallback((r: Route) => {
     if (r.type === 'home') window.location.hash = '/'
     else if (r.type === 'settings') window.location.hash = '/settings'
+    else if (r.type === 'faq') window.location.hash = '/faq'
     else
       window.location.hash = `/game/${encodeURIComponent(r.channel)}/${encodeURIComponent(r.gameId)}`
   }, [])
@@ -1345,6 +1362,7 @@ export default function App() {
           logout={logout}
           onSettings={() => navigate({ type: 'settings' })}
           onHome={() => navigate({ type: 'home' })}
+          onFaq={() => navigate({ type: 'faq' })}
           showSettingsLink={true}
         />
         <GameViewer
@@ -1357,7 +1375,18 @@ export default function App() {
   }
 
   if (route.type === 'settings') {
-    return <SettingsPage user={user} logout={logout} onHome={() => navigate({ type: 'home' })} />
+    return (
+      <SettingsPage
+        user={user}
+        logout={logout}
+        onHome={() => navigate({ type: 'home' })}
+        onFaq={() => navigate({ type: 'faq' })}
+      />
+    )
+  }
+
+  if (route.type === 'faq') {
+    return <FAQPage onHome={() => navigate({ type: 'home' })} />
   }
 
   return (
@@ -1366,6 +1395,7 @@ export default function App() {
       logout={logout}
       onView={(channel, gameId) => navigate({ type: 'game', channel, gameId })}
       onSettings={() => navigate({ type: 'settings' })}
+      onFaq={() => navigate({ type: 'faq' })}
     />
   )
 }

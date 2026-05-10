@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { ChartPlayer, PlayerItemStatSnapshot } from '../shared/types'
 import { ITEM_BY_ID } from '@magic-sentry/shared'
+import { iconSrc } from './iconSrc'
 
 function itemsFromPlayer(player: ChartPlayer): PlayerItemStatSnapshot[] {
   const last = [...player.samples].reverse().find((s) => s.player_items.length > 0)
@@ -60,7 +61,7 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
         )}
         <div style={{ position: 'relative', width: 20, height: 20 }}>
           <img
-            src={`/items/${item.id}.webp`}
+            src={iconSrc(`/items/${item.id}.webp`)}
             alt={item.id}
             width={20}
             height={20}

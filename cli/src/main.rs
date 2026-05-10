@@ -1,6 +1,7 @@
 mod display;
 mod push;
 mod record;
+mod report;
 mod sample;
 mod types;
 mod util;
@@ -13,7 +14,7 @@ use warcraft3_stats_observer::ObserverHandle;
 
 use display::{build_game_lines, ctrl_c_exit, is_ctrl_c, redraw, sleep_or_exit};
 use push::{check_auth, Pusher};
-use record::write_snapshot;
+use record::update_summaries;
 use sample::{
     find_player_slots, init_player_state, is_game_over, read_player_tick, PlayerTickRead,
 };
@@ -80,7 +81,7 @@ fn run_game(
         .map(|p| (p.name.as_str(), p.race.as_str()))
         .collect();
     let game_id = build_game_id(&name_race, &map_name);
-    let filename = format!("{game_id}.json");
+    let html_filename = format!("{game_id}.html");
 
     let mut pusher: Option<Pusher> = match (&config.endpoint, &config.secret) {
         (Some(url), Some(secret)) => Some(Pusher::new(
@@ -182,7 +183,7 @@ fn run_game(
             &map_name,
             &game_name,
             time_ms,
-            &filename,
+            &html_filename,
             pusher.as_ref(),
             authorized_as,
             config.endpoint.as_deref(),
@@ -196,14 +197,6 @@ fn run_game(
         ));
 
         ticks += 1;
-        write_snapshot(
-            &filename,
-            &map_name,
-            &game_name,
-            &mut players,
-            &od,
-            &player_slots,
-        );
 
         if has_combat_data && ticks.is_multiple_of(PUSH_EVERY_N_SAMPLES) {
             if let Some(p) = &mut pusher {
@@ -212,17 +205,11 @@ fn run_game(
         }
 
         if game_over {
-            write_snapshot(
-                &filename,
-                &map_name,
-                &game_name,
-                &mut players,
-                &od,
-                &player_slots,
-            );
+            update_summaries(&mut players, &od, &player_slots);
             if let Some(p) = pusher.as_mut() {
                 p.push(&players, &map_name, &game_name, true);
             }
+            report::write_report(&html_filename, &map_name, &game_name, &players);
             // od is dropped here, releasing the shared memory handle.
             return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
         }
@@ -245,17 +232,11 @@ fn run_game(
                     }
                     if key.kind == KeyEventKind::Press {
                         if let KeyCode::Char('p') = key.code {
-                            write_snapshot(
-                                &filename,
-                                &map_name,
-                                &game_name,
-                                &mut players,
-                                &od,
-                                &player_slots,
-                            );
+                            update_summaries(&mut players, &od, &player_slots);
                             if let Some(p) = pusher.as_mut() {
                                 p.push(&players, &map_name, &game_name, true);
                             }
+                            report::write_report(&html_filename, &map_name, &game_name, &players);
                             return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
                         }
                     }

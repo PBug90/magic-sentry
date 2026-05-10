@@ -13,6 +13,7 @@
     "start": "node --env-file=.env dist/server/index.js",
     "typecheck": "npm run build:shared && tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
     "build:shared": "tsc -p ../shared/tsconfig.json",
+    "build:standalone": "vite build --config vite.standalone.config.ts",
     "test:server": "vitest run --config vitest.config.server.ts"
   },
   "dependencies": {

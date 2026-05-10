@@ -15,6 +15,7 @@ import {
   UPGRADE_GOLD_BY_ID,
   UPGRADE_LUMBER_BY_ID,
 } from '@magic-sentry/shared'
+import { iconSrc } from './iconSrc'
 
 // Unified hero display shape — works for both HeroFinal (summary) and HeroSample (live).
 interface HeroDisplay {
@@ -53,7 +54,7 @@ function HeroIcon({ id, size = 44 }: { id: string; size?: number }) {
       }}
     >
       <img
-        src={`/heroes/${id}.webp`}
+        src={iconSrc(`/heroes/${id}.webp`)}
         alt={id}
         title={id}
         width={size}
@@ -93,7 +94,7 @@ function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
           }}
         >
           <img
-            src={`/abilities/${ability.id}.webp`}
+            src={iconSrc(`/abilities/${ability.id}.webp`)}
             alt={name}
             width={size}
             height={size}
@@ -497,7 +498,7 @@ function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
           }}
         >
           <img
-            src={`/upgrades/${upgrade.id}.webp`}
+            src={iconSrc(`/upgrades/${upgrade.id}.webp`)}
             alt={upgrade.id}
             width={25}
             height={25}

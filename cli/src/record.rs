@@ -1,8 +1,7 @@
 use warcraft3_stats_observer::ObserverData;
 
-use crate::display::redraw;
 use crate::types::{
-    AbilitySnapshot, GameState, HeroSummary, ItemSnapshot, PlayerState, PlayerSummary, UnitSummary,
+    AbilitySnapshot, HeroSummary, ItemSnapshot, PlayerState, PlayerSummary, UnitSummary,
     UpgradeSnapshot,
 };
 use crate::util::{fourcc, result_name};
@@ -121,14 +120,7 @@ pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSum
         .collect()
 }
 
-pub fn write_snapshot(
-    filename: &str,
-    map_name: &str,
-    game_name: &str,
-    players: &mut [PlayerState],
-    od: &ObserverData,
-    player_slots: &[usize],
-) {
+pub fn update_summaries(players: &mut [PlayerState], od: &ObserverData, player_slots: &[usize]) {
     let summaries = build_summary(od, player_slots);
     for (i, &slot) in player_slots.iter().enumerate() {
         let p = &od.players[slot];
@@ -156,26 +148,5 @@ pub fn write_snapshot(
             units,
             upgrades: summaries[i].upgrades.clone(),
         };
-    }
-
-    let duration_ms = players
-        .iter()
-        .flat_map(|p| p.samples.last())
-        .map(|s| s.time_ms)
-        .max()
-        .unwrap_or(0);
-
-    let state = GameState {
-        map: map_name.to_string(),
-        game: game_name.to_string(),
-        duration_ms,
-        players: players.to_vec(),
-    };
-
-    if let Err(e) = serde_json::to_string_pretty(&state)
-        .map_err(|e| e.to_string())
-        .and_then(|json| std::fs::write(filename, json).map_err(|e| e.to_string()))
-    {
-        redraw(&[format!("Error writing snapshot: {e}")]);
     }
 }

@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "build:shared": "tsc -p shared/tsconfig.json",
+    "build:icons": "tsx scripts/build-standalone.ts",
+    "build:standalone": "npm run build:icons && npm -w magic-sentry-web run build:standalone",
     "dev": "docker compose up -d && concurrently --names \"web,ext\" --prefix-colors \"cyan,magenta\" \"npm -w magic-sentry-web run dev\" \"npm -w twitch-extension run dev\"",
     "dev:extension": "npm -w twitch-extension run dev",
     "dev:web": "npm -w magic-sentry-web run dev",

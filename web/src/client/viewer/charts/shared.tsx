@@ -7,6 +7,7 @@ import {
   UNIT_ICON_BY_ID,
 } from '@magic-sentry/shared'
 import { heroSupply, fmtTime, UNIT_COLORS } from '@magic-sentry/shared'
+import { iconSrc } from '../iconSrc'
 
 export const CM = { top: 16, right: 16, bottom: 28, left: 52 }
 export const W = 640
@@ -97,7 +98,7 @@ export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string
   const [hovered, setHovered] = useState(false)
   const isHero = HERO_OBSERVER_IDS.has(name)
   const iconId = UNIT_ICON_BY_ID[name] ?? name
-  const src = isHero ? `/heroes/${iconId}.webp` : `/units/${iconId}.webp`
+  const src = isHero ? iconSrc(`/heroes/${iconId}.webp`) : iconSrc(`/units/${iconId}.webp`)
   const displayName = UNIT_NAME_BY_ID[name] ?? name
   const gold = !isHero ? UNIT_GOLD_BY_ID[name] : undefined
   const lumber = !isHero ? UNIT_LUMBER_BY_ID[name] : undefined

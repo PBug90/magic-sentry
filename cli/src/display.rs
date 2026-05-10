@@ -94,7 +94,7 @@ pub fn build_game_lines(
     lines.push(format!("Game        {game_name}"));
     lines.push(format!("Time        {}", fmt_time(time_ms)));
     lines.push(format!("Sampling    {} ms", sample_interval_ms));
-    lines.push(format!("Output      {output_file}"));
+    lines.push(format!("Report      {output_file}"));
     if let Some(p) = pusher {
         let user = authorized_as.unwrap_or("anonymous");
         lines.push(format!("Endpoint    {}", endpoint.unwrap_or("")));
@@ -130,11 +130,11 @@ pub fn build_game_lines(
     }
     if game_over {
         lines.push(String::new());
-        lines.push("Game over.".to_string());
+        lines.push(format!("Game over  ·  report saved: {output_file}"));
     }
     if stale_ticks >= 10 {
         lines.push(String::new());
-        lines.push("Game appears stalled. Press [p] to stop recording.".to_string());
+        lines.push("Game appears stalled. Press [p] to save report and exit.".to_string());
     }
     if !has_unit_data {
         lines.push(String::new());
