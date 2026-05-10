@@ -88,14 +88,28 @@ mod tests {
     fn write_report_produces_valid_html() {
         let players = vec![make_player("Back2War"), make_player("Grubby")];
         let tmp = std::env::temp_dir().join("ms_test_report.html");
-        write_report(tmp.to_str().unwrap(), "TwistedMeadows", "TestGame", &players);
+        write_report(
+            tmp.to_str().unwrap(),
+            "TwistedMeadows",
+            "TestGame",
+            &players,
+        );
 
         let content = std::fs::read_to_string(&tmp).unwrap();
         assert!(content.contains("<!DOCTYPE html>"), "missing doctype");
         assert!(content.contains("<style>"), "missing style tag");
-        assert!(content.contains("window.__GAME_DATA__="), "missing data script");
-        assert!(content.contains("TwistedMeadows"), "missing map name in title");
-        assert!(content.contains("\"Back2War\""), "missing player name in JSON");
+        assert!(
+            content.contains("window.__GAME_DATA__="),
+            "missing data script"
+        );
+        assert!(
+            content.contains("TwistedMeadows"),
+            "missing map name in title"
+        );
+        assert!(
+            content.contains("\"Back2War\""),
+            "missing player name in JSON"
+        );
         assert!(content.contains("/* test stub */"), "missing bundle");
 
         let _ = std::fs::remove_file(tmp);

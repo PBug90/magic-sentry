@@ -81,9 +81,9 @@ const SECTIONS: { title: string; items: QA[] }[] = [
         a: (
           <p>
             Magic Sentry is a stat-tracking tool for Warcraft III. It reads live game data from WC3
-            running on your machine and lets you review hero builds, resource curves, item stats, and
-            army composition after each match. You can share games publicly, stream live data to a
-            Twitch extension, or just generate a local HTML report for your own use.
+            running on your machine and lets you review hero builds, resource curves, item stats,
+            and army composition after each match. You can share games publicly, stream live data to
+            a Twitch extension, or just generate a local HTML report for your own use.
           </p>
         ),
       },
@@ -91,9 +91,9 @@ const SECTIONS: { title: string; items: QA[] }[] = [
         q: 'What do I need to run it?',
         a: (
           <p>
-            You need the Magic Sentry CLI app running on the same Windows PC as Warcraft III.
-            No game files are modified — it reads data from WC3's shared memory. For streaming and
-            the Twitch extension you also need an account here and a configured{' '}
+            You need the Magic Sentry CLI app running on the same Windows PC as Warcraft III. No
+            game files are modified — it reads data from WC3's shared memory. For streaming and the
+            Twitch extension you also need an account here and a configured{' '}
             <code>magic-sentry.toml</code> file next to the CLI executable.
           </p>
         ),
@@ -178,10 +178,9 @@ const SECTIONS: { title: string; items: QA[] }[] = [
           <p>
             The CLI pushes a compressed snapshot of the current game state to this server every 10
             seconds. Viewers can watch the game live from this site or through the Twitch extension.
-            To enable streaming, sign in here, copy your CLI token from{' '}
-            <strong>Settings</strong>, and paste it into a{' '}
-            <code>magic-sentry.toml</code> file next to the CLI executable along with the server
-            endpoint.
+            To enable streaming, sign in here, copy your CLI token from <strong>Settings</strong>,
+            and paste it into a <code>magic-sentry.toml</code> file next to the CLI executable along
+            with the server endpoint.
           </p>
         ),
       },
@@ -254,9 +253,9 @@ secret   = "your-cli-token-from-settings"`}</pre>
         a: (
           <p>
             The CLI detects a stall when the game clock stops advancing for several consecutive
-            ticks. This can happen if WC3 is paused, if there is a lag or disconnect, or if the
-            game has ended but the "game over" flag wasn't written cleanly. Press <code>p</code> to
-            save the report with the data collected so far and exit.
+            ticks. This can happen if WC3 is paused, if there is a lag or disconnect, or if the game
+            has ended but the "game over" flag wasn't written cleanly. Press <code>p</code> to save
+            the report with the data collected so far and exit.
           </p>
         ),
       },
@@ -264,11 +263,11 @@ secret   = "your-cli-token-from-settings"`}</pre>
         q: 'Authorization failed on startup',
         a: (
           <p>
-            Double-check that the <code>secret</code> in your <code>magic-sentry.toml</code>{' '}
-            matches the CLI token shown in <strong>Settings</strong> — tokens are case-sensitive.
-            Also verify the <code>endpoint</code> URL has no trailing slash and matches exactly what
-            is shown on the settings page. Regenerating a new token in Settings will invalidate the
-            old one.
+            Double-check that the <code>secret</code> in your <code>magic-sentry.toml</code> matches
+            the CLI token shown in <strong>Settings</strong> — tokens are case-sensitive. Also
+            verify the <code>endpoint</code> URL has no trailing slash and matches exactly what is
+            shown on the settings page. Regenerating a new token in Settings will invalidate the old
+            one.
           </p>
         ),
       },
@@ -276,9 +275,9 @@ secret   = "your-cli-token-from-settings"`}</pre>
         q: 'My account shows "pending approval"',
         a: (
           <p>
-            Access to push data to the server is gated by an allowlist. Sign in with Twitch and
-            your account will be reviewed. Local reports work without an account — only streaming
-            and the Twitch extension require approval.
+            Access to push data to the server is gated by an allowlist. Sign in with Twitch and your
+            account will be reviewed. Local reports work without an account — only streaming and the
+            Twitch extension require approval.
           </p>
         ),
       },
@@ -291,8 +290,8 @@ secret   = "your-cli-token-from-settings"`}</pre>
         q: 'What is the difference between a public token and a CLI token?',
         a: (
           <p>
-            Your <strong>public token</strong> is used to construct the URL to your channel page
-            and in the Twitch extension config — it is safe to share. Your <strong>CLI token</strong>{' '}
+            Your <strong>public token</strong> is used to construct the URL to your channel page and
+            in the Twitch extension config — it is safe to share. Your <strong>CLI token</strong>{' '}
             (also called the secret) authenticates the CLI to push game data to the server — keep it
             private and treat it like a password.
           </p>

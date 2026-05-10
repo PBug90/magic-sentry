@@ -14,12 +14,13 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
   const [hovered, setHovered] = useState(false)
   const meta = ITEM_BY_ID[item.id]
   const name = meta?.name ?? item.id
+  const totalGold = item.purchased * (meta?.gold ?? 0)
 
   return (
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: '22px 1fr 32px 32px 32px 32px 48px 48px',
+        gridTemplateColumns: '22px 1fr 32px 48px 32px 32px 32px 48px 48px',
         alignItems: 'center',
         gap: 4,
         padding: '2px 0',
@@ -106,6 +107,9 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
         {name}
       </span>
       <span style={{ color: '#c8a050', textAlign: 'right' }}>{item.purchased || '—'}</span>
+      <span style={{ color: '#c8a050', textAlign: 'right', opacity: totalGold > 0 ? 1 : 0.3 }}>
+        {totalGold > 0 ? `${totalGold.toLocaleString()}g` : '—'}
+      </span>
       <span style={{ color: '#7dbf7d', textAlign: 'right' }}>{item.used || '—'}</span>
       <span style={{ color: '#888', textAlign: 'right' }}>{item.sold || '—'}</span>
       <span style={{ color: '#e06c6c', textAlign: 'right' }}>{item.destroyed || '—'}</span>
@@ -121,7 +125,7 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
 
 const HEADER_STYLE: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: '22px 1fr 32px 32px 32px 32px 48px 48px',
+  gridTemplateColumns: '22px 1fr 32px 48px 32px 32px 32px 48px 48px',
   gap: 4,
   padding: '0 0 4px 0',
   borderBottom: '1px solid #2a2a3a',
@@ -133,19 +137,40 @@ const HEADER_STYLE: CSSProperties = {
 }
 
 export function ItemsPanel({ players }: { players: ChartPlayer[] }) {
-  const playerData = players.map((player) => ({
-    player,
-    items: itemsFromPlayer(player),
-  }))
+  const playerData = players.map((player) => {
+    const items = itemsFromPlayer(player)
+    const totalGold = items.reduce(
+      (sum, item) => sum + item.purchased * (ITEM_BY_ID[item.id]?.gold ?? 0),
+      0,
+    )
+    return { player, items, totalGold }
+  })
 
   if (playerData.every(({ items }) => items.length === 0)) return null
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 12, alignItems: 'flex-start' }}>
-      {playerData.map(({ player, items }) => {
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
+        alignItems: 'flex-start',
+      }}
+    >
+      {playerData.map(({ player, items, totalGold }) => {
         if (items.length === 0) return null
         return (
-          <div key={player.name} style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: '1 1 0', minWidth: 240 }}>
+          <div
+            key={player.name}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+              flex: '1 1 0',
+              minWidth: 240,
+            }}
+          >
             <div
               style={{
                 fontSize: '.62em',
@@ -169,6 +194,7 @@ export function ItemsPanel({ players }: { players: ChartPlayer[] }) {
                 <div />
                 <div>Item</div>
                 <div style={{ textAlign: 'right' }}>Buy</div>
+                <div style={{ textAlign: 'right' }}>Gold</div>
                 <div style={{ textAlign: 'right' }}>Use</div>
                 <div style={{ textAlign: 'right' }}>Sell</div>
                 <div style={{ textAlign: 'right' }}>Lost</div>
@@ -178,6 +204,29 @@ export function ItemsPanel({ players }: { players: ChartPlayer[] }) {
               {items.map((item) => (
                 <ItemRow key={item.id} item={item} />
               ))}
+              {totalGold > 0 && (
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    gap: 6,
+                    paddingTop: 6,
+                    marginTop: 2,
+                    borderTop: '1px solid #2a2a3a',
+                    fontSize: '.62em',
+                    fontFamily: 'monospace',
+                    color: '#c8a050',
+                  }}
+                >
+                  <span
+                    style={{ color: '#555', textTransform: 'uppercase', letterSpacing: '.08em' }}
+                  >
+                    Total invested
+                  </span>
+                  <span>{totalGold.toLocaleString()}g</span>
+                </div>
+              )}
             </div>
           </div>
         )
