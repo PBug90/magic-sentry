@@ -56,3 +56,10 @@ export const UPGRADE_GOLD_BY_ID: Record<string, number> = Object.fromEntries(
 export const UPGRADE_LUMBER_BY_ID: Record<string, number> = Object.fromEntries(
   Object.entries(UPGRADES_TECH).map(([id, u]) => [id, u.lumber]),
 )
+
+/** Maps unit IDs that share an icon to the ID whose asset file should be used. */
+export const UNIT_ICON_BY_ID: Record<string, string> = {
+  hwat: 'hwel',
+  hwt2: 'hwel',
+  hwt3: 'hwel',
+}

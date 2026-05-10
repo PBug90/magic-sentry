@@ -4,6 +4,7 @@ import {
   UNIT_NAME_BY_ID,
   UNIT_GOLD_BY_ID,
   UNIT_LUMBER_BY_ID,
+  UNIT_ICON_BY_ID,
 } from '@magic-sentry/shared'
 import { heroSupply, fmtTime, UNIT_COLORS } from '@magic-sentry/shared'
 
@@ -95,7 +96,8 @@ export function TooltipTime({ sec }: { sec: number }) {
 export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string; size?: number }) {
   const [hovered, setHovered] = useState(false)
   const isHero = HERO_OBSERVER_IDS.has(name)
-  const src = isHero ? `/heroes/${name}.webp` : `/units/${name}.webp`
+  const iconId = UNIT_ICON_BY_ID[name] ?? name
+  const src = isHero ? `/heroes/${iconId}.webp` : `/units/${iconId}.webp`
   const displayName = UNIT_NAME_BY_ID[name] ?? name
   const gold = !isHero ? UNIT_GOLD_BY_ID[name] : undefined
   const lumber = !isHero ? UNIT_LUMBER_BY_ID[name] : undefined

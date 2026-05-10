@@ -1,10 +1,11 @@
 use warcraft3_stats_observer::{
-    AbilityInfo, HeroInfo, ItemInfo, ObserverData, PlayerInfo, UnitInfo, UpgradeInfo,
+    AbilityInfo, HeroInfo, ItemInfo, ObserverData, PlayerInfo, PlayerItemInfo, UnitInfo,
+    UpgradeInfo,
 };
 
 use crate::types::{
-    AbilitySnapshot, HeroSnapshot, ItemSnapshot, PlayerState, PlayerSummary, UnitSnapshot,
-    UpgradeSnapshot,
+    AbilitySnapshot, HeroSnapshot, ItemSnapshot, PlayerItemStatSnapshot, PlayerState,
+    PlayerSummary, UnitSnapshot, UpgradeSnapshot,
 };
 use crate::util::{fourcc, race_name};
 
@@ -63,6 +64,7 @@ pub struct PlayerTickRead {
     pub heroes: Vec<HeroSnapshot>,
     pub units: Vec<UnitSnapshot>,
     pub upgrades: Vec<UpgradeSnapshot>,
+    pub player_items: Vec<PlayerItemStatSnapshot>,
     pub gold: u32,
     pub gold_mined: u32,
     pub gold_upkeep_lost: u32,
@@ -165,6 +167,23 @@ fn read_unit_snapshot(u: &UnitInfo) -> Option<UnitSnapshot> {
     })
 }
 
+fn read_player_item_stat_snapshot(item: &PlayerItemInfo) -> Option<PlayerItemStatSnapshot> {
+    if item.name.to_string().trim().is_empty() {
+        return None;
+    }
+    Some(PlayerItemStatSnapshot {
+        id: fourcc(item.id),
+        item_level: item.item_level,
+        collected: item.collected,
+        purchased: item.purchased,
+        sold: item.sold,
+        used: item.used,
+        destroyed: item.destroyed,
+        damage_dealt: item.damaged_dealt,
+        healing_done: item.healing_done,
+    })
+}
+
 pub fn read_player_tick(p: &PlayerInfo) -> PlayerTickRead {
     let heroes = p
         .heroes
@@ -187,10 +206,18 @@ pub fn read_player_tick(p: &PlayerInfo) -> PlayerTickRead {
         .filter_map(read_upgrade_snapshot)
         .collect();
 
+    let player_items = p
+        .items
+        .iter()
+        .take((p.item_count as usize).min(999))
+        .filter_map(read_player_item_stat_snapshot)
+        .collect();
+
     PlayerTickRead {
         heroes,
         units,
         upgrades,
+        player_items,
         gold: p.gold,
         gold_mined: p.gold_mined,
         gold_upkeep_lost: p.gold_upkeep_lost,

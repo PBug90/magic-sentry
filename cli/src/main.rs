@@ -160,6 +160,7 @@ fn run_game(
                     heroes,
                     units,
                     upgrades: r.upgrades,
+                    player_items: r.player_items,
                 });
             }
         }
@@ -345,6 +346,20 @@ fn main() {
 
         let reported_player_count = od.game.active_player_count as usize;
         let player_slots = find_player_slots(&od, reported_player_count);
+
+        let player_count = player_slots.len();
+        if player_count != 2 && player_count != 4 {
+            redraw(&[
+                format!(
+                    "WC3 connected  ·  {player_count} players detected  ·  Only 1v1 and 2v2 are supported."
+                ),
+                auth_line,
+                session_line,
+            ]);
+            sleep_or_exit(Duration::from_secs(2));
+            continue;
+        }
+
         if is_game_over(&od, &player_slots) {
             sleep_or_exit(Duration::from_secs(2));
             continue;

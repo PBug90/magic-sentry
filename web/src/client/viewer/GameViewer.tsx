@@ -2,14 +2,16 @@
 import { GameRecord, GamePatch, PlayerRecord, ChartPlayer } from '../shared/types'
 import { PLAYER_COLORS, formatDuration } from '@magic-sentry/shared'
 import { HeroPanel } from './HeroPanel'
+import { ItemsPanel } from './ItemsPanel'
 import { EconomyChart, LumberChart, ApmChart } from './charts/ResourceChart'
 import { FoodChart } from './charts/FoodChart'
 import { ArmyChart, CurrentArmies } from './charts/ArmyChart'
 
-type TabKey = 'heroes' | 'gold' | 'lumber' | 'food' | 'armies' | 'army' | 'apm'
+type TabKey = 'heroes' | 'gold' | 'lumber' | 'food' | 'armies' | 'army' | 'apm' | 'items'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'heroes', label: 'Heroes' },
+  { key: 'items', label: 'Items' },
   { key: 'gold', label: 'Gold' },
   { key: 'lumber', label: 'Lumber' },
   { key: 'food', label: 'Food' },
@@ -328,6 +330,7 @@ export function GameViewer({ channel, gameId, onBack }: GameViewerProps) {
             {tab === 'armies' && <CurrentArmies players={playerData} />}
             {tab === 'army' && <ArmyChart players={playerData} />}
             {tab === 'apm' && <ApmChart players={playerData} />}
+            {tab === 'items' && <ItemsPanel players={playerData} />}
           </div>
         </>
       )}

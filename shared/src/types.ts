@@ -13,6 +13,7 @@ export const MAX_SAMPLES_PER_PATCH = 1800 // ~1 sample / 2 s for a 1-hour game
 export const MAX_HEROES = 3
 export const MAX_UNITS = 200
 export const MAX_UPGRADES = 100
+export const MAX_ITEMS = 200
 export const MAX_SEQ = 100_000
 export const MAX_GAME_MS = 10_800_000 // 3 hours
 export const MAX_APM = 1_000
@@ -80,6 +81,18 @@ export const UpgradeSnapshotSchema = z.object({
   max_level: nat(10),
 })
 
+export const PlayerItemStatSnapshotSchema = z.object({
+  id: fcc,
+  item_level: nat(100),
+  collected: nat(MAX_RESOURCE),
+  purchased: nat(MAX_RESOURCE),
+  sold: nat(MAX_RESOURCE),
+  used: nat(MAX_RESOURCE),
+  destroyed: nat(MAX_RESOURCE),
+  damage_dealt: nat(MAX_STAT),
+  healing_done: nat(MAX_STAT),
+})
+
 export const SampleSchema = z.object({
   time_ms: nat(MAX_GAME_MS),
   gold: nat(MAX_RESOURCE),
@@ -94,6 +107,7 @@ export const SampleSchema = z.object({
   heroes: z.array(HeroSampleSchema).max(MAX_HEROES),
   units: z.array(UnitSnapshotSchema).max(MAX_UNITS),
   upgrades: z.array(UpgradeSnapshotSchema).max(MAX_UPGRADES),
+  player_items: z.array(PlayerItemStatSnapshotSchema).max(MAX_ITEMS),
 })
 
 export const HeroFinalSchema = z.object({
@@ -180,6 +194,7 @@ export type AbilitySnapshot = z.infer<typeof AbilitySnapshotSchema>
 export type HeroSample = z.infer<typeof HeroSampleSchema>
 export type UnitSnapshot = z.infer<typeof UnitSnapshotSchema>
 export type UpgradeSnapshot = z.infer<typeof UpgradeSnapshotSchema>
+export type PlayerItemStatSnapshot = z.infer<typeof PlayerItemStatSnapshotSchema>
 export type Sample = z.infer<typeof SampleSchema>
 export type HeroFinal = z.infer<typeof HeroFinalSchema>
 export type UnitSummary = z.infer<typeof UnitSummarySchema>

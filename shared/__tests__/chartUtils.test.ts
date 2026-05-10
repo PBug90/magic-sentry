@@ -35,6 +35,7 @@ function makeSample(overrides: Partial<Sample> = {}): Sample {
     heroes: [],
     units: [],
     upgrades: [],
+    player_items: [],
     ...overrides,
   }
 }

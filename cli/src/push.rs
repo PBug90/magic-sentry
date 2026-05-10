@@ -239,6 +239,7 @@ mod tests {
             heroes: vec![],
             units: vec![],
             upgrades: vec![],
+            player_items: vec![],
         }
     }
 

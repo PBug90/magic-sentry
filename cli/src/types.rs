@@ -53,6 +53,19 @@ pub struct UpgradeSnapshot {
 }
 
 #[derive(Serialize, Clone)]
+pub struct PlayerItemStatSnapshot {
+    pub id: String,
+    pub item_level: u32,
+    pub collected: u32,
+    pub purchased: u32,
+    pub sold: u32,
+    pub used: u32,
+    pub destroyed: u32,
+    pub damage_dealt: u32,
+    pub healing_done: u32,
+}
+
+#[derive(Serialize, Clone)]
 pub struct ResourceSample {
     pub time_ms: u64,
     pub gold: u32,
@@ -67,6 +80,7 @@ pub struct ResourceSample {
     pub heroes: Vec<HeroSnapshot>,
     pub units: Vec<UnitSnapshot>,
     pub upgrades: Vec<UpgradeSnapshot>,
+    pub player_items: Vec<PlayerItemStatSnapshot>,
 }
 
 // ---------------------------------------------------------------------------
@@ -179,4 +193,28 @@ pub struct GamePatch {
     pub map: String,
     pub game: String,
     pub players: Vec<PlayerPatch>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn player_item_stat_snapshot_serializes() {
+        let snap = PlayerItemStatSnapshot {
+            id: "stwp".to_string(),
+            item_level: 2,
+            collected: 0,
+            purchased: 3,
+            sold: 1,
+            used: 2,
+            destroyed: 0,
+            damage_dealt: 0,
+            healing_done: 450,
+        };
+        let json = serde_json::to_string(&snap).unwrap();
+        assert!(json.contains("\"id\":\"stwp\""));
+        assert!(json.contains("\"purchased\":3"));
+        assert!(json.contains("\"healing_done\":450"));
+    }
 }
