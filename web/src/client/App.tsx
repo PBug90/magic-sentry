@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { GameViewer } from './viewer/GameViewer'
+import { LayoutChecker } from './LayoutChecker'
 import { FAQPage } from './FAQ'
 
 // ---------------------------------------------------------------------------
@@ -1315,11 +1316,19 @@ type Route =
   | { type: 'settings' }
   | { type: 'faq' }
   | { type: 'game'; channel: string; gameId: string }
+  | { type: 'layout-check'; channel: string; gameId: string }
 
 function parseHash(hash: string): Route {
   const path = hash.replace(/^#/, '')
   if (path === '/settings') return { type: 'settings' }
   if (path === '/faq') return { type: 'faq' }
+  const lc = path.match(/^\/layout-check\/([^/]+)\/(.+)$/)
+  if (lc)
+    return {
+      type: 'layout-check',
+      channel: decodeURIComponent(lc[1]),
+      gameId: decodeURIComponent(lc[2]),
+    }
   const m = path.match(/^\/game\/([^/]+)\/(.+)$/)
   if (m)
     return { type: 'game', channel: decodeURIComponent(m[1]), gameId: decodeURIComponent(m[2]) }
@@ -1339,6 +1348,8 @@ function useRoute(): [Route, (r: Route) => void] {
     if (r.type === 'home') window.location.hash = '/'
     else if (r.type === 'settings') window.location.hash = '/settings'
     else if (r.type === 'faq') window.location.hash = '/faq'
+    else if (r.type === 'layout-check')
+      window.location.hash = `/layout-check/${encodeURIComponent(r.channel)}/${encodeURIComponent(r.gameId)}`
     else
       window.location.hash = `/game/${encodeURIComponent(r.channel)}/${encodeURIComponent(r.gameId)}`
   }, [])
@@ -1353,6 +1364,16 @@ function useRoute(): [Route, (r: Route) => void] {
 export default function App() {
   const { user, logout } = useMe()
   const [route, navigate] = useRoute()
+
+  if (route.type === 'layout-check') {
+    return (
+      <LayoutChecker
+        channel={route.channel}
+        gameId={route.gameId}
+        onBack={() => navigate({ type: 'game', channel: route.channel, gameId: route.gameId })}
+      />
+    )
+  }
 
   if (route.type === 'game') {
     return (
@@ -1369,6 +1390,9 @@ export default function App() {
           channel={route.channel}
           gameId={route.gameId}
           onBack={() => navigate({ type: 'home' })}
+          onLayoutCheck={() =>
+            navigate({ type: 'layout-check', channel: route.channel, gameId: route.gameId })
+          }
         />
       </div>
     )

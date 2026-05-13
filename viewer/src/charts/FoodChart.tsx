@@ -1,4 +1,4 @@
-import { ChartPlayer } from '../../shared/types'
+import { ChartPlayer } from '@magic-sentry/shared'
 import { nearestSample, niceMax, timeTicks } from '@magic-sentry/shared'
 import { CM, W, H, IW, IH, useChartHover, ChartTooltip, TooltipTime, SectionLabel } from './shared'
 
@@ -41,7 +41,7 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
                 textAnchor="end"
                 dominantBaseline="middle"
                 fontSize={9}
-                fill="#7a7a88"
+                fill="#585863"
                 fontFamily="monospace"
               >
                 {v}
@@ -55,12 +55,43 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
               y={IH + 16}
               textAnchor="middle"
               fontSize={9}
-              fill="#7a7a88"
+              fill="#585863"
               fontFamily="monospace"
             >
               {Math.floor(t / 60)}m
             </text>
           ))}
+          {(
+            [
+              { value: 50, color: '#c8a050' },
+              { value: 80, color: '#c84040' },
+            ] as { value: number; color: string }[]
+          )
+            .filter(({ value }) => value <= yMax)
+            .map(({ value, color }) => (
+              <g key={value}>
+                <line
+                  x1={0}
+                  y1={yOf(value)}
+                  x2={IW}
+                  y2={yOf(value)}
+                  stroke={color}
+                  strokeWidth={1}
+                  opacity={0.45}
+                />
+                <text
+                  x={IW + 4}
+                  y={yOf(value)}
+                  dominantBaseline="middle"
+                  fontSize={8}
+                  fill={color}
+                  fontFamily="monospace"
+                  opacity={0.7}
+                >
+                  {value}
+                </text>
+              </g>
+            ))}
           {players.map(({ color, samples }) => (
             <g key={color}>
               <path
@@ -115,7 +146,7 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
             return (
               <div key={p.name} style={{ marginBottom: 4 }}>
                 <span
-                  style={{ fontSize: '.62rem', color: p.color, display: 'block', marginBottom: 1 }}
+                  style={{ fontSize: '.85em', color: p.color, display: 'block', marginBottom: 1 }}
                 >
                   {p.name}
                 </span>
@@ -132,10 +163,10 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
                       justifyContent: 'space-between',
                       gap: 12,
                       fontFamily: 'monospace',
-                      fontSize: '.58rem',
+                      fontSize: '.8em',
                     }}
                   >
-                    <span style={{ color: '#7a7a88' }}>{label}</span>
+                    <span style={{ color: '#585863' }}>{label}</span>
                     <span style={{ color: '#efeff1' }}>{val}</span>
                   </div>
                 ))}
@@ -148,7 +179,7 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0 24px' }}>
         {players.map(({ name, color }) => (
           <span key={name} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: '.65rem', color: '#888' }}>{name}</span>
+            <span style={{ fontSize: '.65em', color: '#888' }}>{name}</span>
             {(
               [
                 { label: 'used', dash: undefined },
@@ -161,8 +192,8 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
-                  fontSize: '.6rem',
-                  color: '#888',
+                  fontSize: '.6em',
+                  color: '#6a6a6a',
                 }}
               >
                 <svg width={16} height={2} style={{ flexShrink: 0 }}>

@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "paths": {
-      "@magic-sentry/shared": ["../shared/src/index.ts"]
+      "@magic-sentry/shared": ["../shared/src/index.ts"],
+      "@magic-sentry/viewer": ["../viewer/src/index.ts"]
     },
     "target": "ES2020",
     "useDefineForClassFields": true,

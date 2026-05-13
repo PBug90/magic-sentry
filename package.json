@@ -3,6 +3,7 @@
   "private": true,
   "workspaces": [
     "shared",
+    "viewer",
     "twitch-extension",
     "web"
   ],
@@ -17,6 +18,7 @@
     "build:web": "npm -w magic-sentry-web run build",
     "build:all": "npm -w twitch-extension run build && npm -w magic-sentry-web run build",
     "typecheck:extension": "npm -w twitch-extension run typecheck",
+    "typecheck:viewer": "npm -w @magic-sentry/viewer run typecheck",
     "typecheck:web": "npm -w magic-sentry-web run typecheck",
     "test:shared": "npm -w @magic-sentry/shared run test",
     "test:web": "npm -w magic-sentry-web run test:server",

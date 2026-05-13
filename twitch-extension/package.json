@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@magic-sentry/shared": "*",
+    "@magic-sentry/viewer": "*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -23,6 +24,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "archiver": "^8.0.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.10"
   }

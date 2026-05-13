@@ -1,11 +1,12 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import {
   AbilitySnapshot,
   ChartPlayer,
   HeroSample,
   ItemSnapshot,
   UpgradeSnapshot,
-} from '../shared/types'
+} from '@magic-sentry/shared'
+import { HoverTooltip } from './HoverTooltip'
 import {
   ABILITY_BY_ID,
   HERO_XP_THRESHOLDS,
@@ -15,9 +16,8 @@ import {
   UPGRADE_GOLD_BY_ID,
   UPGRADE_LUMBER_BY_ID,
 } from '@magic-sentry/shared'
-import { iconSrc } from './iconSrc'
+import { useIconSrc } from './context'
 
-// Unified hero display shape — works for both HeroFinal (summary) and HeroSample (live).
 interface HeroDisplay {
   id: string
   level: number
@@ -30,8 +30,6 @@ interface HeroDisplay {
   inventory: ItemSnapshot[]
 }
 
-/** When the final summary isn't available yet, derive one entry per hero from the
- *  most recent sample that mentions them. */
 function heroesFromSamples(player: ChartPlayer): HeroDisplay[] {
   const latest = new Map<string, HeroSample>()
   for (const sample of player.samples) {
@@ -43,6 +41,7 @@ function heroesFromSamples(player: ChartPlayer): HeroDisplay[] {
 }
 
 function HeroIcon({ id, size = 44 }: { id: string; size?: number }) {
+  const iconSrc = useIconSrc()
   return (
     <div
       style={{
@@ -75,6 +74,7 @@ function fmtStat(n: number): string {
 }
 
 function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
+  const iconSrc = useIconSrc()
   const info = ABILITY_BY_ID[ability.id]
   const name = info?.name ?? ability.id
   const size = 32
@@ -135,6 +135,7 @@ function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
 }
 
 function ItemTile({ item }: { item: ItemSnapshot }) {
+  const iconSrc = useIconSrc()
   const [hovered, setHovered] = useState(false)
   const item_info = ITEM_BY_ID[item.id]
   const name = item_info?.name ?? item.id
@@ -146,29 +147,12 @@ function ItemTile({ item }: { item: ItemSnapshot }) {
       onMouseLeave={() => setHovered(false)}
     >
       {hovered && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            marginBottom: 4,
-            background: '#0f0f1a',
-            border: '1px solid #2a2a3a',
-            padding: '4px 8px',
-            whiteSpace: 'nowrap',
-            zIndex: 100,
-            pointerEvents: 'none',
-            fontSize: '0.7rem',
-            lineHeight: 1.5,
-            color: '#f0ece0',
-          }}
-        >
+        <HoverTooltip>
           <div>{name}</div>
           {gold !== undefined && (
             <div style={{ color: '#c8a050', fontFamily: 'monospace' }}>{gold}g</div>
           )}
-        </div>
+        </HoverTooltip>
       )}
       <div
         style={{
@@ -180,7 +164,7 @@ function ItemTile({ item }: { item: ItemSnapshot }) {
         }}
       >
         <img
-          src={`/items/${item.id}.webp`}
+          src={iconSrc(`/items/${item.id}.webp`)}
           alt={item.id}
           width={32}
           height={32}
@@ -318,7 +302,6 @@ function HeroCard({
       }}
     >
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        {/* Left: icon + name, stats, abilities */}
         <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
             <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -391,7 +374,7 @@ function HeroCard({
               </span>
             ))}
           </div>
-          {hero.abilities.length > 0 && (
+          {hero.abilities.filter((a) => a.id in ABILITY_BY_ID).length > 0 && (
             <div
               style={{
                 borderTop: '1px solid #1e1e26',
@@ -401,13 +384,14 @@ function HeroCard({
                 flexWrap: 'wrap',
               }}
             >
-              {hero.abilities.map((a) => (
-                <AbilityTile key={a.id} ability={a} />
-              ))}
+              {hero.abilities
+                .filter((a) => a.id in ABILITY_BY_ID)
+                .map((a) => (
+                  <AbilityTile key={a.id} ability={a} />
+                ))}
             </div>
           )}
         </div>
-        {/* Right: 2×3 inventory grid */}
         <div
           style={{
             display: 'grid',
@@ -419,7 +403,7 @@ function HeroCard({
         >
           {[0, 1, 2, 3, 4, 5].map((i) => {
             const item = hero.inventory[i]
-            if (!item) {
+            if (!item || !(item.id in ITEM_BY_ID)) {
               return (
                 <div
                   key={i}
@@ -447,6 +431,7 @@ function upgradesFromPlayer(player: ChartPlayer): UpgradeSnapshot[] {
 }
 
 function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
+  const iconSrc = useIconSrc()
   const [hovered, setHovered] = useState(false)
   const name = UPGRADE_NAME_BY_ID[upgrade.id] ?? upgrade.id
   const gold = UPGRADE_GOLD_BY_ID[upgrade.id]
@@ -460,25 +445,7 @@ function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
         onMouseLeave={() => setHovered(false)}
       >
         {hovered && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginBottom: 4,
-              background: '#0f0f1a',
-              border: '1px solid #2a2a3a',
-              padding: '4px 8px',
-              whiteSpace: 'nowrap',
-              zIndex: 100,
-              pointerEvents: 'none',
-              fontSize: '0.7rem',
-              lineHeight: 1.5,
-              color: '#f0ece0',
-              borderRadius: 3,
-            }}
-          >
+          <HoverTooltip>
             <div>{name}</div>
             {gold !== undefined && gold > 0 && (
               <div style={{ color: '#c8a050', fontFamily: 'monospace' }}>{gold}g</div>
@@ -486,7 +453,7 @@ function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
             {lumber !== undefined && lumber > 0 && (
               <div style={{ color: '#7dbf7d', fontFamily: 'monospace' }}>{lumber}w</div>
             )}
-          </div>
+          </HoverTooltip>
         )}
         <div
           style={{
@@ -531,9 +498,9 @@ export function HeroPanel({ players }: { players: ChartPlayer[] }) {
   const playerData = players.map((player) => {
     const heroes: HeroDisplay[] =
       player.summary.heroes.length > 0
-        ? [...player.summary.heroes].reverse()
-        : heroesFromSamples(player)
-    const upgrades = upgradesFromPlayer(player)
+        ? [...player.summary.heroes].reverse().filter((h) => h.id in UNIT_NAME_BY_ID)
+        : heroesFromSamples(player).filter((h) => h.id in UNIT_NAME_BY_ID)
+    const upgrades = upgradesFromPlayer(player).filter((u) => u.id in UPGRADE_NAME_BY_ID)
     return { player, heroes, upgrades }
   })
 

@@ -6,13 +6,13 @@ A Twitch Video Overlay extension that displays real-time Warcraft III game stati
 
 A collapsible side panel (360 px wide) on the left edge of the video with five tabs:
 
-| Tab | Chart |
-|-----|-------|
-| **Heroes** | Hero portraits, level, XP, damage/kills/deaths |
-| **Gold** | Gold mined (solid), upkeep lost (dashed), net (dotted) per player |
-| **Lumber** | Lumber mined per player |
-| **Food** | Food used vs. food cap per player |
-| **Army** | Mirrored butterfly chart — player 1 stacks up, player 2 stacks down, by army supply |
+| Tab        | Chart                                                                               |
+| ---------- | ----------------------------------------------------------------------------------- |
+| **Heroes** | Hero portraits, level, XP, damage/kills/deaths                                      |
+| **Gold**   | Gold mined (solid), upkeep lost (dashed), net (dotted) per player                   |
+| **Lumber** | Lumber mined per player                                                             |
+| **Food**   | Food used vs. food cap per player                                                   |
+| **Army**   | Mirrored butterfly chart — player 1 stacks up, player 2 stacks down, by army supply |
 
 All charts have an interactive hover crosshair with a tooltip. The panel can be collapsed to a small chevron button at the video edge.
 
@@ -81,14 +81,14 @@ twitch-extension/
 
 ## Twitch Developer Console settings
 
-| Setting | Value |
-|---------|-------|
-| Extension type | Video Overlay |
-| Viewer HTML file | `viewer.html` |
-| Config HTML file | `config.html` |
-| Configuration method | Twitch Configuration Service |
-| Channel segment | Broadcaster-writable |
-| External URLs (fetch) | Your Magic Sentry domain |
+| Setting               | Value                        |
+| --------------------- | ---------------------------- |
+| Extension type        | Video Overlay                |
+| Viewer HTML file      | `viewer.html`                |
+| Config HTML file      | `config.html`                |
+| Configuration method  | Twitch Configuration Service |
+| Channel segment       | Broadcaster-writable         |
+| External URLs (fetch) | Your Magic Sentry domain     |
 
 ## Data contract
 
@@ -106,17 +106,22 @@ interface PlayerRecord {
   name: string
   race: string
   team: number
-  result: string         // "Victory" | "Defeat"
-  samples: Sample[]      // time-series snapshots
+  result: string // "Victory" | "Defeat"
+  samples: Sample[] // time-series snapshots
   summary: PlayerSummary // end-of-game hero/unit stats
   time_in_upkeep_ms: number[]
 }
 
 interface Sample {
   time_ms: number
-  gold: number; gold_mined: number; gold_upkeep_lost: number
-  lumber: number; lumber_mined: number; lumber_upkeep_lost: number
-  food_used: number; food_cap: number
+  gold: number
+  gold_mined: number
+  gold_upkeep_lost: number
+  lumber: number
+  lumber_mined: number
+  lumber_upkeep_lost: number
+  food_used: number
+  food_cap: number
   apm: number
   heroes: HeroSample[]
   units: UnitSnapshot[]

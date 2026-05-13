@@ -1,4 +1,4 @@
-﻿import { ChartPlayer } from '../../shared/types'
+import { ChartPlayer, type Sample } from '@magic-sentry/shared'
 import { nearestSample, niceMax, timeTicks } from '@magic-sentry/shared'
 import {
   CM,
@@ -14,8 +14,8 @@ import {
 } from './shared'
 
 interface ResourceSeries {
-  mined: (s: import('../../shared/types').Sample) => number
-  upkeep: (s: import('../../shared/types').Sample) => number
+  mined: (s: Sample) => number
+  upkeep: (s: Sample) => number
   netLabel: string
   minedLabel: string
   upkeepLabel: string
@@ -72,7 +72,7 @@ function ResourceChart({
                 textAnchor="end"
                 dominantBaseline="middle"
                 fontSize={9}
-                fill="#46464f"
+                fill="#7a7a88"
                 fontFamily="monospace"
               >
                 {v >= 1000 ? `${v / 1000}k` : v}
@@ -86,7 +86,7 @@ function ResourceChart({
               y={IH + 16}
               textAnchor="middle"
               fontSize={9}
-              fill="#46464f"
+              fill="#7a7a88"
               fontFamily="monospace"
             >
               {Math.floor(t / 60)}m
@@ -170,7 +170,7 @@ function ResourceChart({
             return (
               <div key={p.name} style={{ marginBottom: 6 }}>
                 <span
-                  style={{ fontSize: '.62em', color: p.color, display: 'block', marginBottom: 2 }}
+                  style={{ fontSize: '.85em', color: p.color, display: 'block', marginBottom: 2 }}
                 >
                   {p.name}
                 </span>
@@ -189,10 +189,10 @@ function ResourceChart({
                       justifyContent: 'space-between',
                       gap: 12,
                       fontFamily: 'monospace',
-                      fontSize: '.58em',
+                      fontSize: '.8em',
                     }}
                   >
-                    <span style={{ color: '#46464f' }}>{label}</span>
+                    <span style={{ color: '#7a7a88' }}>{label}</span>
                     <span style={{ color: '#efeff1' }}>{val.toLocaleString()}</span>
                   </div>
                 ))}
@@ -202,7 +202,6 @@ function ResourceChart({
         </ChartTooltip>
       )}
 
-      {/* Legend */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0 24px' }}>
         {players.map(({ name, color }) => (
           <span key={name} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -224,7 +223,7 @@ function ResourceChart({
                   alignItems: 'center',
                   gap: 6,
                   fontSize: '.6em',
-                  color: '#555',
+                  color: '#888',
                 }}
               >
                 <svg width={16} height={2} style={{ flexShrink: 0 }}>
@@ -251,19 +250,98 @@ function ResourceChart({
 export function EconomyChart({ players }: { players: ChartPlayer[] }) {
   const rawMax = Math.max(...players.flatMap((p) => p.samples.map((s) => s.gold_mined)), 1)
   const step = rawMax > 10000 ? 5000 : rawMax > 4000 ? 2000 : 1000
+
+  const summaries = players
+    .map((p) => {
+      const s = p.samples[p.samples.length - 1]
+      if (!s) return null
+      const net = s.gold_mined - s.gold_upkeep_lost
+      return { player: p, mined: s.gold_mined, upkeep: s.gold_upkeep_lost, net }
+    })
+    .filter(Boolean) as { player: ChartPlayer; mined: number; upkeep: number; net: number }[]
+
   return (
-    <ResourceChart
-      players={players}
-      title="Economy — Gold"
-      yStep={step}
-      series={{
-        mined: (s) => s.gold_mined,
-        upkeep: (s) => s.gold_upkeep_lost,
-        minedLabel: 'mined',
-        upkeepLabel: 'upkeep',
-        netLabel: 'net gold',
-      }}
-    />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {summaries.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
+        >
+          {summaries.map(({ player, mined, upkeep, net }) => (
+            <div
+              key={player.name}
+              style={{
+                flex: 1,
+                minWidth: 160,
+                padding: '10px 14px',
+                background: '#12121a',
+                border: '1px solid #2a2a3a',
+                borderTop: `3px solid ${player.color}`,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 6,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '.62em',
+                  color: player.color,
+                  fontFamily: 'monospace',
+                  letterSpacing: '.06em',
+                }}
+              >
+                {player.name}
+              </span>
+              {(
+                [
+                  ['Gold mined', mined],
+                  ['Upkeep lost', upkeep],
+                  ['Net mined', net],
+                ] as [string, number][]
+              ).map(([label, val]) => (
+                <div
+                  key={label}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'baseline',
+                    gap: 8,
+                  }}
+                >
+                  <span style={{ fontSize: '.58em', color: '#7a7a88', fontFamily: 'monospace' }}>
+                    {label}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: '.66em',
+                      color: label === 'Upkeep lost' ? '#ff7b72' : '#efeff1',
+                      fontFamily: 'monospace',
+                    }}
+                  >
+                    {val.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+      <ResourceChart
+        players={players}
+        title="Economy — Gold"
+        yStep={step}
+        series={{
+          mined: (s) => s.gold_mined,
+          upkeep: (s) => s.gold_upkeep_lost,
+          minedLabel: 'mined',
+          upkeepLabel: 'upkeep',
+          netLabel: 'net gold',
+        }}
+      />
+    </div>
   )
 }
 

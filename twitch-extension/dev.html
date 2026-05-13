@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Magic Sentry – Dev Preview</title>
+    <script>
+      // Mock window.Twitch.ext for local development.
+      // Config is persisted in localStorage so it survives refreshes.
+      ;(function () {
+        const KEY = 'magic_sentry_dev_config'
+        const cbs = { authorized: [], changed: [], context: [], error: [] }
+
+        function load() {
+          try {
+            return JSON.parse(localStorage.getItem(KEY) || '{}')
+          } catch {
+            return {}
+          }
+        }
+
+        window.Twitch = {
+          ext: {
+            configuration: {
+              get broadcaster() {
+                const cfg = load()
+                if (!cfg.endpointUrl) return null
+                return {
+                  content: JSON.stringify({
+                    endpointUrl: cfg.endpointUrl,
+                    pollIntervalSec: 5,
+                    token: cfg.token || '',
+                  }),
+                }
+              },
+              onChanged(fn) {
+                cbs.changed.push(fn)
+              },
+            },
+            onAuthorized(fn) {
+              cbs.authorized.push(fn)
+              setTimeout(() => fn({ channelId: 'dev', userId: 'dev', token: 'dev' }), 50)
+            },
+            onContext(fn) {
+              cbs.context.push(fn)
+            },
+            onError(fn) {
+              cbs.error.push(fn)
+            },
+          },
+        }
+
+        window.__devUpdateConfig = function (cfg) {
+          localStorage.setItem(KEY, JSON.stringify(cfg))
+          cbs.changed.forEach((fn) => fn())
+        }
+
+        window.__devGetConfig = load
+      })()
+    </script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: #0e0e10;
+        color: #efeff1;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/dev/DevMain.tsx"></script>
+  </body>
+</html>

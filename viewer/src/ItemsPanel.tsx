@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import { ChartPlayer, PlayerItemStatSnapshot } from '../shared/types'
+import { ChartPlayer, PlayerItemStatSnapshot } from '@magic-sentry/shared'
 import { ITEM_BY_ID } from '@magic-sentry/shared'
-import { iconSrc } from './iconSrc'
+import { HoverTooltip } from './HoverTooltip'
+import { useIconSrc } from './context'
 
 function itemsFromPlayer(player: ChartPlayer): PlayerItemStatSnapshot[] {
   const last = [...player.samples].reverse().find((s) => s.player_items.length > 0)
@@ -11,11 +12,13 @@ function itemsFromPlayer(player: ChartPlayer): PlayerItemStatSnapshot[] {
 }
 
 function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
+  const iconSrc = useIconSrc()
   const [hovered, setHovered] = useState(false)
   const meta = ITEM_BY_ID[item.id]
   const name = meta?.name ?? item.id
   const totalGold = item.purchased * (meta?.gold ?? 0)
 
+  const cell: CSSProperties = { fontSize: '.65em', fontFamily: 'monospace' }
   return (
     <div
       style={{
@@ -25,40 +28,21 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
         gap: 4,
         padding: '2px 0',
         borderBottom: '1px solid #1a1a24',
-        fontSize: '.65em',
-        fontFamily: 'monospace',
       }}
     >
+      {/* Icon at root font level so HoverTooltip matches hero tab sizing */}
       <div
         style={{ position: 'relative', flexShrink: 0 }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {hovered && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              marginBottom: 4,
-              background: '#0f0f1a',
-              border: '1px solid #2a2a3a',
-              padding: '4px 8px',
-              whiteSpace: 'nowrap',
-              zIndex: 100,
-              pointerEvents: 'none',
-              fontSize: '1rem',
-              lineHeight: 1.5,
-              color: '#f0ece0',
-              borderRadius: 3,
-            }}
-          >
+          <HoverTooltip>
             <div>{name}</div>
             {meta?.gold !== undefined && meta.gold > 0 && (
               <div style={{ color: '#c8a050' }}>{meta.gold}g</div>
             )}
-          </div>
+          </HoverTooltip>
         )}
         <div style={{ position: 'relative', width: 20, height: 20 }}>
           <img
@@ -85,7 +69,7 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
                 right: 0,
                 background: 'rgba(0,0,0,0.75)',
                 color: '#c8a050',
-                fontSize: '.55em',
+                fontSize: '.35em',
                 lineHeight: 1,
                 padding: '1px 2px',
               }}
@@ -98,6 +82,7 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
 
       <span
         style={{
+          ...cell,
           color: '#efeff1',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -106,17 +91,19 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
       >
         {name}
       </span>
-      <span style={{ color: '#c8a050', textAlign: 'right' }}>{item.purchased || '—'}</span>
-      <span style={{ color: '#c8a050', textAlign: 'right', opacity: totalGold > 0 ? 1 : 0.3 }}>
+      <span style={{ ...cell, color: '#c8a050', textAlign: 'right' }}>{item.purchased || '—'}</span>
+      <span
+        style={{ ...cell, color: '#c8a050', textAlign: 'right', opacity: totalGold > 0 ? 1 : 0.3 }}
+      >
         {totalGold > 0 ? `${totalGold.toLocaleString()}g` : '—'}
       </span>
-      <span style={{ color: '#7dbf7d', textAlign: 'right' }}>{item.used || '—'}</span>
-      <span style={{ color: '#888', textAlign: 'right' }}>{item.sold || '—'}</span>
-      <span style={{ color: '#e06c6c', textAlign: 'right' }}>{item.destroyed || '—'}</span>
-      <span style={{ color: '#ff9944', textAlign: 'right' }}>
+      <span style={{ ...cell, color: '#7dbf7d', textAlign: 'right' }}>{item.used || '—'}</span>
+      <span style={{ ...cell, color: '#888', textAlign: 'right' }}>{item.sold || '—'}</span>
+      <span style={{ ...cell, color: '#e06c6c', textAlign: 'right' }}>{item.destroyed || '—'}</span>
+      <span style={{ ...cell, color: '#ff9944', textAlign: 'right' }}>
         {item.damage_dealt > 0 ? item.damage_dealt.toLocaleString() : '—'}
       </span>
-      <span style={{ color: '#7dbf7d', textAlign: 'right' }}>
+      <span style={{ ...cell, color: '#7dbf7d', textAlign: 'right' }}>
         {item.healing_done > 0 ? item.healing_done.toLocaleString() : '—'}
       </span>
     </div>
@@ -133,12 +120,12 @@ const HEADER_STYLE: CSSProperties = {
   fontFamily: 'monospace',
   letterSpacing: '.08em',
   textTransform: 'uppercase',
-  color: '#555',
+  color: '#6a6a6a',
 }
 
 export function ItemsPanel({ players }: { players: ChartPlayer[] }) {
   const playerData = players.map((player) => {
-    const items = itemsFromPlayer(player)
+    const items = itemsFromPlayer(player).filter((item) => item.id in ITEM_BY_ID)
     const totalGold = items.reduce(
       (sum, item) => sum + item.purchased * (ITEM_BY_ID[item.id]?.gold ?? 0),
       0,
@@ -220,7 +207,7 @@ export function ItemsPanel({ players }: { players: ChartPlayer[] }) {
                   }}
                 >
                   <span
-                    style={{ color: '#555', textTransform: 'uppercase', letterSpacing: '.08em' }}
+                    style={{ color: '#6a6a6a', textTransform: 'uppercase', letterSpacing: '.08em' }}
                   >
                     Total invested
                   </span>

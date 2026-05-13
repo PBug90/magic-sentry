@@ -21,6 +21,11 @@ const requestLogger = {
 
 export default defineConfig({
   plugins: [react(), basicSsl(), requestLogger],
+  resolve: {
+    alias: {
+      '@magic-sentry/viewer': resolve(__dirname, '../viewer/src/index.ts'),
+    },
+  },
   server: {
     port: 8080,
     https: {}, // basic-ssl fills in the self-signed cert
@@ -44,6 +49,7 @@ export default defineConfig({
       input: {
         viewer: resolve(__dirname, 'viewer.html'),
         config: resolve(__dirname, 'config.html'),
+        dev: resolve(__dirname, 'dev.html'),
       },
     },
     outDir: 'dist',

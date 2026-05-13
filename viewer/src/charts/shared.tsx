@@ -1,16 +1,15 @@
-﻿import { useState, useRef } from 'react'
+import { useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import {
   HERO_OBSERVER_IDS,
   UNIT_NAME_BY_ID,
   UNIT_GOLD_BY_ID,
   UNIT_LUMBER_BY_ID,
+  UNIT_ICON_BY_ID,
 } from '@magic-sentry/shared'
 import { heroSupply, fmtTime, UNIT_COLORS } from '@magic-sentry/shared'
-
-// ---------------------------------------------------------------------------
-// Chart layout constants — same viewBox as MemoryGameView so charts are
-// visually identical; SVG width="100%" makes them scale to the panel width.
-// ---------------------------------------------------------------------------
+import { HoverTooltip } from '../HoverTooltip'
+import { useIconSrc } from '../context'
 
 export const CM = { top: 16, right: 16, bottom: 28, left: 52 }
 export const W = 640
@@ -20,15 +19,14 @@ export const IH = H - CM.top - CM.bottom
 export const CH = 200
 export const CIH = CH - CM.top - CM.bottom
 
-// ---------------------------------------------------------------------------
-// Hover hook
-// ---------------------------------------------------------------------------
-
 export interface HoverState {
   fraction: number
   sx: number
   sy: number
+  vx: number
+  vy: number
   wrapW: number
+  baseFontSize: number
 }
 
 export function useChartHover() {
@@ -45,16 +43,15 @@ export function useChartHover() {
       fraction,
       sx: e.clientX - wrapRect.left,
       sy: e.clientY - wrapRect.top,
+      vx: e.clientX,
+      vy: e.clientY,
       wrapW: wrapRect.width,
+      baseFontSize: parseFloat(getComputedStyle(wrapRef.current!).fontSize),
     })
   }
 
   return { hover, wrapRef, onSvgMouseMove, onSvgMouseLeave: () => setHover(null) }
 }
-
-// ---------------------------------------------------------------------------
-// Tooltip
-// ---------------------------------------------------------------------------
 
 export function ChartTooltip({
   hover,
@@ -66,26 +63,29 @@ export function ChartTooltip({
   children: React.ReactNode
 }) {
   const toLeft = hover.sx > hover.wrapW * 0.58
-  return (
+  return createPortal(
     <div
       style={{
-        position: 'absolute',
-        left: toLeft ? hover.sx - 8 : hover.sx + 12,
-        top: hover.sy,
+        position: 'fixed',
+        left: toLeft ? hover.vx - 8 : hover.vx + 12,
+        top: hover.vy,
         transform: toLeft ? 'translate(-100%, -50%)' : 'translateY(-50%)',
         background: '#1a1a23',
         border: '1px solid #3a3a4a',
-        padding: '7px 10px',
+        padding: '.32em .45em',
         pointerEvents: 'none',
-        zIndex: 10,
+        zIndex: 9999,
         minWidth,
         maxWidth: 260,
         boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
         borderRadius: 4,
+        fontSize: `${hover.baseFontSize}px`,
+        fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
       }}
     >
       {children}
-    </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -93,10 +93,10 @@ export function TooltipTime({ sec }: { sec: number }) {
   return (
     <div
       style={{
-        fontSize: '.58em',
+        fontSize: '.82em',
         marginBottom: 5,
         letterSpacing: '.05em',
-        color: '#555',
+        color: '#888',
         fontFamily: 'monospace',
       }}
     >
@@ -105,22 +105,20 @@ export function TooltipTime({ sec }: { sec: number }) {
   )
 }
 
-// ---------------------------------------------------------------------------
-// Unit icon tile
-// ---------------------------------------------------------------------------
-
-export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string; size?: number }) {
+export function UnitIcon({ name, fill, size = 1 }: { name: string; fill: string; size?: number }) {
   const [hovered, setHovered] = useState(false)
+  const iconSrc = useIconSrc()
   const isHero = HERO_OBSERVER_IDS.has(name)
-  const src = isHero ? `./heroes/${name}.webp` : `./units/${name}.webp`
+  const iconId = UNIT_ICON_BY_ID[name] ?? name
+  const src = isHero ? iconSrc(`/heroes/${iconId}.webp`) : iconSrc(`/units/${iconId}.webp`)
   const displayName = UNIT_NAME_BY_ID[name] ?? name
   const gold = !isHero ? UNIT_GOLD_BY_ID[name] : undefined
   const lumber = !isHero ? UNIT_LUMBER_BY_ID[name] : undefined
   return (
     <div
       style={{
-        width: size,
-        height: size,
+        width: `${size}em`,
+        height: `${size}em`,
         background: fill,
         opacity: 0.9,
         flexShrink: 0,
@@ -137,8 +135,6 @@ export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string
           <img
             src={src}
             alt={name}
-            width={size}
-            height={size}
             style={{ display: 'block', imageRendering: 'pixelated', width: '100%', height: '100%' }}
             onError={(e) => {
               ;(e.currentTarget as HTMLImageElement).style.display = 'none'
@@ -147,25 +143,7 @@ export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string
         )}
       </div>
       {hovered && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            marginBottom: 4,
-            background: '#0f0f1a',
-            border: '1px solid #2a2a3a',
-            padding: '4px 8px',
-            whiteSpace: 'nowrap',
-            zIndex: 100,
-            pointerEvents: 'none',
-            fontSize: '0.7rem',
-            lineHeight: 1.6,
-            color: '#f0ece0',
-            borderRadius: 3,
-          }}
-        >
+        <HoverTooltip>
           <div>{displayName}</div>
           {gold !== undefined && gold > 0 && (
             <div style={{ color: '#c8a050', fontFamily: 'monospace' }}>{gold}g</div>
@@ -173,7 +151,7 @@ export function UnitIcon({ name, fill, size = 22 }: { name: string; fill: string
           {lumber !== undefined && lumber > 0 && (
             <div style={{ color: '#7dbf7d', fontFamily: 'monospace' }}>{lumber}w</div>
           )}
-        </div>
+        </HoverTooltip>
       )}
     </div>
   )
@@ -184,29 +162,21 @@ export function UnitIconRow({ fill, name, count }: { fill: string; name: string;
   const displayName = UNIT_NAME_BY_ID[name] ?? name
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-      <UnitIcon name={name} fill={fill} size={14} />
-      <span style={{ fontSize: '.6em', color: '#8b8b99', fontFamily: 'sans-serif', flex: 1 }}>
+      <UnitIcon name={name} fill={fill} size={0.85} />
+      <span style={{ fontSize: '.75em', color: '#8b8b99', fontFamily: 'sans-serif', flex: 1 }}>
         {displayName}
       </span>
-      <span style={{ fontSize: '.6em', fontFamily: 'monospace', color: '#efeff1' }}>×{count}</span>
-      <span style={{ fontSize: '.55em', fontFamily: 'monospace', color: '#555' }}>
+      <span style={{ fontSize: '.75em', fontFamily: 'monospace', color: '#efeff1' }}>×{count}</span>
+      <span style={{ fontSize: '.68em', fontFamily: 'monospace', color: '#6a6a6a' }}>
         {count * sup}f
       </span>
     </div>
   )
 }
 
-// ---------------------------------------------------------------------------
-// Shared color map builder for army chart
-// ---------------------------------------------------------------------------
-
 export function buildSharedColorMap(names: string[]): Record<string, string> {
   return Object.fromEntries(names.map((name, i) => [name, UNIT_COLORS[i % UNIT_COLORS.length]]))
 }
-
-// ---------------------------------------------------------------------------
-// Section label
-// ---------------------------------------------------------------------------
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -214,7 +184,7 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
       style={{
         fontSize: '.62em',
         letterSpacing: '.12em',
-        color: '#555',
+        color: '#888',
         fontFamily: 'monospace',
         textTransform: 'uppercase',
         marginBottom: 4,
@@ -224,10 +194,6 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
     </div>
   )
 }
-
-// ---------------------------------------------------------------------------
-// Grid path helper
-// ---------------------------------------------------------------------------
 
 export const svgPath = (pts: Array<[number, number]>) =>
   pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ')

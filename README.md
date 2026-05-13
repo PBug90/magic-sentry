@@ -10,10 +10,10 @@ Live WarCraft III game intelligence — a monorepo containing three applications
 
 ## Applications
 
-| Package | Stack | Description |
-|---|---|---|
-| [`cli`](cli/) | Rust · Windows | Reads live game data from WC3 shared memory, writes JSON snapshots to disk, and streams incremental patches to the web server |
-| [`web`](web/) | TypeScript · Hono · React | Receives patches from the CLI, reconstructs full game records, and exposes a JSON API for viewers |
+| Package                                 | Stack                     | Description                                                                                                                   |
+| --------------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [`cli`](cli/)                           | Rust · Windows            | Reads live game data from WC3 shared memory, writes JSON snapshots to disk, and streams incremental patches to the web server |
+| [`web`](web/)                           | TypeScript · Hono · React | Receives patches from the CLI, reconstructs full game records, and exposes a JSON API for viewers                             |
 | [`twitch-extension`](twitch-extension/) | TypeScript · React · Vite | Twitch video overlay that polls the live API and renders interactive charts for heroes, resources, food, and army composition |
 
 ## Quick start

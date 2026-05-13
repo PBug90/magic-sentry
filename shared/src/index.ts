@@ -1,4 +1,5 @@
 export * from './types.js'
+export * from './patches.js'
 export * from './balance.js'
 export * from './chartUtils.js'
 export * from './enriched.js'
