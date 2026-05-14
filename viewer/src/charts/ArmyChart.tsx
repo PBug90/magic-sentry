@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { ChartPlayer } from '@magic-sentry/shared'
 import {
   buildLayers,
@@ -144,50 +145,72 @@ export function CurrentArmies({ players }: { players: ChartPlayer[] }) {
 }
 
 export function ArmyChart({ players }: { players: ChartPlayer[] }) {
-  const { hover, wrapRef, onSvgMouseMove, onSvgMouseLeave } = useChartHover()
-
   if (players.length < 2) return null
   const p1 = players[0]
   const p2 = players[1]
-  const allSamples = [...p1.samples, ...p2.samples]
-  if (allSamples.length === 0) return null
+  if (p1.samples.length === 0 && p2.samples.length === 0) return null
+  return <ArmyChartInner p1={p1} p2={p2} />
+}
 
-  const maxTime = Math.max(...allSamples.map((s) => s.time_ms)) / 1000
+function ArmyChartInner({ p1, p2 }: { p1: ChartPlayer; p2: ChartPlayer }) {
+  const { hover, wrapRef, onSvgMouseMove, onSvgMouseLeave } = useChartHover()
+
+  const layers1 = useMemo(
+    () => buildLayers(p1.samples).filter((name) => name in UNIT_NAME_BY_ID),
+    [p1.samples],
+  )
+  const layers2 = useMemo(
+    () => buildLayers(p2.samples).filter((name) => name in UNIT_NAME_BY_ID),
+    [p2.samples],
+  )
+  const byTime1 = useMemo(() => buildByTime(p1.samples), [p1.samples])
+  const byTime2 = useMemo(() => buildByTime(p2.samples), [p2.samples])
+
+  const maxTime = useMemo(
+    () => Math.max(...[...p1.samples, ...p2.samples].map((s) => s.time_ms)) / 1000,
+    [p1.samples, p2.samples],
+  )
+
+  const { yMax, yStep } = useMemo(() => {
+    const maxStack1 = Math.max(
+      ...p1.samples.map((_, si) =>
+        layers1.reduce((sum, n) => sum + (byTime1[si][n] ?? 0) * heroSupply(n), 0),
+      ),
+      1,
+    )
+    const maxStack2 = Math.max(
+      ...p2.samples.map((_, si) =>
+        layers2.reduce((sum, n) => sum + (byTime2[si][n] ?? 0) * heroSupply(n), 0),
+      ),
+      1,
+    )
+    const maxStack = Math.max(maxStack1, maxStack2)
+    const yStep = maxStack > 60 ? 20 : maxStack > 30 ? 10 : 5
+    return { yMax: niceMax(maxStack, yStep), yStep }
+  }, [p1.samples, p2.samples, layers1, layers2, byTime1, byTime2])
+
+  const colorMap = useMemo(() => buildSharedColorMap([layers1, layers2]), [layers1, layers2])
+
+  const areas1 = useMemo(() => {
+    const center = CIH / 2
+    const xOf = (t: number) => (t / maxTime) * IW
+    const yOf = (v: number) => center - (v / yMax) * center
+    const colorOf = (name: string) => colorMap[name] ?? UNIT_COLORS[0]
+    return buildAreas(p1.samples, layers1, byTime1, xOf, yOf, heroSupply, colorOf)
+  }, [p1.samples, layers1, byTime1, maxTime, yMax, colorMap])
+
+  const areas2 = useMemo(() => {
+    const center = CIH / 2
+    const xOf = (t: number) => (t / maxTime) * IW
+    const yOf = (v: number) => center + (v / yMax) * center
+    const colorOf = (name: string) => colorMap[name] ?? UNIT_COLORS[0]
+    return buildAreas(p2.samples, layers2, byTime2, xOf, yOf, heroSupply, colorOf)
+  }, [p2.samples, layers2, byTime2, maxTime, yMax, colorMap])
+
   const center = CIH / 2
-
-  const layers1 = buildLayers(p1.samples).filter((name) => name in UNIT_NAME_BY_ID)
-  const layers2 = buildLayers(p2.samples).filter((name) => name in UNIT_NAME_BY_ID)
-  const byTime1 = buildByTime(p1.samples)
-  const byTime2 = buildByTime(p2.samples)
-
-  const supply = heroSupply
-
-  const maxStack1 = Math.max(
-    ...p1.samples.map((_, si) =>
-      layers1.reduce((sum, n) => sum + (byTime1[si][n] ?? 0) * supply(n), 0),
-    ),
-    1,
-  )
-  const maxStack2 = Math.max(
-    ...p2.samples.map((_, si) =>
-      layers2.reduce((sum, n) => sum + (byTime2[si][n] ?? 0) * supply(n), 0),
-    ),
-    1,
-  )
-  const maxStack = Math.max(maxStack1, maxStack2)
-
-  const yStep = maxStack > 60 ? 20 : maxStack > 30 ? 10 : 5
-  const yMax = niceMax(maxStack, yStep)
-
   const xOf = (t: number) => (t / maxTime) * IW
   const yOf_up = (v: number) => center - (v / yMax) * center
   const yOf_dn = (v: number) => center + (v / yMax) * center
-
-  const colorMap = buildSharedColorMap([layers1, layers2])
-  const colorOf = (name: string) => colorMap[name] ?? UNIT_COLORS[0]
-
-  const areas1 = buildAreas(p1.samples, layers1, byTime1, xOf, yOf_up, supply, colorOf)
-  const areas2 = buildAreas(p2.samples, layers2, byTime2, xOf, yOf_dn, supply, colorOf)
 
   const yTicks: number[] = []
   for (let v = yStep; v <= yMax; v += yStep) yTicks.push(v)
