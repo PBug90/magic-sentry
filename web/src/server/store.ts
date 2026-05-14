@@ -36,7 +36,9 @@ export interface GameSummary {
 // Store
 // ---------------------------------------------------------------------------
 
-class GameStore {
+const EXPIRY_MS = 10 * 60 * 1000
+
+export class GameStore {
   private readonly games = new Map<string, GameEntry>()
   /** Maps Twitch login (lowercase) → most recently ingested game_id for that channel. */
   private readonly channelMap = new Map<string, string>()
@@ -49,6 +51,32 @@ class GameStore {
   private version = 0
   private gameListCache: { json: string; version: number } | null = null
   private chunkSeals = new Map<string, number>()
+
+  constructor() {
+    setInterval(() => this.sweep(), 60_000).unref()
+  }
+
+  private sweep(): void {
+    const cutoff = Date.now() - EXPIRY_MS
+    for (const entry of this.games.values()) {
+      if (entry.updatedAt.getTime() < cutoff) this.evict(entry.gameId)
+    }
+  }
+
+  private evict(gameId: string): void {
+    const publicId = this.publicIds.get(gameId)
+    const owner = this.gameOwnerMap.get(gameId)
+    this.games.delete(gameId)
+    this.gameOwnerMap.delete(gameId)
+    if (publicId) this.publicToInternal.delete(publicId)
+    this.publicIds.delete(gameId)
+    if (owner && this.channelMap.get(owner) === gameId) this.channelMap.delete(owner)
+    for (const key of this.chunkSeals.keys()) {
+      if (key.startsWith(`${gameId}:`)) this.chunkSeals.delete(key)
+    }
+    this.version++
+    this.gameListCache = null
+  }
 
   setChannelGame(login: string, gameId: string): void {
     const lower = login.toLowerCase()
