@@ -19,6 +19,7 @@ const WIKI_ENABLED = import.meta.env.VITE_ENABLE_WIKI === 'true'
 import type { ChartPlayer } from '../shared/types'
 import { useTwitchConfig } from './hooks/useTwitchConfig'
 import { useMagicSentryGame } from './hooks/useMagicSentryGame'
+import { NoGameScreen } from './NoGameScreen'
 
 function twitchIconSrc(path: string): string {
   return `.${path}`
@@ -187,10 +188,8 @@ export function Overlay() {
         <div style={{ padding: '20px 24px' }}>
           {!config.endpointUrl || !config.token ? (
             <StatusDot ok={false} label="Incomplete setup — endpoint and token required" />
-          ) : fetchError ? (
-            <StatusDot ok={false} label={`Error: ${fetchError}`} />
           ) : (
-            <StatusDot ok={true} label="Waiting for data…" />
+            <NoGameScreen />
           )}
         </div>
       )}

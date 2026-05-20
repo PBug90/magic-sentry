@@ -61,62 +61,34 @@ export function Config() {
 
   useEffect(() => {
     const ext = window.Twitch?.ext
-    console.log('[config] useEffect — window.Twitch.ext present:', !!ext)
 
     function loadFromTwitch() {
-      console.log('[config] loadFromTwitch called')
       const seg = ext!.configuration.broadcaster
-      console.log('[config] broadcaster segment:', seg ?? 'undefined')
       if (seg?.content) {
         try {
           const parsed = JSON.parse(seg.content) as ExtensionConfig
-          console.log('[config] parsed config:', parsed)
           setCfg(parsed)
-        } catch (e) {
-          console.error('[config] failed to parse broadcaster segment:', e)
+        } catch {
+          // ignore malformed config
         }
-      } else {
-        console.log('[config] no broadcaster segment content — using defaults')
       }
     }
 
     if (ext) {
-      console.log('[config] registering onAuthorized + onChanged')
-      ext.onAuthorized((auth) => {
-        console.log(
-          '[config] onAuthorized fired — channelId:',
-          auth.channelId,
-          'userId:',
-          auth.userId,
-        )
+      ext.onAuthorized(() => {
         loadFromTwitch()
       })
       ext.configuration.onChanged(() => {
-        console.log('[config] onChanged fired')
         loadFromTwitch()
       })
-      ext.onError((e) => console.error('[config] Twitch ext error:', e))
-    } else {
-      console.warn('[config] window.Twitch.ext not available')
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function save() {
     const ext = window.Twitch?.ext
-    console.log('[config] save — window.Twitch.ext present:', !!ext)
-    if (!ext) {
-      console.error('[config] save aborted — ext not available')
-      return
-    }
+    if (!ext) return
     const payload = JSON.stringify(cfg)
-    console.log(
-      '[config] save — segment: broadcaster, version:',
-      CONFIG_VERSION,
-      'payload:',
-      payload,
-    )
     ext.configuration.set('broadcaster', CONFIG_VERSION, payload)
-    console.log('[config] save — configuration.set called successfully')
     setSaved(true)
     setTimeout(() => setSaved(false), 2500)
   }
