@@ -12,6 +12,7 @@ interface GameEntry {
   isFinal: boolean
   receivedAt: Date
   updatedAt: Date
+  pinnedUntil?: Date
   /** All patches received, deduplicated and keyed by seq. */
   patches: Map<number, GamePatch>
 }
@@ -32,11 +33,21 @@ export interface GameSummary {
   updated_at: string
 }
 
+export interface HistorySummary {
+  public_id: string
+  map: string
+  is_final: boolean
+  duration_ms: number
+  players: { name: string; race: string; team: number; result: string }[]
+}
+
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
 
 const EXPIRY_MS = 10 * 60 * 1000
+/** TTL applied when a game is pushed to channel history. */
+const HISTORY_TTL_MS = 2 * 60 * 60 * 1000
 
 export class GameStore {
   private readonly games = new Map<string, GameEntry>()
@@ -44,6 +55,8 @@ export class GameStore {
   private readonly channelMap = new Map<string, string>()
   /** Reverse map: game_id → Twitch login. */
   private readonly gameOwnerMap = new Map<string, string>()
+  /** Maps Twitch login (lowercase) → previous game_ids for that channel, newest first, max 5. */
+  private readonly channelHistory = new Map<string, string[]>()
   /** Internal game_id → URL-safe public UUID. */
   private readonly publicIds = new Map<string, string>()
   /** Public UUID → internal game_id (reverse of publicIds). */
@@ -57,8 +70,10 @@ export class GameStore {
   }
 
   private sweep(): void {
-    const cutoff = Date.now() - EXPIRY_MS
+    const now = Date.now()
+    const cutoff = now - EXPIRY_MS
     for (const entry of this.games.values()) {
+      if (entry.pinnedUntil && entry.pinnedUntil.getTime() > now) continue
       if (entry.updatedAt.getTime() < cutoff) this.evict(entry.gameId)
     }
   }
@@ -71,6 +86,14 @@ export class GameStore {
     if (publicId) this.publicToInternal.delete(publicId)
     this.publicIds.delete(gameId)
     if (owner && this.channelMap.get(owner) === gameId) this.channelMap.delete(owner)
+    if (owner) {
+      const hist = this.channelHistory.get(owner)
+      if (hist) {
+        const updated = hist.filter((id) => id !== gameId)
+        if (updated.length === 0) this.channelHistory.delete(owner)
+        else this.channelHistory.set(owner, updated)
+      }
+    }
     for (const key of this.chunkSeals.keys()) {
       if (key.startsWith(`${gameId}:`)) this.chunkSeals.delete(key)
     }
@@ -80,12 +103,43 @@ export class GameStore {
 
   setChannelGame(login: string, gameId: string): void {
     const lower = login.toLowerCase()
+    const prev = this.channelMap.get(lower)
+    if (prev && prev !== gameId) {
+      const hist = this.channelHistory.get(lower) ?? []
+      this.channelHistory.set(lower, [prev, ...hist].slice(0, 5))
+      const prevEntry = this.games.get(prev)
+      if (prevEntry) prevEntry.pinnedUntil = new Date(Date.now() + HISTORY_TTL_MS)
+    }
     this.channelMap.set(lower, gameId)
     this.gameOwnerMap.set(gameId, lower)
   }
 
   getChannelGameId(login: string): string | undefined {
     return this.channelMap.get(login.toLowerCase())
+  }
+
+  getChannelHistory(login: string): HistorySummary[] {
+    const hist = this.channelHistory.get(login.toLowerCase()) ?? []
+    const result: HistorySummary[] = []
+    for (const gameId of hist) {
+      const publicId = this.publicIds.get(gameId)
+      const entry = this.games.get(gameId)
+      const record = this.buildFullRecord(gameId)
+      if (!publicId || !record || !entry) continue
+      result.push({
+        public_id: publicId,
+        map: record.map,
+        is_final: entry.isFinal,
+        duration_ms: record.duration_ms,
+        players: record.players.map((p) => ({
+          name: p.name,
+          race: p.race,
+          team: p.team,
+          result: p.result,
+        })),
+      })
+    }
+    return result
   }
 
   /** Ingest an incoming patch from the CLI. Duplicate seqs are silently ignored. */
@@ -167,6 +221,7 @@ export class GameStore {
     this.version = 0
     this.gameListCache = null
     this.chunkSeals.clear()
+    this.channelHistory.clear()
   }
 
   /** Returns the public UUID for a given internal game_id, or undefined if not found. */

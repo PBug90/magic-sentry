@@ -599,3 +599,45 @@ describe('traffic tracking', () => {
     expect(rawBytes).toBeGreaterThan(0)
   })
 })
+
+// ---------------------------------------------------------------------------
+// GET /api/:channel/history
+// ---------------------------------------------------------------------------
+
+describe('GET /api/:channel/history', () => {
+  it('returns empty array when channel has no history', async () => {
+    const res = await app.request('/api/back2warcraft/history')
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body).toEqual([])
+  })
+
+  it('returns summaries for previous games after a game transition', async () => {
+    const token = await seedUserWithToken()
+
+    // Ingest game-1 and finalize it
+    await app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch({ game_id: 'game-1', seq: 0, is_final: true,
+        players: [makePlayer({ name: TEST_USER.login, result: 'Victory' })] })),
+    })
+
+    // Ingest game-2 — this triggers the game transition in setChannelGame
+    await app.request('/api/ingest', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(makePatch({ game_id: 'game-2', seq: 0 })),
+    })
+
+    const res = await app.request(`/api/${TEST_USER.login}/history`)
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as any[]
+    expect(body).toHaveLength(1)
+    expect(body[0].map).toBe('Lost Temple')
+    expect(body[0].is_final).toBe(true)
+    expect(typeof body[0].public_id).toBe('string')
+    expect(body[0].players[0].name).toBe(TEST_USER.login)
+    expect(body[0].players[0].result).toBe('Victory')
+  })
+})

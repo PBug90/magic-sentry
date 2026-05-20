@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useState, useMemo, type CSSProperties } from 'react'
 import type { ChartPlayer } from '@magic-sentry/shared'
 import { HeroPanel } from './HeroPanel'
 import { ItemsPanel } from './ItemsPanel'
@@ -6,11 +6,14 @@ import { EconomyChart, LumberChart, ApmChart } from './charts/ResourceChart'
 import { FoodChart } from './charts/FoodChart'
 import { ArmyChart, CurrentArmies } from './charts/ArmyChart'
 import { IconSrcProvider } from './context'
+import { detectFights, detectTimeline } from '@magic-sentry/shared'
+import { FightSection } from './FightSection'
+import { TimelineSection } from './TimelineSection'
 
-export type TabKey = 'heroes' | 'items' | 'gold' | 'lumber' | 'food' | 'armies' | 'army' | 'apm'
+export type TabKey = 'heroes' | 'items' | 'gold' | 'lumber' | 'food' | 'armies' | 'army' | 'apm' | 'fights' | 'timeline'
 
 export const VIEWER_TABS: { key: TabKey; label: string }[] = [
-  { key: 'heroes', label: 'Heroes' },
+  { key: 'heroes', label: 'Heroes and Upgrades' },
   { key: 'items', label: 'Items' },
   { key: 'gold', label: 'Gold' },
   { key: 'lumber', label: 'Lumber' },
@@ -18,6 +21,8 @@ export const VIEWER_TABS: { key: TabKey; label: string }[] = [
   { key: 'armies', label: 'Current Armies' },
   { key: 'army', label: 'Army over time' },
   { key: 'apm', label: 'APM' },
+  { key: 'fights', label: 'Fights' },
+  { key: 'timeline', label: 'Timeline' },
 ]
 
 export function StatusDot({ ok, label }: { ok: boolean; label: string }) {
@@ -47,7 +52,15 @@ export function StatusDot({ ok, label }: { ok: boolean; label: string }) {
   )
 }
 
-export function TabBar({ active, onChange }: { active: TabKey; onChange: (t: TabKey) => void }) {
+export function TabBar({
+  active,
+  onChange,
+  tabs = VIEWER_TABS,
+}: {
+  active: TabKey
+  onChange: (t: TabKey) => void
+  tabs?: typeof VIEWER_TABS
+}) {
   return (
     <div
       style={{
@@ -57,7 +70,7 @@ export function TabBar({ active, onChange }: { active: TabKey; onChange: (t: Tab
         overflowY: 'hidden',
       }}
     >
-      {VIEWER_TABS.map(({ key, label }) => {
+      {tabs.map(({ key, label }) => {
         const isActive = key === active
         const style: CSSProperties = {
           padding: '9px 18px',
@@ -153,18 +166,26 @@ export function ViewerContent({
   players,
   iconSrc,
   error,
+  tabs = VIEWER_TABS,
 }: {
   players: ChartPlayer[]
   iconSrc: (path: string) => string
   error?: string | null
+  tabs?: typeof VIEWER_TABS
 }) {
   const [tab, setTab] = useState<TabKey>('heroes')
+  const fights = useMemo(() => detectFights(players), [players])
+  const timeline = useMemo(() => detectTimeline(players), [players])
+  const playerColors = useMemo(
+    () => Object.fromEntries(players.map((p) => [p.name, p.color])),
+    [players],
+  )
 
   return (
     <IconSrcProvider value={iconSrc}>
       <>
         <div style={{ padding: '0 24px', flexShrink: 0 }}>
-          <TabBar active={tab} onChange={setTab} />
+          <TabBar active={tab} onChange={setTab} tabs={tabs} />
         </div>
         <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '24px' }}>
           {error && (
@@ -191,6 +212,8 @@ export function ViewerContent({
           {tab === 'armies' && <CurrentArmies players={players} />}
           {tab === 'army' && <ArmyChart players={players} />}
           {tab === 'apm' && <ApmChart players={players} />}
+          {tab === 'fights' && <FightSection fights={fights} />}
+          {tab === 'timeline' && <TimelineSection events={timeline} playerColors={playerColors} />}
         </div>
       </>
     </IconSrcProvider>

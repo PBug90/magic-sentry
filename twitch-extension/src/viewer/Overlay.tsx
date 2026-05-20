@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { PLAYER_COLORS, formatDuration } from '@magic-sentry/shared'
-import { ViewerContent, TeamsBar, StatusDot } from '@magic-sentry/viewer'
+import { ViewerContent, TeamsBar, StatusDot, EncyclopediaPanel, VIEWER_TABS, GameHistoryDropdown } from '@magic-sentry/viewer'
+import { useExtensionHistory } from './hooks/useExtensionHistory'
+
+const visibleTabs = import.meta.env.VITE_ENABLE_FIGHTS === 'true'
+  ? VIEWER_TABS
+  : VIEWER_TABS.filter((t) => t.key !== 'fights')
+
+const WIKI_ENABLED = import.meta.env.VITE_ENABLE_WIKI === 'true'
 import type { ChartPlayer } from '../shared/types'
 import { useTwitchConfig } from './hooks/useTwitchConfig'
 import { useMagicSentryGame } from './hooks/useMagicSentryGame'
@@ -11,6 +18,8 @@ function twitchIconSrc(path: string): string {
 
 export function Overlay() {
   const [fontSize, setFontSize] = useState(16)
+  const [view, setView] = useState<'game' | 'encyclopedia'>('game')
+  const effectiveView = WIKI_ENABLED ? view : 'game'
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -25,7 +34,29 @@ export function Overlay() {
   }, [])
 
   const { config, configReady } = useTwitchConfig()
-  const { game, fetchError, lastUpdated, refresh } = useMagicSentryGame(config, configReady)
+
+  const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null)
+  const history = useExtensionHistory(config.endpointUrl)
+
+  // Reset to live view when the channel/endpoint changes
+  useEffect(() => {
+    setSelectedHistoryId(null)
+  }, [config.endpointUrl])
+
+  // When a history game is selected, point useMagicSentryGame at that specific game
+  const effectiveConfig = selectedHistoryId
+    ? { ...config, endpointUrl: `${config.endpointUrl}/${selectedHistoryId}` }
+    : config
+
+  // endpointUrl is https://host/api/:channel/live — extract the channel segment
+  const channel = (() => {
+    try {
+      const parts = new URL(config.endpointUrl).pathname.split('/')
+      return parts[parts.length - 2] ?? ''
+    } catch { return '' }
+  })()
+
+  const { game, fetchError, lastUpdated, refresh } = useMagicSentryGame(effectiveConfig, configReady)
 
   const playerData: ChartPlayer[] = (game?.players ?? []).map((p, i) => ({
     ...p,
@@ -84,30 +115,62 @@ export function Overlay() {
           </>
         )}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-          {lastUpdated && (
+          {lastUpdated && effectiveView === 'game' && !selectedHistoryId && (
             <span style={{ fontSize: '.6em', color: '#555', fontFamily: 'monospace' }}>
               updated {lastUpdated.toLocaleTimeString()}
             </span>
           )}
-          <button
-            onClick={refresh}
-            title="Refresh"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#555',
-              fontSize: '.85em',
-              padding: '2px 4px',
-              lineHeight: 1,
-            }}
-          >
-            ↺
-          </button>
+          {WIKI_ENABLED && (
+            <button
+              onClick={() => setView(v => v === 'encyclopedia' ? 'game' : 'encyclopedia')}
+              title={effectiveView === 'encyclopedia' ? 'Back to game' : 'Encyclopedia'}
+              style={{
+                background: effectiveView === 'encyclopedia' ? '#1e1e2e' : 'none',
+                border: `1px solid ${effectiveView === 'encyclopedia' ? '#2a2a4a' : 'transparent'}`,
+                borderRadius: 3,
+                cursor: 'pointer',
+                color: effectiveView === 'encyclopedia' ? '#c8a050' : '#555',
+                fontSize: '.7em',
+                padding: '2px 7px',
+                lineHeight: 1.4,
+                fontFamily: 'monospace',
+              }}
+            >
+              {effectiveView === 'encyclopedia' ? '← game' : '⊞ wiki'}
+            </button>
+          )}
+          {effectiveView === 'game' && !selectedHistoryId && (
+            <button
+              onClick={refresh}
+              title="Refresh"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#555',
+                fontSize: '.85em',
+                padding: '2px 4px',
+                lineHeight: 1,
+              }}
+            >
+              ↺
+            </button>
+          )}
+          {effectiveView === 'game' && (
+            <GameHistoryDropdown
+              channel={channel}
+              liveGame={effectiveConfig === config ? game : null}
+              history={history}
+              selectedHistoryId={selectedHistoryId}
+              onSelect={setSelectedHistoryId}
+            />
+          )}
         </div>
       </div>
 
-      {!game && configReady && (
+      {effectiveView === 'encyclopedia' && <EncyclopediaPanel iconSrc={twitchIconSrc} />}
+
+      {effectiveView === 'game' && !game && configReady && (
         <div style={{ padding: '20px 24px' }}>
           {!config.endpointUrl || !config.token ? (
             <StatusDot ok={false} label="Incomplete setup — endpoint and token required" />
@@ -119,7 +182,7 @@ export function Overlay() {
         </div>
       )}
 
-      {game && <ViewerContent players={playerData} iconSrc={twitchIconSrc} error={fetchError} />}
+      {effectiveView === 'game' && game && <ViewerContent players={playerData} iconSrc={twitchIconSrc} error={fetchError} tabs={visibleTabs} />}
     </div>
   )
 }

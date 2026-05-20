@@ -1,11 +1,11 @@
 use warcraft3_stats_observer::{
-    AbilityInfo, HeroInfo, ItemInfo, ObserverData, PlayerInfo, PlayerItemInfo, UnitInfo,
-    UpgradeInfo,
+    AbilityInfo, HeroInfo, ItemInfo, ObserverData, PlayerInfo, PlayerItemInfo, StructureInfo,
+    UnitInfo, UpgradeInfo,
 };
 
 use crate::types::{
     AbilitySnapshot, HeroSnapshot, ItemSnapshot, PlayerItemStatSnapshot, PlayerState,
-    PlayerSummary, UnitSnapshot, UpgradeSnapshot,
+    PlayerSummary, StructureSnapshot, UnitSnapshot, UpgradeSnapshot,
 };
 use crate::util::{fourcc, race_name};
 
@@ -63,6 +63,7 @@ pub fn init_player_state(p: &PlayerInfo) -> PlayerState {
 pub struct PlayerTickRead {
     pub heroes: Vec<HeroSnapshot>,
     pub units: Vec<UnitSnapshot>,
+    pub structures: Vec<StructureSnapshot>,
     pub upgrades: Vec<UpgradeSnapshot>,
     pub player_items: Vec<PlayerItemStatSnapshot>,
     pub gold: u32,
@@ -142,16 +143,25 @@ fn read_hero_snapshot(h: &HeroInfo) -> HeroSnapshot {
 
 fn read_upgrade_snapshot(u: &UpgradeInfo) -> Option<UpgradeSnapshot> {
     let level = u.current_level;
-    if level == 0 {
-        return None;
-    }
-    if u.name.to_string().trim_matches('_').trim().is_empty() {
+    if level == 0 || u.id == 0 {
         return None;
     }
     Some(UpgradeSnapshot {
         id: fourcc(u.id),
         level,
         max_level: u.max_level,
+    })
+}
+
+fn read_structure_snapshot(s: &StructureInfo) -> Option<StructureSnapshot> {
+    if s.name.to_string().trim_matches('_').trim().is_empty() {
+        return None;
+    }
+    Some(StructureSnapshot {
+        id: fourcc(unsafe { std::ptr::read_unaligned(std::ptr::addr_of!(s.id)) }),
+        construction_progress: unsafe {
+            std::ptr::read_unaligned(std::ptr::addr_of!(s.construction_progress))
+        },
     })
 }
 
@@ -199,6 +209,13 @@ pub fn read_player_tick(p: &PlayerInfo) -> PlayerTickRead {
         .filter_map(read_unit_snapshot)
         .collect();
 
+    let structures = p
+        .structures
+        .iter()
+        .take((p.structure_count as usize).min(999))
+        .filter_map(read_structure_snapshot)
+        .collect();
+
     let upgrades = p
         .upgrades
         .iter()
@@ -216,6 +233,7 @@ pub fn read_player_tick(p: &PlayerInfo) -> PlayerTickRead {
     PlayerTickRead {
         heroes,
         units,
+        structures,
         upgrades,
         player_items,
         gold: p.gold,

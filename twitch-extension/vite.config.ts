@@ -49,7 +49,6 @@ export default defineConfig({
       input: {
         viewer: resolve(__dirname, 'viewer.html'),
         config: resolve(__dirname, 'config.html'),
-        dev: resolve(__dirname, 'dev.html'),
       },
     },
     outDir: 'dist',

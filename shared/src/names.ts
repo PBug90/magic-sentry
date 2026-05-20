@@ -65,6 +65,7 @@ export const UNIT_NAMES: Record<string, string> = {
   umtw: 'Meat Wagon',
   ubsp: 'Destroyer',
   ufro: 'Frost Wyrm',
+  uske: 'Skeleton Warrior',
   uskw: 'Skeleton Warrior',
   uskm: 'Skeletal Mage',
   ucrb: 'Carrion Beetle',

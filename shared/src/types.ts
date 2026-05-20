@@ -75,6 +75,11 @@ export const UnitSnapshotSchema = z.object({
   trained: nat(100_000),
 })
 
+export const StructureSnapshotSchema = z.object({
+  id: fcc,
+  construction_progress: nat(100_000),
+})
+
 export const UpgradeSnapshotSchema = z.object({
   id: fcc,
   level: nat(10),
@@ -106,6 +111,7 @@ export const SampleSchema = z.object({
   apm: nat(MAX_APM),
   heroes: z.array(HeroSampleSchema).max(MAX_HEROES),
   units: z.array(UnitSnapshotSchema).max(MAX_UNITS),
+  structures: z.array(StructureSnapshotSchema).max(MAX_UNITS).optional().default([]),
   upgrades: z.array(UpgradeSnapshotSchema).max(MAX_UPGRADES),
   player_items: z.array(PlayerItemStatSnapshotSchema).max(MAX_ITEMS),
 })
@@ -193,6 +199,7 @@ export type ItemSnapshot = z.infer<typeof ItemSnapshotSchema>
 export type AbilitySnapshot = z.infer<typeof AbilitySnapshotSchema>
 export type HeroSample = z.infer<typeof HeroSampleSchema>
 export type UnitSnapshot = z.infer<typeof UnitSnapshotSchema>
+export type StructureSnapshot = z.infer<typeof StructureSnapshotSchema>
 export type UpgradeSnapshot = z.infer<typeof UpgradeSnapshotSchema>
 export type PlayerItemStatSnapshot = z.infer<typeof PlayerItemStatSnapshotSchema>
 export type Sample = z.infer<typeof SampleSchema>

@@ -27,6 +27,7 @@ node_modules/
 # Twitch extension
 /twitch-extension/dist/
 /twitch-extension/node_modules/
+/twitch-extension/.env
 
 # Claude
 .claude

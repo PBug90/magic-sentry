@@ -11,8 +11,10 @@ import {
   buildLayers,
   buildByTime,
   buildAreas,
+  unitColor,
   PLAYER_COLORS,
   UNIT_COLORS,
+  HERO_COLOR,
 } from '../src/chartUtils.js'
 import { HERO_OBSERVER_IDS } from '../src/heroes.js'
 
@@ -434,6 +436,29 @@ describe('UNIT_COLORS', () => {
     for (const c of UNIT_COLORS) {
       expect(c).toMatch(/^#[0-9a-f]{6}$/i)
     }
+  })
+
+  it('does not contain HERO_COLOR (heroes use a dedicated slot)', () => {
+    expect(UNIT_COLORS).not.toContain(HERO_COLOR)
+  })
+})
+
+describe('unitColor', () => {
+  it('returns HERO_COLOR for every hero id', () => {
+    for (const id of HERO_OBSERVER_IDS) {
+      expect(unitColor(id)).toBe(HERO_COLOR)
+    }
+  })
+
+  it('returns a color from UNIT_COLORS for normal units', () => {
+    expect(UNIT_COLORS).toContain(unitColor('hfoo'))
+    expect(UNIT_COLORS).toContain(unitColor('ogru'))
+    expect(UNIT_COLORS).toContain(unitColor('earc'))
+  })
+
+  it('is deterministic — same id always yields same color', () => {
+    expect(unitColor('hfoo')).toBe(unitColor('hfoo'))
+    expect(unitColor('ogru')).toBe(unitColor('ogru'))
   })
 })
 

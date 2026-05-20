@@ -217,40 +217,6 @@ export function Config() {
         </p>
       </div>
 
-      {/* CORS notice */}
-      <div
-        style={{
-          padding: '10px 14px',
-          background: 'rgba(200,160,80,0.06)',
-          border: '1px solid rgba(200,160,80,0.2)',
-          borderRadius: 4,
-        }}
-      >
-        <p
-          style={{ fontSize: '.68rem', color: '#c8a050', marginBottom: 4, letterSpacing: '.04em' }}
-        >
-          CORS requirement
-        </p>
-        <p style={{ fontSize: '.65rem', color: '#888', lineHeight: 1.6 }}>
-          Your Magic Sentry server must allow cross-origin requests from{' '}
-          <code style={{ color: '#aaa' }}>https://ext-twitch.tv</code>. Add this header to your
-          server's responses:
-        </p>
-        <pre
-          style={{
-            fontSize: '.65rem',
-            color: '#aaa',
-            marginTop: 8,
-            background: '#0e0e10',
-            padding: '6px 10px',
-            borderRadius: 3,
-            overflowX: 'auto',
-          }}
-        >
-          Access-Control-Allow-Origin: *
-        </pre>
-      </div>
-
       {/* Actions */}
       <div style={{ display: 'flex', gap: 10 }}>
         <button

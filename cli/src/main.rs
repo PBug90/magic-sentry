@@ -32,12 +32,14 @@ const PUSH_EVERY_N_SAMPLES: u32 = 5;
 struct Config {
     endpoint: Option<String>,
     secret: Option<String>,
+    generate_reports: bool,
 }
 
 #[derive(serde::Deserialize, Default)]
 struct FileConfig {
     endpoint: Option<String>,
     secret: Option<String>,
+    generate_reports: Option<bool>,
 }
 
 impl Config {
@@ -52,6 +54,7 @@ impl Config {
         Config {
             endpoint: file_config.endpoint,
             secret: file_config.secret,
+            generate_reports: file_config.generate_reports.unwrap_or(true),
         }
     }
 }
@@ -127,7 +130,7 @@ fn run_game(
                 .all(|r| r.heroes.is_empty() && r.units.is_empty());
 
             for (i, r) in tick_reads.into_iter().enumerate() {
-                let (heroes, units) = if dirty_frame {
+                let (heroes, units, structures, upgrades) = if dirty_frame {
                     let prev_heroes = players[i]
                         .samples
                         .iter()
@@ -142,9 +145,21 @@ fn run_game(
                         .find(|s| !s.units.is_empty())
                         .map(|s| s.units.clone())
                         .unwrap_or_default();
-                    (prev_heroes, prev_units)
+                    let prev_structures = players[i]
+                        .samples
+                        .last()
+                        .map(|s| s.structures.clone())
+                        .unwrap_or_default();
+                    let prev_upgrades = players[i]
+                        .samples
+                        .iter()
+                        .rev()
+                        .find(|s| !s.upgrades.is_empty())
+                        .map(|s| s.upgrades.clone())
+                        .unwrap_or_default();
+                    (prev_heroes, prev_units, prev_structures, prev_upgrades)
                 } else {
-                    (r.heroes, r.units)
+                    (r.heroes, r.units, r.structures, r.upgrades)
                 };
 
                 players[i].samples.push(ResourceSample {
@@ -160,7 +175,8 @@ fn run_game(
                     apm: r.apm,
                     heroes,
                     units,
-                    upgrades: r.upgrades,
+                    structures,
+                    upgrades,
                     player_items: r.player_items,
                 });
             }
@@ -209,7 +225,9 @@ fn run_game(
             if let Some(p) = pusher.as_mut() {
                 p.push(&players, &map_name, &game_name, true);
             }
-            report::write_report(&html_filename, &map_name, &game_name, &players);
+            if config.generate_reports {
+                report::write_report(&html_filename, &map_name, &game_name, &players);
+            }
             // od is dropped here, releasing the shared memory handle.
             return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
         }
@@ -236,7 +254,9 @@ fn run_game(
                             if let Some(p) = pusher.as_mut() {
                                 p.push(&players, &map_name, &game_name, true);
                             }
-                            report::write_report(&html_filename, &map_name, &game_name, &players);
+                            if config.generate_reports {
+                                report::write_report(&html_filename, &map_name, &game_name, &players);
+                            }
                             return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
                         }
                     }

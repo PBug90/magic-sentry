@@ -1,8 +1,9 @@
-import { type CSSProperties } from 'react'
+import { type CSSProperties, useState, useEffect } from 'react'
 import { PLAYER_COLORS, formatDuration } from '@magic-sentry/shared'
-import { ViewerContent, TeamsBar, StatusDot } from '@magic-sentry/viewer'
+import { ViewerContent, TeamsBar, StatusDot, GameHistoryDropdown } from '@magic-sentry/viewer'
 import type { ChartPlayer } from '../shared/types'
 import { useMagicSentryGame } from './hooks/useMagicSentryGame'
+import { useChannelHistory } from './hooks/useChannelHistory'
 
 function webIconSrc(path: string): string {
   return (window as any).__ICON_MAP__?.[path] ?? path
@@ -26,7 +27,16 @@ interface GameViewerProps {
 }
 
 export function GameViewer({ channel, gameId, onBack, onLayoutCheck }: GameViewerProps) {
-  const { game, fetchError, lastUpdated, refresh } = useMagicSentryGame(channel, gameId)
+  const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null)
+  const history = useChannelHistory(channel)
+
+  // Reset to live view whenever the live game changes
+  useEffect(() => {
+    setSelectedHistoryId(null)
+  }, [gameId])
+
+  const effectiveGameId = selectedHistoryId ?? gameId
+  const { game, fetchError, lastUpdated, refresh } = useMagicSentryGame(channel, effectiveGameId)
 
   const playerData: ChartPlayer[] = (game?.players ?? []).map((p, i) => ({
     ...p,
@@ -90,7 +100,7 @@ export function GameViewer({ channel, gameId, onBack, onLayoutCheck }: GameViewe
           </>
         )}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-          {lastUpdated && (
+          {lastUpdated && !selectedHistoryId && (
             <span style={{ fontSize: '.6em', color: '#777', fontFamily: 'monospace' }}>
               updated {lastUpdated.toLocaleTimeString()}
             </span>
@@ -100,9 +110,18 @@ export function GameViewer({ channel, gameId, onBack, onLayoutCheck }: GameViewe
               ⊞
             </button>
           )}
-          <button onClick={refresh} title="Refresh" style={btnStyle}>
-            ↺
-          </button>
+          {!selectedHistoryId && (
+            <button onClick={refresh} title="Refresh" style={btnStyle}>
+              ↺
+            </button>
+          )}
+          <GameHistoryDropdown
+            channel={channel}
+            liveGame={effectiveGameId === gameId ? game : null}
+            history={history}
+            selectedHistoryId={selectedHistoryId}
+            onSelect={setSelectedHistoryId}
+          />
         </div>
       </div>
 

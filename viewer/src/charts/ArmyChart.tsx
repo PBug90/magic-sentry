@@ -8,7 +8,7 @@ import {
   niceMax,
   timeTicks,
   nearestSampleIdx,
-  UNIT_COLORS,
+  unitColor,
   UNIT_NAME_BY_ID,
 } from '@magic-sentry/shared'
 import {
@@ -96,13 +96,6 @@ function ArmySnapshotPanel({
   )
 }
 
-function buildSharedColorMap(playerLayers: string[][]): Record<string, string> {
-  const allUnitNames = [...new Set(playerLayers.flat())]
-  return Object.fromEntries(
-    allUnitNames.map((name, i) => [name, UNIT_COLORS[i % UNIT_COLORS.length]]),
-  )
-}
-
 export function CurrentArmies({ players }: { players: ChartPlayer[] }) {
   if (players.length === 0) return null
 
@@ -111,9 +104,6 @@ export function CurrentArmies({ players }: { players: ChartPlayer[] }) {
     layers: buildLayers(p.samples).filter((name) => name in UNIT_NAME_BY_ID),
     byTime: buildByTime(p.samples),
   }))
-
-  const colorMap = buildSharedColorMap(perPlayer.map(({ layers }) => layers))
-  const colorOf = (name: string) => colorMap[name] ?? UNIT_COLORS[0]
 
   return (
     <div
@@ -136,7 +126,7 @@ export function CurrentArmies({ players }: { players: ChartPlayer[] }) {
             player={player}
             layers={layers}
             lastByTime={byTime.length ? byTime[byTime.length - 1] : {}}
-            colorOf={colorOf}
+            colorOf={unitColor}
           />
         </>
       ))}
@@ -189,23 +179,19 @@ function ArmyChartInner({ p1, p2 }: { p1: ChartPlayer; p2: ChartPlayer }) {
     return { yMax: niceMax(maxStack, yStep), yStep }
   }, [p1.samples, p2.samples, layers1, layers2, byTime1, byTime2])
 
-  const colorMap = useMemo(() => buildSharedColorMap([layers1, layers2]), [layers1, layers2])
-
   const areas1 = useMemo(() => {
     const center = CIH / 2
     const xOf = (t: number) => (t / maxTime) * IW
     const yOf = (v: number) => center - (v / yMax) * center
-    const colorOf = (name: string) => colorMap[name] ?? UNIT_COLORS[0]
-    return buildAreas(p1.samples, layers1, byTime1, xOf, yOf, heroSupply, colorOf)
-  }, [p1.samples, layers1, byTime1, maxTime, yMax, colorMap])
+    return buildAreas(p1.samples, layers1, byTime1, xOf, yOf, heroSupply, unitColor)
+  }, [p1.samples, layers1, byTime1, maxTime, yMax])
 
   const areas2 = useMemo(() => {
     const center = CIH / 2
     const xOf = (t: number) => (t / maxTime) * IW
     const yOf = (v: number) => center + (v / yMax) * center
-    const colorOf = (name: string) => colorMap[name] ?? UNIT_COLORS[0]
-    return buildAreas(p2.samples, layers2, byTime2, xOf, yOf, heroSupply, colorOf)
-  }, [p2.samples, layers2, byTime2, maxTime, yMax, colorMap])
+    return buildAreas(p2.samples, layers2, byTime2, xOf, yOf, heroSupply, unitColor)
+  }, [p2.samples, layers2, byTime2, maxTime, yMax])
 
   const center = CIH / 2
   const xOf = (t: number) => (t / maxTime) * IW

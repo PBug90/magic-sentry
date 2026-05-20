@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { GameViewer } from './viewer/GameViewer'
+import { EncyclopediaPage } from './viewer/EncyclopediaPage'
 import { LayoutChecker } from './LayoutChecker'
 import { FAQPage } from './FAQ'
 
@@ -70,6 +71,7 @@ function NavBar({
   onSettings,
   onHome,
   onFaq,
+  onEncyclopedia,
   showSettingsLink,
 }: {
   user: TwitchUser | null | undefined
@@ -77,6 +79,7 @@ function NavBar({
   onSettings: () => void
   onHome: () => void
   onFaq: () => void
+  onEncyclopedia: () => void
   showSettingsLink: boolean
 }) {
   return (
@@ -107,6 +110,10 @@ function NavBar({
 
       <button className="btn btn-ghost btn-sm" onClick={onFaq}>
         FAQ
+      </button>
+
+      <button className="btn btn-ghost btn-sm" onClick={onEncyclopedia}>
+        Encyclopedia
       </button>
 
       {showSettingsLink && user && (
@@ -504,11 +511,13 @@ function SettingsPage({
   logout,
   onHome,
   onFaq,
+  onEncyclopedia,
 }: {
   user: TwitchUser | null | undefined
   logout: () => void
   onHome: () => void
   onFaq: () => void
+  onEncyclopedia: () => void
 }) {
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -518,6 +527,7 @@ function SettingsPage({
         onSettings={() => {}}
         onHome={onHome}
         onFaq={onFaq}
+        onEncyclopedia={onEncyclopedia}
         showSettingsLink={false}
       />
       <div className="app" style={{ paddingTop: 48 }}>
@@ -1154,15 +1164,19 @@ function ScreenshotGallery() {
 function LandingPage({
   user,
   logout,
+  loginError,
   onView,
   onSettings,
   onFaq,
+  onEncyclopedia,
 }: {
   user: TwitchUser | null | undefined
   logout: () => void
+  loginError: boolean
   onView: (channel: string, gameId: string) => void
   onSettings: () => void
   onFaq: () => void
+  onEncyclopedia: () => void
 }) {
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -1172,6 +1186,7 @@ function LandingPage({
         onSettings={onSettings}
         onHome={() => {}}
         onFaq={onFaq}
+        onEncyclopedia={onEncyclopedia}
         showSettingsLink={true}
       />
       <div className="app">
@@ -1203,6 +1218,11 @@ function LandingPage({
                   <TwitchIcon />
                   Sign in with Twitch
                 </a>
+                {loginError && (
+                  <p style={{ marginTop: 12, color: 'var(--error, #f85149)', fontSize: '0.85rem' }}>
+                    Sign-in failed. Please try again.
+                  </p>
+                )}
               </div>
             ) : !user.allowed ? (
               <div className="hero-actions">
@@ -1315,6 +1335,7 @@ type Route =
   | { type: 'home' }
   | { type: 'settings' }
   | { type: 'faq' }
+  | { type: 'encyclopedia' }
   | { type: 'game'; channel: string; gameId: string }
   | { type: 'layout-check'; channel: string; gameId: string }
 
@@ -1322,6 +1343,7 @@ function parseHash(hash: string): Route {
   const path = hash.replace(/^#/, '')
   if (path === '/settings') return { type: 'settings' }
   if (path === '/faq') return { type: 'faq' }
+  if (path === '/encyclopedia') return { type: 'encyclopedia' }
   const lc = path.match(/^\/layout-check\/([^/]+)\/(.+)$/)
   if (lc)
     return {
@@ -1348,6 +1370,7 @@ function useRoute(): [Route, (r: Route) => void] {
     if (r.type === 'home') window.location.hash = '/'
     else if (r.type === 'settings') window.location.hash = '/settings'
     else if (r.type === 'faq') window.location.hash = '/faq'
+    else if (r.type === 'encyclopedia') window.location.hash = '/encyclopedia'
     else if (r.type === 'layout-check')
       window.location.hash = `/layout-check/${encodeURIComponent(r.channel)}/${encodeURIComponent(r.gameId)}`
     else
@@ -1364,6 +1387,14 @@ function useRoute(): [Route, (r: Route) => void] {
 export default function App() {
   const { user, logout } = useMe()
   const [route, navigate] = useRoute()
+  const [loginError] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('auth') === 'error') {
+      window.history.replaceState(null, '', window.location.pathname + window.location.hash)
+      return true
+    }
+    return false
+  })
 
   if (route.type === 'layout-check') {
     return (
@@ -1384,6 +1415,7 @@ export default function App() {
           onSettings={() => navigate({ type: 'settings' })}
           onHome={() => navigate({ type: 'home' })}
           onFaq={() => navigate({ type: 'faq' })}
+          onEncyclopedia={() => navigate({ type: 'encyclopedia' })}
           showSettingsLink={true}
         />
         <GameViewer
@@ -1405,6 +1437,7 @@ export default function App() {
         logout={logout}
         onHome={() => navigate({ type: 'home' })}
         onFaq={() => navigate({ type: 'faq' })}
+        onEncyclopedia={() => navigate({ type: 'encyclopedia' })}
       />
     )
   }
@@ -1413,13 +1446,32 @@ export default function App() {
     return <FAQPage onHome={() => navigate({ type: 'home' })} />
   }
 
+  if (route.type === 'encyclopedia') {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0d0d14' }}>
+        <NavBar
+          user={user}
+          logout={logout}
+          onSettings={() => navigate({ type: 'settings' })}
+          onHome={() => navigate({ type: 'home' })}
+          onFaq={() => navigate({ type: 'faq' })}
+          onEncyclopedia={() => {}}
+          showSettingsLink={true}
+        />
+        <EncyclopediaPage />
+      </div>
+    )
+  }
+
   return (
     <LandingPage
       user={user}
       logout={logout}
+      loginError={loginError}
       onView={(channel, gameId) => navigate({ type: 'game', channel, gameId })}
       onSettings={() => navigate({ type: 'settings' })}
       onFaq={() => navigate({ type: 'faq' })}
+      onEncyclopedia={() => navigate({ type: 'encyclopedia' })}
     />
   )
 }

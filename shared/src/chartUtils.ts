@@ -7,7 +7,6 @@ export const PLAYER_COLORS = ['#58a6ff', '#ff7b72', '#3fb950', '#d2a8ff', '#ffa6
 export const UNIT_COLORS = [
   '#58a6ff',
   '#3fb950',
-  '#d4a843',
   '#d2a8ff',
   '#ffa657',
   '#ff7b72',
@@ -21,6 +20,21 @@ export const UNIT_COLORS = [
   '#a5d6ff',
   '#c9e0a0',
 ]
+
+/** All heroes share this amber color regardless of race. */
+export const HERO_COLOR = '#d4a843'
+
+function hashId(id: string): number {
+  let h = 0
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0x7fffffff
+  return h
+}
+
+/** Deterministic color for a unit or hero id. All heroes share HERO_COLOR. */
+export function unitColor(id: string): string {
+  if (HERO_OBSERVER_IDS.has(id)) return HERO_COLOR
+  return UNIT_COLORS[hashId(id) % UNIT_COLORS.length]
+}
 
 /** Supply cost for a unit or hero id. Heroes cost 5 food in the army chart. */
 export function heroSupply(id: string): number {

@@ -238,11 +238,15 @@ api.post('/ingest', async (c) => {
   try {
     body = await c.req.json()
   } catch {
+    console.warn(`[ingest] malformed request from ${auth.user.login}: invalid JSON`)
     return c.json({ error: 'invalid JSON' }, 400)
   }
 
   const parsed = validatePatch(body)
-  if ('error' in parsed) return c.json({ error: `invalid patch: ${parsed.error}` }, 400)
+  if ('error' in parsed) {
+    console.warn(`[ingest] malformed request from ${auth.user.login}: ${parsed.error}`)
+    return c.json({ error: `invalid patch: ${parsed.error}` }, 400)
+  }
 
   const patch = parsed.data
   gameStore.ingest(patch)
@@ -266,6 +270,16 @@ api.get('/game', (c) => {
     'Cache-Control': CC,
     ETag: etag,
   })
+})
+
+// ---------------------------------------------------------------------------
+// GET /api/:channel/history
+// ---------------------------------------------------------------------------
+
+api.get('/:channel/history', (c) => {
+  const channel = c.req.param('channel').toLowerCase()
+  if (!CHANNEL_RE.test(channel)) return c.json({ error: 'invalid channel' }, 400)
+  return c.json(gameStore.getChannelHistory(channel), 200, { 'Cache-Control': CC })
 })
 
 // ---------------------------------------------------------------------------

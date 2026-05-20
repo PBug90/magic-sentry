@@ -62,4 +62,11 @@ export const UNIT_ICON_BY_ID: Record<string, string> = {
   hwat: 'hwel',
   hwt2: 'hwel',
   hwt3: 'hwel',
+  edcm: 'edoc',
+  edtm: 'edot',
+  // Night Elf ancients: observer unit IDs differ from the building icon IDs
+  eaom: 'eaow', // Ancient of War
+  eaoe: 'eaol', // Ancient of Lore
+  eden: 'eawo', // Ancient of Wonders
+  uske: 'uskw', // Skeleton Warrior (summoned by Necromancer)
 }

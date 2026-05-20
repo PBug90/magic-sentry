@@ -46,6 +46,13 @@ pub struct UnitSnapshot {
 }
 
 #[derive(Serialize, Clone)]
+pub struct StructureSnapshot {
+    pub id: String,
+    /// 0 = construction complete; > 0 = still being built.
+    pub construction_progress: u32,
+}
+
+#[derive(Serialize, Clone)]
 pub struct UpgradeSnapshot {
     pub id: String,
     pub level: u32,
@@ -79,6 +86,7 @@ pub struct ResourceSample {
     pub apm: u32,
     pub heroes: Vec<HeroSnapshot>,
     pub units: Vec<UnitSnapshot>,
+    pub structures: Vec<StructureSnapshot>,
     pub upgrades: Vec<UpgradeSnapshot>,
     pub player_items: Vec<PlayerItemStatSnapshot>,
 }
