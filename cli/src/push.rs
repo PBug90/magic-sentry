@@ -238,6 +238,7 @@ mod tests {
             apm: 100,
             heroes: vec![],
             units: vec![],
+            structures: vec![],
             upgrades: vec![],
             player_items: vec![],
         }
