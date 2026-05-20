@@ -5,7 +5,7 @@ edition = "2021"
 description = "Magic Sentry - WarCraft III Live Game Data Tracker"
 
 [dependencies]
-warcraft3-stats-observer = { git = "https://github.com/PBug90/Warcraft3StatsObserverRs", rev = "0462e250c64a7603b91371b45ad7fe6773835835" }
+warcraft3-stats-observer = { git = "https://github.com/garlic-hub/Warcraft3StatsObserverRs", rev = "df7ac9b2c5e7140d1e15544927e50b5514a940f1" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 crossterm = "0.27"
