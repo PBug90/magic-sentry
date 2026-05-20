@@ -19,10 +19,14 @@ const EXPANSION_HALLS = new Set([
 
 // Tier 2 and tier 3 main hall buildings. Detected when first seen in structures.
 const TIER_BUILDINGS = new Set([
-  'hkee', 'hcas',  // Human: Keep, Castle
-  'ostr', 'ofrt',  // Orc: Stronghold, Fortress
-  'etoa', 'etoe',  // Night Elf: Tree of Ages, Tree of Eternity
-  'unp1', 'unp2',  // Undead: Halls of the Dead, Black Citadel
+  'hkee',
+  'hcas', // Human: Keep, Castle
+  'ostr',
+  'ofrt', // Orc: Stronghold, Fortress
+  'etoa',
+  'etoe', // Night Elf: Tree of Ages, Tree of Eternity
+  'unp1',
+  'unp2', // Undead: Halls of the Dead, Black Citadel
 ])
 
 export function detectTimeline(players: PlayerRecord[]): TimelineEvent[] {
@@ -37,7 +41,13 @@ export function detectTimeline(players: PlayerRecord[]): TimelineEvent[] {
       for (const upgrade of curr.upgrades) {
         const prevLevel = prev.upgrades.find((u) => u.id === upgrade.id)?.level ?? 0
         if (upgrade.level > prevLevel) {
-          events.push({ time_ms: curr.time_ms, player: player.name, type: 'upgrade', id: upgrade.id, level: upgrade.level })
+          events.push({
+            time_ms: curr.time_ms,
+            player: player.name,
+            type: 'upgrade',
+            id: upgrade.id,
+            level: upgrade.level,
+          })
         }
       }
 
@@ -50,7 +60,12 @@ export function detectTimeline(players: PlayerRecord[]): TimelineEvent[] {
         const prevCount = prevStructures.filter((p) => p.id === s.id).length
         const currCount = currStructures.filter((c) => c.id === s.id).length
         if (currCount > prevCount && prevCount === 0) {
-          events.push({ time_ms: curr.time_ms, player: player.name, type: 'tier_upgrade', id: s.id })
+          events.push({
+            time_ms: curr.time_ms,
+            player: player.name,
+            type: 'tier_upgrade',
+            id: s.id,
+          })
         }
       }
 
@@ -59,10 +74,18 @@ export function detectTimeline(players: PlayerRecord[]): TimelineEvent[] {
       const currHallCount = currStructures.filter((s) => EXPANSION_HALLS.has(s.id)).length
       if (currHallCount > prevHallCount) {
         const newHall = currStructures.find(
-          (s) => EXPANSION_HALLS.has(s.id) && prevStructures.filter((p) => p.id === s.id).length < currStructures.filter((c) => c.id === s.id).length,
+          (s) =>
+            EXPANSION_HALLS.has(s.id) &&
+            prevStructures.filter((p) => p.id === s.id).length <
+              currStructures.filter((c) => c.id === s.id).length,
         )
         if (newHall) {
-          events.push({ time_ms: curr.time_ms, player: player.name, type: 'expansion', id: newHall.id })
+          events.push({
+            time_ms: curr.time_ms,
+            player: player.name,
+            type: 'expansion',
+            id: newHall.id,
+          })
         }
       }
     }

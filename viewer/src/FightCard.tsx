@@ -84,24 +84,41 @@ function Sparkline({ fight }: { fight: Fight }) {
 
   return (
     <div style={{ marginBottom: 10 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-        <div style={{ fontSize: '.58em', fontFamily: 'monospace', letterSpacing: '.1em', color: '#555', textTransform: 'uppercase' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 4,
+        }}
+      >
+        <div
+          style={{
+            fontSize: '.58em',
+            fontFamily: 'monospace',
+            letterSpacing: '.1em',
+            color: '#555',
+            textTransform: 'uppercase',
+          }}
+        >
           Damage activity
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           {fight.players.map((p, i) => (
-            <span key={p.name} style={{ fontSize: '.6em', fontFamily: 'monospace', color: playerColors[i] ?? '#888' }}>
+            <span
+              key={p.name}
+              style={{
+                fontSize: '.6em',
+                fontFamily: 'monospace',
+                color: playerColors[i] ?? '#888',
+              }}
+            >
               — {p.name}
             </span>
           ))}
         </div>
       </div>
-      <svg
-        width={W}
-        height={H}
-        style={{ display: 'block' }}
-        viewBox={`0 0 ${W} ${H}`}
-      >
+      <svg width={W} height={H} style={{ display: 'block' }} viewBox={`0 0 ${W} ${H}`}>
         {fight.players.map((p, i) => {
           const pts = toPoints(p.damageCurve)
           if (!pts) return null
@@ -138,17 +155,41 @@ export function ExpandedPanel({ fight }: { fight: Fight }) {
     >
       <Sparkline fight={fight} />
       <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: '.58em', fontFamily: 'monospace', letterSpacing: '.1em', color: '#555', marginBottom: 6, textTransform: 'uppercase' }}>
+        <div
+          style={{
+            fontSize: '.58em',
+            fontFamily: 'monospace',
+            letterSpacing: '.1em',
+            color: '#555',
+            marginBottom: 6,
+            textTransform: 'uppercase',
+          }}
+        >
           Heroes
         </div>
         {fight.players.map((p, i) => (
           <div key={p.name} style={{ marginBottom: 6 }}>
-            <div style={{ fontSize: '.65em', color: playerColors[i] ?? '#888', marginBottom: 2 }}>{p.name}</div>
+            <div style={{ fontSize: '.65em', color: playerColors[i] ?? '#888', marginBottom: 2 }}>
+              {p.name}
+            </div>
             {p.heroStats.map((h) => (
-              <div key={h.id} style={{ display: 'flex', gap: 10, fontSize: '.62em', paddingLeft: 8, alignItems: 'center' }}>
-                <span style={{ color: '#ccc', minWidth: 100 }}>{UNIT_NAME_BY_ID[h.id] ?? h.id} lv{h.level}</span>
+              <div
+                key={h.id}
+                style={{
+                  display: 'flex',
+                  gap: 10,
+                  fontSize: '.62em',
+                  paddingLeft: 8,
+                  alignItems: 'center',
+                }}
+              >
+                <span style={{ color: '#ccc', minWidth: 100 }}>
+                  {UNIT_NAME_BY_ID[h.id] ?? h.id} lv{h.level}
+                </span>
                 <span style={{ color: '#f85149' }}>{h.damageDone.toLocaleString()} dmg</span>
-                {h.healingDone > 0 && <span style={{ color: '#3fb950' }}>{h.healingDone.toLocaleString()} heal</span>}
+                {h.healingDone > 0 && (
+                  <span style={{ color: '#3fb950' }}>{h.healingDone.toLocaleString()} heal</span>
+                )}
               </div>
             ))}
           </div>
@@ -158,7 +199,14 @@ export function ExpandedPanel({ fight }: { fight: Fight }) {
         {/* Losses column */}
         <div style={{ flex: 1 }}>
           <div
-            style={{ fontSize: '.58em', fontFamily: 'monospace', letterSpacing: '.1em', color: '#555', marginBottom: 6, textTransform: 'uppercase' }}
+            style={{
+              fontSize: '.58em',
+              fontFamily: 'monospace',
+              letterSpacing: '.1em',
+              color: '#555',
+              marginBottom: 6,
+              textTransform: 'uppercase',
+            }}
           >
             Losses
           </div>
@@ -167,7 +215,10 @@ export function ExpandedPanel({ fight }: { fight: Fight }) {
               <div style={{ fontSize: '.68em', color: playerColors[i] ?? '#888', marginBottom: 3 }}>
                 {p.name}
                 {p.killedHeroes.map((h) => (
-                  <span key={h.id} style={{ color: '#f85149', marginLeft: 6, fontFamily: 'monospace' }}>
+                  <span
+                    key={h.id}
+                    style={{ color: '#f85149', marginLeft: 6, fontFamily: 'monospace' }}
+                  >
                     {UNIT_NAME_BY_ID[h.id] ?? h.id} lv{h.level} died
                   </span>
                 ))}
@@ -176,7 +227,17 @@ export function ExpandedPanel({ fight }: { fight: Fight }) {
                 <div style={{ fontSize: '.62em', color: '#444' }}>none</div>
               ) : (
                 p.unitsLost.map((u) => (
-                  <div key={u.id} style={{ fontSize: '.62em', color: '#ccc', display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                  <div
+                    key={u.id}
+                    style={{
+                      fontSize: '.62em',
+                      color: '#ccc',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      marginBottom: 2,
+                    }}
+                  >
                     <img
                       src={iconSrc(`/units/${u.id}.webp`)}
                       width={14}
@@ -196,13 +257,22 @@ export function ExpandedPanel({ fight }: { fight: Fight }) {
         {/* Before / After column */}
         <div style={{ flex: 1 }}>
           <div
-            style={{ fontSize: '.58em', fontFamily: 'monospace', letterSpacing: '.1em', color: '#555', marginBottom: 6, textTransform: 'uppercase' }}
+            style={{
+              fontSize: '.58em',
+              fontFamily: 'monospace',
+              letterSpacing: '.1em',
+              color: '#555',
+              marginBottom: 6,
+              textTransform: 'uppercase',
+            }}
           >
             Before / After
           </div>
           {fight.players.map((p, i) => (
             <div key={p.name} style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: '.68em', color: playerColors[i] ?? '#888', marginBottom: 3 }}>{p.name}</div>
+              <div style={{ fontSize: '.68em', color: playerColors[i] ?? '#888', marginBottom: 3 }}>
+                {p.name}
+              </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start' }}>
                 <div>
                   {p.armyBefore.map((u) => (
@@ -227,20 +297,39 @@ export function ExpandedPanel({ fight }: { fight: Fight }) {
         {/* Items Used column */}
         <div style={{ flex: 1 }}>
           <div
-            style={{ fontSize: '.58em', fontFamily: 'monospace', letterSpacing: '.1em', color: '#555', marginBottom: 6, textTransform: 'uppercase' }}
+            style={{
+              fontSize: '.58em',
+              fontFamily: 'monospace',
+              letterSpacing: '.1em',
+              color: '#555',
+              marginBottom: 6,
+              textTransform: 'uppercase',
+            }}
           >
             Items Used
           </div>
           {fight.players.map((p, i) => (
             <div key={p.name} style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: '.68em', color: playerColors[i] ?? '#888', marginBottom: 3 }}>{p.name}</div>
+              <div style={{ fontSize: '.68em', color: playerColors[i] ?? '#888', marginBottom: 3 }}>
+                {p.name}
+              </div>
               {p.itemsUsed.length === 0 ? (
                 <div style={{ fontSize: '.62em', color: '#444' }}>none</div>
               ) : (
                 p.itemsUsed.map((item) => {
                   const data = ITEM_BY_ID[item.id]
                   return (
-                    <div key={item.id} style={{ fontSize: '.62em', color: '#d29922', display: 'flex', alignItems: 'center', gap: 4, marginBottom: 2 }}>
+                    <div
+                      key={item.id}
+                      style={{
+                        fontSize: '.62em',
+                        color: '#d29922',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        marginBottom: 2,
+                      }}
+                    >
                       <img
                         src={iconSrc(`/items/${item.id}.webp`)}
                         width={14}

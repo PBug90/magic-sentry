@@ -5,16 +5,32 @@ import type { PlayerRecord, Sample } from '../src/types.js'
 function makeSample(time_ms: number, overrides: Partial<Sample> = {}): Sample {
   return {
     time_ms,
-    gold: 0, gold_mined: 0, gold_upkeep_lost: 0,
-    lumber: 0, lumber_mined: 0, lumber_upkeep_lost: 0,
-    food_used: 0, food_cap: 0, apm: 0,
-    heroes: [], units: [], upgrades: [], player_items: [],
+    gold: 0,
+    gold_mined: 0,
+    gold_upkeep_lost: 0,
+    lumber: 0,
+    lumber_mined: 0,
+    lumber_upkeep_lost: 0,
+    food_used: 0,
+    food_cap: 0,
+    apm: 0,
+    heroes: [],
+    units: [],
+    upgrades: [],
+    player_items: [],
     ...overrides,
   }
 }
 
 function makePlayer(name: string, samples: Sample[]): PlayerRecord {
-  return { name, race: 'Human', team: 0, result: '', samples, summary: { heroes: [], units: [], upgrades: [] } }
+  return {
+    name,
+    race: 'Human',
+    team: 0,
+    result: '',
+    samples,
+    summary: { heroes: [], units: [], upgrades: [] },
+  }
 }
 
 describe('detectTimeline — upgrades', () => {
@@ -25,7 +41,13 @@ describe('detectTimeline — upgrades', () => {
     ])
     const events = detectTimeline([p])
     expect(events).toHaveLength(1)
-    expect(events[0]).toMatchObject({ player: 'leqi', type: 'upgrade', id: 'Rhme', level: 1, time_ms: 2000 })
+    expect(events[0]).toMatchObject({
+      player: 'leqi',
+      type: 'upgrade',
+      id: 'Rhme',
+      level: 1,
+      time_ms: 2000,
+    })
   })
 
   it('detects each upgrade level separately', () => {
@@ -53,9 +75,9 @@ describe('detectTimeline — upgrades', () => {
     // receives the same level in adjacent samples rather than a 0-gap. Confirm
     // that repeated level=1 entries across three samples produce exactly one event.
     const p = makePlayer('leqi', [
-      makeSample(0,    { upgrades: [] }),
+      makeSample(0, { upgrades: [] }),
       makeSample(2000, { upgrades: [{ id: 'Rora', level: 1, max_level: 3 }] }),
-      makeSample(4000, { upgrades: [{ id: 'Rora', level: 1, max_level: 3 }] }),  // dirty frame filled in
+      makeSample(4000, { upgrades: [{ id: 'Rora', level: 1, max_level: 3 }] }), // dirty frame filled in
       makeSample(6000, { upgrades: [{ id: 'Rora', level: 1, max_level: 3 }] }),
     ])
     const events = detectTimeline([p])
@@ -68,11 +90,21 @@ describe('detectTimeline — expansions', () => {
   it('detects a Human expansion (second Town Hall appears in structures)', () => {
     const p = makePlayer('leqi', [
       makeSample(0, { structures: [{ id: 'htow', construction_progress: 0 }] }),
-      makeSample(2000, { structures: [{ id: 'htow', construction_progress: 0 }, { id: 'htow', construction_progress: 0 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'htow', construction_progress: 0 },
+          { id: 'htow', construction_progress: 0 },
+        ],
+      }),
     ])
     const events = detectTimeline([p])
     expect(events).toHaveLength(1)
-    expect(events[0]).toMatchObject({ player: 'leqi', type: 'expansion', id: 'htow', time_ms: 2000 })
+    expect(events[0]).toMatchObject({
+      player: 'leqi',
+      type: 'expansion',
+      id: 'htow',
+      time_ms: 2000,
+    })
   })
 
   it('does not fire as expansion when Town Hall is upgraded to Keep (hall count unchanged)', () => {
@@ -88,7 +120,12 @@ describe('detectTimeline — expansions', () => {
   it('detects Undead expansion (Haunted Gold Mine appears)', () => {
     const p = makePlayer('ghost', [
       makeSample(0, { structures: [{ id: 'unpl', construction_progress: 0 }] }),
-      makeSample(2000, { structures: [{ id: 'unpl', construction_progress: 0 }, { id: 'ugol', construction_progress: 0 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'unpl', construction_progress: 0 },
+          { id: 'ugol', construction_progress: 0 },
+        ],
+      }),
     ])
     const events = detectTimeline([p])
     expect(events).toHaveLength(1)
@@ -104,7 +141,12 @@ describe('detectTimeline — tier upgrades', () => {
     ])
     const events = detectTimeline([p])
     expect(events).toHaveLength(1)
-    expect(events[0]).toMatchObject({ player: 'leqi', type: 'tier_upgrade', id: 'hkee', time_ms: 2000 })
+    expect(events[0]).toMatchObject({
+      player: 'leqi',
+      type: 'tier_upgrade',
+      id: 'hkee',
+      time_ms: 2000,
+    })
   })
 
   it('detects Human tier 3 (Castle)', () => {
@@ -142,7 +184,12 @@ describe('detectTimeline — tier upgrades', () => {
     // By the time it upgrades to Keep, no new event should fire.
     const p = makePlayer('leqi', [
       makeSample(0, { structures: [{ id: 'hkee', construction_progress: 0 }] }),
-      makeSample(2000, { structures: [{ id: 'hkee', construction_progress: 0 }, { id: 'hkee', construction_progress: 0 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'hkee', construction_progress: 0 },
+          { id: 'hkee', construction_progress: 0 },
+        ],
+      }),
     ])
     expect(detectTimeline([p])).toHaveLength(0)
   })
@@ -156,7 +203,12 @@ describe('detectTimeline — ordering', () => {
     ])
     const p2 = makePlayer('Rollex', [
       makeSample(0, { structures: [{ id: 'ogre', construction_progress: 0 }] }),
-      makeSample(2000, { structures: [{ id: 'ogre', construction_progress: 0 }, { id: 'ogre', construction_progress: 0 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'ogre', construction_progress: 0 },
+          { id: 'ogre', construction_progress: 0 },
+        ],
+      }),
     ])
     const events = detectTimeline([p1, p2])
     expect(events).toHaveLength(2)

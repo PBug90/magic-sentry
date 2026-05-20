@@ -255,7 +255,12 @@ fn run_game(
                                 p.push(&players, &map_name, &game_name, true);
                             }
                             if config.generate_reports {
-                                report::write_report(&html_filename, &map_name, &game_name, &players);
+                                report::write_report(
+                                    &html_filename,
+                                    &map_name,
+                                    &game_name,
+                                    &players,
+                                );
                             }
                             return pusher.as_ref().map_or(0, |p| p.total_wire_bytes);
                         }

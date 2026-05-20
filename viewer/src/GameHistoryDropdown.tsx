@@ -18,7 +18,10 @@ interface GameHistoryDropdownProps {
   onSelect: (id: string | null) => void
 }
 
-function resultLabel(players: HistorySummary['players'], channel: string): { text: string; color: string } {
+function resultLabel(
+  players: HistorySummary['players'],
+  channel: string,
+): { text: string; color: string } {
   const streamer = players.find((p) => p.name.toLowerCase() === channel.toLowerCase())
   if (!streamer || !streamer.result) return { text: 'abandoned', color: '#555' }
   if (streamer.result === 'Victory') {
@@ -123,22 +126,44 @@ export function GameHistoryDropdown({
           {/* Live game row */}
           <div
             style={{ ...rowStyle(!selectedHistoryId), borderBottom: '1px solid #1a1a24' }}
-            onClick={() => { onSelect(null); setOpen(false) }}
+            onClick={() => {
+              onSelect(null)
+              setOpen(false)
+            }}
           >
             <span style={badgeStyle(true)}>live</span>
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span style={{ fontSize: '.7em', color: '#ccc', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <span
+                style={{
+                  fontSize: '.7em',
+                  color: '#ccc',
+                  fontFamily: 'monospace',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
                 {liveGame ? matchupLabel(liveGame.players) : 'Loading…'}
               </span>
               <span style={{ fontSize: '.6em', color: '#555', fontFamily: 'monospace' }}>
                 {liveGame?.map ?? ''}
               </span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: 2,
+                flexShrink: 0,
+              }}
+            >
               <span style={{ fontSize: '.62em', color: '#555', fontFamily: 'monospace' }}>
                 {liveGame ? formatDuration(liveGame.duration_ms) : ''}
               </span>
-              <span style={{ fontSize: '.58em', color: '#555', fontFamily: 'monospace' }}>in progress</span>
+              <span style={{ fontSize: '.58em', color: '#555', fontFamily: 'monospace' }}>
+                in progress
+              </span>
             </div>
           </div>
 
@@ -150,18 +175,40 @@ export function GameHistoryDropdown({
               <div
                 key={item.public_id}
                 style={rowStyle(isSelected)}
-                onClick={() => { onSelect(item.public_id); setOpen(false) }}
+                onClick={() => {
+                  onSelect(item.public_id)
+                  setOpen(false)
+                }}
               >
                 <span style={badgeStyle(false)}>done</span>
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontSize: '.7em', color: '#ccc', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div
+                  style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}
+                >
+                  <span
+                    style={{
+                      fontSize: '.7em',
+                      color: '#ccc',
+                      fontFamily: 'monospace',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
                     {matchupLabel(item.players)}
                   </span>
                   <span style={{ fontSize: '.6em', color: '#555', fontFamily: 'monospace' }}>
                     {item.map}
                   </span>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    gap: 2,
+                    flexShrink: 0,
+                  }}
+                >
                   <span style={{ fontSize: '.62em', color: '#555', fontFamily: 'monospace' }}>
                     {formatDuration(item.duration_ms)}
                   </span>

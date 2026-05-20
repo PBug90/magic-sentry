@@ -27,7 +27,7 @@ const PEASANT_ID = 'hpea'
 const MILITIA_ID = 'hmil'
 
 function peasantMilitiaPool(units: UnitSnapshot[]): number {
-  return units.reduce((s, u) => (u.id === PEASANT_ID || u.id === MILITIA_ID) ? s + u.alive : s, 0)
+  return units.reduce((s, u) => (u.id === PEASANT_ID || u.id === MILITIA_ID ? s + u.alive : s), 0)
 }
 
 function hasUnitLoss(prevUnits: UnitSnapshot[], currUnits: UnitSnapshot[]): boolean {
@@ -64,12 +64,16 @@ export function detectFights(players: PlayerRecord[]): Fight[] {
         if (!prevHero) {
           for (let j = i - 2; j >= 0; j--) {
             const found = player.samples[j].heroes.find((h) => h.id === hero.id)
-            if (found) { prevHero = found; break }
+            if (found) {
+              prevHero = found
+              break
+            }
           }
         }
         if (!prevHero) continue
         const dmgDelta =
-          hero.damage_dealt - prevHero.damage_dealt +
+          hero.damage_dealt -
+          prevHero.damage_dealt +
           (hero.damage_received - prevHero.damage_received)
         if (dmgDelta >= DAMAGE_THRESHOLD) {
           active[i] = true
@@ -171,12 +175,17 @@ function buildFightPlayer(player: PlayerRecord, start: number, end: number): Fig
       if (!prevHero) {
         for (let j = i - 2; j >= 0; j--) {
           const found = player.samples[j].heroes.find((h) => h.id === hero.id)
-          if (found) { prevHero = found; break }
+          if (found) {
+            prevHero = found
+            break
+          }
         }
       }
       if (prevHero) {
-        delta += (hero.damage_dealt - prevHero.damage_dealt) +
-                 (hero.damage_received - prevHero.damage_received)
+        delta +=
+          hero.damage_dealt -
+          prevHero.damage_dealt +
+          (hero.damage_received - prevHero.damage_received)
       }
     }
     damageCurve.push(delta)
@@ -219,5 +228,15 @@ function buildFightPlayer(player: PlayerRecord, start: number, end: number): Fig
     }
   }
 
-  return { name: player.name, race: player.race, armyBefore, armyAfter, unitsLost, itemsUsed, damageCurve, killedHeroes, heroStats }
+  return {
+    name: player.name,
+    race: player.race,
+    armyBefore,
+    armyAfter,
+    unitsLost,
+    itemsUsed,
+    damageCurve,
+    killedHeroes,
+    heroStats,
+  }
 }

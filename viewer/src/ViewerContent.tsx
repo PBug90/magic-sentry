@@ -10,7 +10,17 @@ import { detectFights, detectTimeline } from '@magic-sentry/shared'
 import { FightSection } from './FightSection'
 import { TimelineSection } from './TimelineSection'
 
-export type TabKey = 'heroes' | 'items' | 'gold' | 'lumber' | 'food' | 'armies' | 'army' | 'apm' | 'fights' | 'timeline'
+export type TabKey =
+  | 'heroes'
+  | 'items'
+  | 'gold'
+  | 'lumber'
+  | 'food'
+  | 'armies'
+  | 'army'
+  | 'apm'
+  | 'fights'
+  | 'timeline'
 
 export const VIEWER_TABS: { key: TabKey; label: string }[] = [
   { key: 'heroes', label: 'Heroes and Upgrades' },

@@ -1,5 +1,11 @@
 import { useState, useMemo } from 'react'
-import { UNITS, ITEM_BY_ID, UPGRADES_TECH, HERO_OBSERVER_IDS, UNIT_ICON_BY_ID } from '@magic-sentry/shared'
+import {
+  UNITS,
+  ITEM_BY_ID,
+  UPGRADES_TECH,
+  HERO_OBSERVER_IDS,
+  UNIT_ICON_BY_ID,
+} from '@magic-sentry/shared'
 import { useIconSrc } from './context'
 
 type Category = 'units' | 'buildings' | 'heroes' | 'items' | 'upgrades'
@@ -40,21 +46,50 @@ function buildEntries(category: Category): Entry[] {
     case 'units':
       return Object.entries(UNITS)
         .filter(([id, d]) => d.supply > 0 && d.gold > 0 && !HERO_OBSERVER_IDS.has(id))
-        .map(([id, d]) => ({ id, name: d.name, gold: d.gold, lumber: d.lumber, supply: d.supply, race: raceFromId(id) }))
+        .map(([id, d]) => ({
+          id,
+          name: d.name,
+          gold: d.gold,
+          lumber: d.lumber,
+          supply: d.supply,
+          race: raceFromId(id),
+        }))
     case 'buildings':
       return Object.entries(UNITS)
         .filter(([id, d]) => d.supply === 0 && d.gold > 0 && !HERO_OBSERVER_IDS.has(id))
-        .map(([id, d]) => ({ id, name: d.name, gold: d.gold, lumber: d.lumber, race: raceFromId(id) }))
+        .map(([id, d]) => ({
+          id,
+          name: d.name,
+          gold: d.gold,
+          lumber: d.lumber,
+          race: raceFromId(id),
+        }))
     case 'heroes':
       return Object.entries(UNITS)
         .filter(([id]) => HERO_OBSERVER_IDS.has(id))
-        .map(([id, d]) => ({ id, name: d.name, gold: d.gold, lumber: d.lumber, race: raceFromId(id) }))
+        .map(([id, d]) => ({
+          id,
+          name: d.name,
+          gold: d.gold,
+          lumber: d.lumber,
+          race: raceFromId(id),
+        }))
     case 'items':
-      return Object.entries(ITEM_BY_ID)
-        .map(([id, d]) => ({ id, name: d.name, gold: d.gold, lumber: 0, race: 'Neutral' }))
+      return Object.entries(ITEM_BY_ID).map(([id, d]) => ({
+        id,
+        name: d.name,
+        gold: d.gold,
+        lumber: 0,
+        race: 'Neutral',
+      }))
     case 'upgrades':
-      return Object.entries(UPGRADES_TECH)
-        .map(([id, d]) => ({ id, name: d.name, gold: d.gold, lumber: d.lumber, race: raceFromId(id) }))
+      return Object.entries(UPGRADES_TECH).map(([id, d]) => ({
+        id,
+        name: d.name,
+        gold: d.gold,
+        lumber: d.lumber,
+        race: raceFromId(id),
+      }))
   }
 }
 
@@ -62,28 +97,53 @@ function Stat({ value, color, suffix }: { value: number; color: string; suffix: 
   if (value === 0) return <span style={{ color: '#333', minWidth: 44, fontSize: '.6em' }}>—</span>
   return (
     <span style={{ color, fontFamily: 'monospace', fontSize: '.6em', minWidth: 44 }}>
-      {value}{suffix}
+      {value}
+      {suffix}
     </span>
   )
 }
 
-function EntryRow({ entry, iconPath, showSupply, iconSrc }: {
+function EntryRow({
+  entry,
+  iconPath,
+  showSupply,
+  iconSrc,
+}: {
   entry: Entry
   iconPath: string
   showSupply: boolean
   iconSrc: (p: string) => string
 }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', borderBottom: '1px solid #16161e' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '4px 0',
+        borderBottom: '1px solid #16161e',
+      }}
+    >
       <img
         src={iconSrc(`${iconPath}/${UNIT_ICON_BY_ID[entry.id] ?? entry.id}.webp`)}
         width={20}
         height={20}
         alt=""
         style={{ imageRendering: 'pixelated', flexShrink: 0 }}
-        onError={(e) => { (e.target as HTMLImageElement).style.visibility = 'hidden' }}
+        onError={(e) => {
+          ;(e.target as HTMLImageElement).style.visibility = 'hidden'
+        }}
       />
-      <span style={{ flex: 1, fontSize: '.7em', color: '#ccc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <span
+        style={{
+          flex: 1,
+          fontSize: '.7em',
+          color: '#ccc',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {entry.name}
       </span>
       <Stat value={entry.gold} color="#c8a050" suffix="g" />
@@ -93,7 +153,9 @@ function EntryRow({ entry, iconPath, showSupply, iconSrc }: {
   )
 }
 
-export function EncyclopediaPanel({ iconSrc: iconSrcProp }: { iconSrc?: (p: string) => string } = {}) {
+export function EncyclopediaPanel({
+  iconSrc: iconSrcProp,
+}: { iconSrc?: (p: string) => string } = {}) {
   const contextIconSrc = useIconSrc()
   const iconSrc = iconSrcProp ?? contextIconSrc
 
@@ -145,14 +207,31 @@ export function EncyclopediaPanel({ iconSrc: iconSrcProp }: { iconSrc?: (p: stri
       {/* Category tabs */}
       <div style={{ display: 'flex', borderBottom: '1px solid #1e1e26', flexShrink: 0 }}>
         {CATEGORIES.map(({ key, label }) => (
-          <button key={key} style={tabStyle(category === key)} onClick={() => { setCategory(key); setRace('All') }}>
+          <button
+            key={key}
+            style={tabStyle(category === key)}
+            onClick={() => {
+              setCategory(key)
+              setRace('All')
+            }}
+          >
             {label}
           </button>
         ))}
       </div>
 
       {/* Search + race filter */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '8px 12px', flexShrink: 0, flexWrap: 'wrap', borderBottom: '1px solid #1e1e26' }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          alignItems: 'center',
+          padding: '8px 12px',
+          flexShrink: 0,
+          flexWrap: 'wrap',
+          borderBottom: '1px solid #1e1e26',
+        }}
+      >
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -181,21 +260,85 @@ export function EncyclopediaPanel({ iconSrc: iconSrcProp }: { iconSrc?: (p: stri
       </div>
 
       {/* Header row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '3px 12px', flexShrink: 0 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          padding: '3px 12px',
+          flexShrink: 0,
+        }}
+      >
         <div style={{ width: 20, flexShrink: 0 }} />
-        <span style={{ flex: 1, fontSize: '.55em', color: '#444', fontFamily: 'monospace', textTransform: 'uppercase', letterSpacing: '.1em' }}>Name</span>
-        <span style={{ fontSize: '.55em', color: '#444', fontFamily: 'monospace', minWidth: 44, textTransform: 'uppercase', letterSpacing: '.05em' }}>Gold</span>
-        <span style={{ fontSize: '.55em', color: '#444', fontFamily: 'monospace', minWidth: 44, textTransform: 'uppercase', letterSpacing: '.05em' }}>Lumber</span>
-        {showSupply && <span style={{ fontSize: '.55em', color: '#444', fontFamily: 'monospace', minWidth: 44, textTransform: 'uppercase', letterSpacing: '.05em' }}>Food</span>}
+        <span
+          style={{
+            flex: 1,
+            fontSize: '.55em',
+            color: '#444',
+            fontFamily: 'monospace',
+            textTransform: 'uppercase',
+            letterSpacing: '.1em',
+          }}
+        >
+          Name
+        </span>
+        <span
+          style={{
+            fontSize: '.55em',
+            color: '#444',
+            fontFamily: 'monospace',
+            minWidth: 44,
+            textTransform: 'uppercase',
+            letterSpacing: '.05em',
+          }}
+        >
+          Gold
+        </span>
+        <span
+          style={{
+            fontSize: '.55em',
+            color: '#444',
+            fontFamily: 'monospace',
+            minWidth: 44,
+            textTransform: 'uppercase',
+            letterSpacing: '.05em',
+          }}
+        >
+          Lumber
+        </span>
+        {showSupply && (
+          <span
+            style={{
+              fontSize: '.55em',
+              color: '#444',
+              fontFamily: 'monospace',
+              minWidth: 44,
+              textTransform: 'uppercase',
+              letterSpacing: '.05em',
+            }}
+          >
+            Food
+          </span>
+        )}
       </div>
 
       {/* Entries */}
       <div style={{ overflowY: 'auto', flex: 1, padding: '0 12px 12px' }}>
         {filtered.length === 0 ? (
-          <div style={{ fontSize: '.65em', color: '#444', fontFamily: 'monospace', paddingTop: 16 }}>No results</div>
+          <div
+            style={{ fontSize: '.65em', color: '#444', fontFamily: 'monospace', paddingTop: 16 }}
+          >
+            No results
+          </div>
         ) : (
           filtered.map((e) => (
-            <EntryRow key={e.id} entry={e} iconPath={iconPath} showSupply={showSupply} iconSrc={iconSrc} />
+            <EntryRow
+              key={e.id}
+              entry={e}
+              iconPath={iconPath}
+              showSupply={showSupply}
+              iconSrc={iconSrc}
+            />
           ))
         )}
       </div>

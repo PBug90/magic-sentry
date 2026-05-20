@@ -206,7 +206,7 @@ describe('GameStore channelHistory', () => {
     vi.advanceTimersByTime(EXPIRY_MS + SWEEP_MS)
 
     const hist: string[] = (store as any).channelHistory.get('streamer')
-    expect(hist).toBeDefined()           // game-3 still alive, so history entry exists
+    expect(hist).toBeDefined() // game-3 still alive, so history entry exists
     expect(hist).not.toContain('game-1')
   })
 
@@ -223,21 +223,29 @@ describe('GameStore channelHistory', () => {
 })
 
 describe('GameStore.getChannelHistory', () => {
-  function makePatchWithPlayer(gameId: string, seq: number, playerName: string, result: string, isFinal = false) {
+  function makePatchWithPlayer(
+    gameId: string,
+    seq: number,
+    playerName: string,
+    result: string,
+    isFinal = false,
+  ) {
     return {
       game_id: gameId,
       seq,
       is_final: isFinal,
       map: 'Lost Temple',
       game: 'Test Game',
-      players: [{
-        name: playerName,
-        race: 'Orc',
-        team: 0,
-        result,
-        new_samples: [],
-        summary: null,
-      }],
+      players: [
+        {
+          name: playerName,
+          race: 'Orc',
+          team: 0,
+          result,
+          new_samples: [],
+          summary: null,
+        },
+      ],
     }
   }
 

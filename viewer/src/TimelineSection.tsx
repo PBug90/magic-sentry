@@ -31,17 +31,24 @@ export function TimelineSection({
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {events.map((e, i) => (
-          <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'baseline', fontSize: '.7em', fontFamily: 'monospace' }}>
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              gap: 12,
+              alignItems: 'baseline',
+              fontSize: '.7em',
+              fontFamily: 'monospace',
+            }}
+          >
             <span style={{ color: '#555', minWidth: 38 }}>{formatTime(e.time_ms)}</span>
-            <span style={{ color: playerColors[e.player] ?? '#888', minWidth: 80 }}>{e.player}</span>
+            <span style={{ color: playerColors[e.player] ?? '#888', minWidth: 80 }}>
+              {e.player}
+            </span>
             {e.type === 'expansion' ? (
-              <span style={{ color: '#d29922' }}>
-                Expansion — {UNIT_NAME_BY_ID[e.id] ?? e.id}
-              </span>
+              <span style={{ color: '#d29922' }}>Expansion — {UNIT_NAME_BY_ID[e.id] ?? e.id}</span>
             ) : e.type === 'tier_upgrade' ? (
-              <span style={{ color: '#7ca3d0' }}>
-                {UNIT_NAME_BY_ID[e.id] ?? e.id}
-              </span>
+              <span style={{ color: '#7ca3d0' }}>{UNIT_NAME_BY_ID[e.id] ?? e.id}</span>
             ) : (
               <span style={{ color: '#ccc' }}>
                 {UPGRADE_NAME_BY_ID[e.id] ?? e.id}

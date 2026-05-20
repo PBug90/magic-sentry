@@ -619,8 +619,14 @@ describe('GET /api/:channel/history', () => {
     await app.request('/api/ingest', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify(makePatch({ game_id: 'game-1', seq: 0, is_final: true,
-        players: [makePlayer({ name: TEST_USER.login, result: 'Victory' })] })),
+      body: JSON.stringify(
+        makePatch({
+          game_id: 'game-1',
+          seq: 0,
+          is_final: true,
+          players: [makePlayer({ name: TEST_USER.login, result: 'Victory' })],
+        }),
+      ),
     })
 
     // Ingest game-2 — this triggers the game transition in setChannelGame

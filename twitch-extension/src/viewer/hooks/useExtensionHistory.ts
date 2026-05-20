@@ -18,7 +18,10 @@ export function useExtensionHistory(endpointUrl: string): HistorySummary[] {
         const res = await fetch(historyUrl, { signal: controller.signal })
         if (!res.ok) return
         const data: unknown = await res.json()
-        if (Array.isArray(data) && (data.length === 0 || typeof (data[0] as any).public_id === 'string')) {
+        if (
+          Array.isArray(data) &&
+          (data.length === 0 || typeof (data[0] as any).public_id === 'string')
+        ) {
           setHistory(data as HistorySummary[])
         }
       } catch (err) {

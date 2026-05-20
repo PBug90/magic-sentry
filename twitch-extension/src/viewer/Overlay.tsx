@@ -1,11 +1,19 @@
 import { useState, useEffect, useRef } from 'react'
 import { PLAYER_COLORS, formatDuration } from '@magic-sentry/shared'
-import { ViewerContent, TeamsBar, StatusDot, EncyclopediaPanel, VIEWER_TABS, GameHistoryDropdown } from '@magic-sentry/viewer'
+import {
+  ViewerContent,
+  TeamsBar,
+  StatusDot,
+  EncyclopediaPanel,
+  VIEWER_TABS,
+  GameHistoryDropdown,
+} from '@magic-sentry/viewer'
 import { useExtensionHistory } from './hooks/useExtensionHistory'
 
-const visibleTabs = import.meta.env.VITE_ENABLE_FIGHTS === 'true'
-  ? VIEWER_TABS
-  : VIEWER_TABS.filter((t) => t.key !== 'fights')
+const visibleTabs =
+  import.meta.env.VITE_ENABLE_FIGHTS === 'true'
+    ? VIEWER_TABS
+    : VIEWER_TABS.filter((t) => t.key !== 'fights')
 
 const WIKI_ENABLED = import.meta.env.VITE_ENABLE_WIKI === 'true'
 import type { ChartPlayer } from '../shared/types'
@@ -53,10 +61,15 @@ export function Overlay() {
     try {
       const parts = new URL(config.endpointUrl).pathname.split('/')
       return parts[parts.length - 2] ?? ''
-    } catch { return '' }
+    } catch {
+      return ''
+    }
   })()
 
-  const { game, fetchError, lastUpdated, refresh } = useMagicSentryGame(effectiveConfig, configReady)
+  const { game, fetchError, lastUpdated, refresh } = useMagicSentryGame(
+    effectiveConfig,
+    configReady,
+  )
 
   const playerData: ChartPlayer[] = (game?.players ?? []).map((p, i) => ({
     ...p,
@@ -122,7 +135,7 @@ export function Overlay() {
           )}
           {WIKI_ENABLED && (
             <button
-              onClick={() => setView(v => v === 'encyclopedia' ? 'game' : 'encyclopedia')}
+              onClick={() => setView((v) => (v === 'encyclopedia' ? 'game' : 'encyclopedia'))}
               title={effectiveView === 'encyclopedia' ? 'Back to game' : 'Encyclopedia'}
               style={{
                 background: effectiveView === 'encyclopedia' ? '#1e1e2e' : 'none',
@@ -182,7 +195,14 @@ export function Overlay() {
         </div>
       )}
 
-      {effectiveView === 'game' && game && <ViewerContent players={playerData} iconSrc={twitchIconSrc} error={fetchError} tabs={visibleTabs} />}
+      {effectiveView === 'game' && game && (
+        <ViewerContent
+          players={playerData}
+          iconSrc={twitchIconSrc}
+          error={fetchError}
+          tabs={visibleTabs}
+        />
+      )}
     </div>
   )
 }
