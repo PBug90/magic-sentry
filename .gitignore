@@ -3,6 +3,7 @@
 
 # CLI game output files (generated at runtime, not project assets)
 /cli/*.json
+/cli/*.html
 
 # Node
 node_modules/
@@ -28,6 +29,7 @@ node_modules/
 /twitch-extension/dist/
 /twitch-extension/node_modules/
 /twitch-extension/.env
+/twitch-extension/*.zip
 
 # Claude
 .claude

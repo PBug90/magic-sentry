@@ -22,7 +22,8 @@
     "hono": "^4.6.0",
     "postgres": "^3.4.9",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
     "@hono/node-server": "^2.0.1",
