@@ -315,13 +315,20 @@ api.get('/:channel/live/after/:from', measureRawFetchBytes, (c) => {
   if (isNaN(fromSeq)) return c.json({ error: 'invalid from' }, 400)
 
   const internalId = gameStore.getChannelGameId(channel)
-  if (!internalId) return c.json({ error: 'no game found for channel' }, 404, { 'Cache-Control': 'public, max-age=30' })
+  if (!internalId)
+    return c.json({ error: 'no game found for channel' }, 404, {
+      'Cache-Control': 'public, max-age=30',
+    })
 
   const publicId = gameStore.getPublicId(internalId)
-  if (!publicId) return c.json({ error: 'no game found for channel' }, 404, { 'Cache-Control': 'public, max-age=30' })
+  if (!publicId)
+    return c.json({ error: 'no game found for channel' }, 404, {
+      'Cache-Control': 'public, max-age=30',
+    })
 
   const latestSeq = gameStore.getLatestSeq(internalId)
-  if (latestSeq <= fromSeq) return c.newResponse(null, 204, { 'Cache-Control': 'public, max-age=10' })
+  if (latestSeq <= fromSeq)
+    return c.newResponse(null, 204, { 'Cache-Control': 'public, max-age=10' })
 
   const toSeq = gameStore.sealChunk(publicId, fromSeq, latestSeq)
   const patches = gameStore.getChunk(internalId, fromSeq, toSeq)
@@ -347,13 +354,14 @@ api.get('/:channel/live/:gameId/after/:from', measureRawFetchBytes, (c) => {
 
   const publicId = c.req.param('gameId')
   const internalId = gameStore.getInternalGameId(publicId)
-  if (!internalId) return c.newResponse(null, 204, { 'Cache-Control': 'no-store' })
+  if (!internalId) return c.newResponse(null, 204, { 'Cache-Control': 'public, max-age=5' })
 
   const fromSeq = parseInt(c.req.param('from'), 10)
   if (isNaN(fromSeq)) return c.json({ error: 'invalid from' }, 400)
 
   const latestSeq = gameStore.getLatestSeq(internalId)
-  if (latestSeq <= fromSeq) return c.newResponse(null, 204, { 'Cache-Control': 'no-store' })
+  if (latestSeq <= fromSeq)
+    return c.newResponse(null, 204, { 'Cache-Control': 'public, max-age=5' })
 
   const toSeq = gameStore.sealChunk(publicId, fromSeq, latestSeq)
   const patches = gameStore.getChunk(internalId, fromSeq, toSeq)
