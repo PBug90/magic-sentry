@@ -17,6 +17,7 @@
     "test:server": "vitest run --config vitest.config.server.ts"
   },
   "dependencies": {
+    "@hono/node-server": "^2.0.1",
     "@magic-sentry/shared": "*",
     "@magic-sentry/viewer": "*",
     "hono": "^4.6.0",
@@ -26,7 +27,6 @@
     "react-router-dom": "^7.15.1"
   },
   "devDependencies": {
-    "@hono/node-server": "^2.0.1",
     "@types/node": "^25.6.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
