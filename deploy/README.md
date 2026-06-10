@@ -56,6 +56,14 @@ DATABASE_URL=postgresql://<supabase connection string>
 TWITCH_CLIENT_ID=<twitch app id>
 TWITCH_CLIENT_SECRET=<twitch app secret>
 TWITCH_REDIRECT_URI=https://magicsentry.pro/auth/twitch/callback
+
+# Monitoring — filled in during step 9 (optional; omit to disable monitoring).
+GC_PROM_URL=
+GC_PROM_USERNAME=
+GC_PROM_PASSWORD=
+GC_LOKI_URL=
+GC_LOKI_USERNAME=
+GC_LOKI_PASSWORD=
 EOF
 chmod 600 /opt/magic-sentry/.env
 chown deploy:deploy /opt/magic-sentry/.env
@@ -94,6 +102,44 @@ ssh -i gha_deploy deploy@<VPS_HOST> "docker --version && ls -la /opt/magic-sentr
 ```
 
 Expected: prints the Docker version and shows the `.env` file with mode `-rw-------`.
+
+### 9. Monitoring — Grafana Cloud (optional)
+
+The `alloy` service in `docker-compose.yml` pushes host + container metrics and container logs to Grafana Cloud. Without the six `GC_*` variables in `.env`, Alloy crash-loops harmlessly; the rest of the stack is unaffected.
+
+To enable:
+
+1. Sign up at https://grafana.com (free tier, no card). Create a stack — this provisions a hosted Prometheus, Loki, and Grafana instance.
+2. From the stack's **Connections → Data sources** page, copy the push credentials for both Prometheus and Loki. For each one Grafana shows a "Remote Write Endpoint" URL, a numeric username, and a `glc_...` API token.
+3. Fill the six `GC_*` lines in `/opt/magic-sentry/.env`:
+   ```
+   GC_PROM_URL=https://prometheus-prod-<region>.grafana.net/api/prom/push
+   GC_PROM_USERNAME=<numeric id>
+   GC_PROM_PASSWORD=glc_xxxxxxxxxxxx
+   GC_LOKI_URL=https://logs-prod-<region>.grafana.net/loki/api/v1/push
+   GC_LOKI_USERNAME=<numeric id>
+   GC_LOKI_PASSWORD=glc_xxxxxxxxxxxx
+   ```
+4. Reload Alloy: `cd /opt/magic-sentry && docker compose --env-file .compose.env up -d alloy`.
+5. In Grafana Cloud → **Connections**, enable the **Linux Server** and **Docker** integrations. The prebuilt dashboards auto-import and start populating within ~1 minute.
+6. Configure email alerts:
+   - **Alerts & IRM → Contact points → Add contact point** of type *Email*, address `anxiety.pb@googlemail.com`. Send a test.
+   - **Alert rules → New rule** — create four warning-level rules, each routed to the contact point (1 h `repeat_interval`, 5 min `group_interval`):
+
+     | Rule | Expression | For |
+     | --- | --- | --- |
+     | `ContainerRestart` | `increase(container_start_time_seconds{name=~"magic-sentry-(web|caddy)-.*"}[10m]) > 0` | 0m |
+     | `ContainerDown` | `absent(container_last_seen{name=~"magic-sentry-(web|caddy)-.*"})` | 2m |
+     | `HostMemoryHigh` | `(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) > 0.85` | 10m |
+     | `HostDiskHigh` | `(node_filesystem_size_bytes{mountpoint="/rootfs"} - node_filesystem_avail_bytes{mountpoint="/rootfs"}) / node_filesystem_size_bytes{mountpoint="/rootfs"} > 0.80` | 10m |
+
+7. Test by stopping the web container for 3 minutes:
+   ```bash
+   docker stop magic-sentry-web-1
+   ```
+   Expect a `ContainerDown` email within ~3 min. Restart with `docker start magic-sentry-web-1` and you should receive `ContainerRestart`.
+
+**Security note:** Alloy needs read-only access to the Docker socket, which is effectively root on the host. This is the standard tradeoff for container monitoring; only the Alloy container is granted it.
 
 ## Deploying
 

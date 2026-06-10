@@ -1,0 +1,95 @@
+// Grafana Alloy pipeline for Magic Sentry.
+//
+// Three sources, two sinks:
+//   host metrics       ─┐
+//   container metrics  ─┼─► Grafana Cloud Prometheus (remote_write)
+//                       │
+//   container logs     ───► Grafana Cloud Loki
+
+// ----------------------------------------------------------------------------
+// Host metrics — reads /proc and /sys via bind mounts.
+// ----------------------------------------------------------------------------
+
+prometheus.exporter.unix "host" {
+  rootfs_path = "/rootfs"
+  procfs_path = "/host/proc"
+  sysfs_path  = "/host/sys"
+}
+
+prometheus.scrape "host" {
+  targets         = prometheus.exporter.unix.host.targets
+  forward_to      = [prometheus.remote_write.grafana_cloud.receiver]
+  scrape_interval = "60s"
+  job_name        = "node"
+}
+
+// ----------------------------------------------------------------------------
+// Container metrics — cAdvisor talks to the Docker socket.
+// ----------------------------------------------------------------------------
+
+prometheus.exporter.cadvisor "containers" {
+  docker_host            = "unix:///var/run/docker.sock"
+  store_container_labels = true
+}
+
+prometheus.scrape "containers" {
+  targets         = prometheus.exporter.cadvisor.containers.targets
+  forward_to      = [prometheus.remote_write.grafana_cloud.receiver]
+  scrape_interval = "60s"
+  job_name        = "cadvisor"
+}
+
+// ----------------------------------------------------------------------------
+// Container logs — discover all running containers, tail their stdout.
+// ----------------------------------------------------------------------------
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  // Drop the leading "/" from "/magic-sentry-web-1" so the label is clean.
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container_name"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  forward_to = [loki.write.grafana_cloud.receiver]
+  labels     = { "job" = "docker_logs" }
+}
+
+// ----------------------------------------------------------------------------
+// Remote write sinks. Credentials live in /opt/magic-sentry/.env.
+// ----------------------------------------------------------------------------
+
+prometheus.remote_write "grafana_cloud" {
+  endpoint {
+    url = sys.env("GC_PROM_URL")
+    basic_auth {
+      username = sys.env("GC_PROM_USERNAME")
+      password = sys.env("GC_PROM_PASSWORD")
+    }
+  }
+}
+
+loki.write "grafana_cloud" {
+  endpoint {
+    url = sys.env("GC_LOKI_URL")
+    basic_auth {
+      username = sys.env("GC_LOKI_USERNAME")
+      password = sys.env("GC_LOKI_PASSWORD")
+    }
+  }
+}
