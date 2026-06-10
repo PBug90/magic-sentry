@@ -402,7 +402,7 @@ describe('GET /api/:channel/live/after/:from (entry route)', () => {
     // latestSeq=0, requesting after/0 → no data beyond it
     const res = await app.request('/api/back2warcraft/live/after/0')
     expect(res.status).toBe(204)
-    expect(res.headers.get('cache-control')).toBe('no-store')
+    expect(res.headers.get('cache-control')).toBe('public, max-age=10')
   })
 
   it('after/-1 returns all patches and a game-specific next URL', async () => {
@@ -456,7 +456,7 @@ describe('GET /api/:channel/live/:gameId/after/:from (sealed chunk route)', () =
     const publicId = gameStore.getPublicId('test-game-1')!
     const res = await app.request(`/api/back2warcraft/live/${publicId}/after/0`)
     expect(res.status).toBe(204)
-    expect(res.headers.get('cache-control')).toBe('no-store')
+    expect(res.headers.get('cache-control')).toBe('public, max-age=5')
   })
 
   it('returns only patches strictly after from', async () => {

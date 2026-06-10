@@ -37,6 +37,7 @@ export function createApp() {
           : null,
       allowHeaders: ['Authorization', 'Content-Type'],
       allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+      maxAge: 600,
     }),
   )
 
