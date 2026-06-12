@@ -70,6 +70,42 @@ describe('detectTimeline — upgrades', () => {
     expect(detectTimeline([p])).toHaveLength(0)
   })
 
+  it('does not re-fire upgrades after a dirty sample with an empty upgrades array', () => {
+    // Regression: WC3 occasionally produces a sample whose upgrades array reads
+    // empty while heroes/units/structures are intact. Every upgrade must not
+    // re-fire when the data reappears in the following sample.
+    const p = makePlayer('leqi', [
+      makeSample(0, { upgrades: [] }),
+      makeSample(2000, {
+        upgrades: [
+          { id: 'Rhme', level: 1, max_level: 3 },
+          { id: 'Rhpt', level: 1, max_level: 2 },
+        ],
+      }),
+      makeSample(4000, { upgrades: [] }), // dirty frame: upgrades read empty
+      makeSample(6000, {
+        upgrades: [
+          { id: 'Rhme', level: 1, max_level: 3 },
+          { id: 'Rhpt', level: 1, max_level: 2 },
+        ],
+      }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(2)
+    expect(events.every((e) => e.time_ms === 2000)).toBe(true)
+  })
+
+  it('still detects a level increase after a dirty empty sample', () => {
+    const p = makePlayer('leqi', [
+      makeSample(0, { upgrades: [{ id: 'Rhme', level: 1, max_level: 3 }] }),
+      makeSample(2000, { upgrades: [] }), // dirty frame
+      makeSample(4000, { upgrades: [{ id: 'Rhme', level: 2, max_level: 3 }] }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ id: 'Rhme', level: 2, time_ms: 4000 })
+  })
+
   it('does not duplicate when the same upgrade level repeats across consecutive samples', () => {
     // Regression: CLI dirty-frame fallback now fills upgrade gaps so the detection
     // receives the same level in adjacent samples rather than a 0-gap. Confirm
@@ -89,11 +125,11 @@ describe('detectTimeline — upgrades', () => {
 describe('detectTimeline — expansions', () => {
   it('detects a Human expansion (second Town Hall appears in structures)', () => {
     const p = makePlayer('leqi', [
-      makeSample(0, { structures: [{ id: 'htow', construction_progress: 0 }] }),
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
       makeSample(2000, {
         structures: [
-          { id: 'htow', construction_progress: 0 },
-          { id: 'htow', construction_progress: 0 },
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 100 },
         ],
       }),
     ])
@@ -109,8 +145,8 @@ describe('detectTimeline — expansions', () => {
 
   it('does not fire as expansion when Town Hall is upgraded to Keep (hall count unchanged)', () => {
     const p = makePlayer('leqi', [
-      makeSample(0, { structures: [{ id: 'htow', construction_progress: 0 }] }),
-      makeSample(2000, { structures: [{ id: 'hkee', construction_progress: 0 }] }),
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(2000, { structures: [{ id: 'hkee', construction_progress: 100 }] }),
     ])
     const events = detectTimeline([p])
     expect(events).toHaveLength(1)
@@ -119,11 +155,11 @@ describe('detectTimeline — expansions', () => {
 
   it('detects Undead expansion (Haunted Gold Mine appears)', () => {
     const p = makePlayer('ghost', [
-      makeSample(0, { structures: [{ id: 'unpl', construction_progress: 0 }] }),
+      makeSample(0, { structures: [{ id: 'unpl', construction_progress: 100 }] }),
       makeSample(2000, {
         structures: [
-          { id: 'unpl', construction_progress: 0 },
-          { id: 'ugol', construction_progress: 0 },
+          { id: 'unpl', construction_progress: 100 },
+          { id: 'ugol', construction_progress: 100 },
         ],
       }),
     ])
@@ -136,8 +172,8 @@ describe('detectTimeline — expansions', () => {
 describe('detectTimeline — tier upgrades', () => {
   it('detects Human tier 2 (Keep)', () => {
     const p = makePlayer('leqi', [
-      makeSample(0, { structures: [{ id: 'htow', construction_progress: 0 }] }),
-      makeSample(2000, { structures: [{ id: 'hkee', construction_progress: 0 }] }),
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(2000, { structures: [{ id: 'hkee', construction_progress: 100 }] }),
     ])
     const events = detectTimeline([p])
     expect(events).toHaveLength(1)
@@ -151,8 +187,8 @@ describe('detectTimeline — tier upgrades', () => {
 
   it('detects Human tier 3 (Castle)', () => {
     const p = makePlayer('leqi', [
-      makeSample(0, { structures: [{ id: 'hkee', construction_progress: 0 }] }),
-      makeSample(2000, { structures: [{ id: 'hcas', construction_progress: 0 }] }),
+      makeSample(0, { structures: [{ id: 'hkee', construction_progress: 100 }] }),
+      makeSample(2000, { structures: [{ id: 'hcas', construction_progress: 100 }] }),
     ])
     const events = detectTimeline([p])
     expect(events).toHaveLength(1)
@@ -161,8 +197,8 @@ describe('detectTimeline — tier upgrades', () => {
 
   it('detects Undead tier 2 (Halls of the Dead)', () => {
     const p = makePlayer('ghost', [
-      makeSample(0, { structures: [{ id: 'unpl', construction_progress: 0 }] }),
-      makeSample(2000, { structures: [{ id: 'unp1', construction_progress: 0 }] }),
+      makeSample(0, { structures: [{ id: 'unpl', construction_progress: 100 }] }),
+      makeSample(2000, { structures: [{ id: 'unp1', construction_progress: 100 }] }),
     ])
     const events = detectTimeline([p])
     expect(events).toHaveLength(1)
@@ -171,7 +207,7 @@ describe('detectTimeline — tier upgrades', () => {
 
   it('detects tier upgrade even when construction is still in progress', () => {
     const p = makePlayer('leqi', [
-      makeSample(0, { structures: [{ id: 'htow', construction_progress: 0 }] }),
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
       makeSample(2000, { structures: [{ id: 'hkee', construction_progress: 50 }] }),
     ])
     const events = detectTimeline([p])
@@ -183,15 +219,269 @@ describe('detectTimeline — tier upgrades', () => {
     // In a real game, the expansion is detected when the Town Hall first appears.
     // By the time it upgrades to Keep, no new event should fire.
     const p = makePlayer('leqi', [
-      makeSample(0, { structures: [{ id: 'hkee', construction_progress: 0 }] }),
+      makeSample(0, { structures: [{ id: 'hkee', construction_progress: 100 }] }),
       makeSample(2000, {
         structures: [
-          { id: 'hkee', construction_progress: 0 },
-          { id: 'hkee', construction_progress: 0 },
+          { id: 'hkee', construction_progress: 100 },
+          { id: 'hkee', construction_progress: 100 },
         ],
       }),
     ])
     expect(detectTimeline([p])).toHaveLength(0)
+  })
+})
+
+describe('detectTimeline — construction lifecycle', () => {
+  it('marks an expansion as completed when its construction finishes', () => {
+    const p = makePlayer('leqi', [
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 20 },
+        ],
+      }),
+      makeSample(4000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 60 },
+        ],
+      }),
+      makeSample(6000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 100 },
+        ],
+      }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({
+      type: 'expansion',
+      id: 'htow',
+      time_ms: 2000,
+      status: 'completed',
+      resolved_ms: 6000,
+    })
+  })
+
+  it('tracks a freshly placed building (progress 0) as in progress until it reaches 100', () => {
+    // Regression from a real game: construction_progress counts UP to 100
+    // (100 = finished). A new Tree of Life sampled at exactly 0% must not be
+    // treated as complete, and completion happens when it reaches 100.
+    const p = makePlayer('LeMei', [
+      makeSample(0, { structures: [{ id: 'etol', construction_progress: 100 }] }),
+      makeSample(250_000, {
+        structures: [
+          // The new building appears before the old one in the live data.
+          { id: 'etol', construction_progress: 0 },
+          { id: 'etol', construction_progress: 100 },
+        ],
+      }),
+      makeSample(252_000, {
+        structures: [
+          { id: 'etol', construction_progress: 2 },
+          { id: 'etol', construction_progress: 100 },
+        ],
+      }),
+      makeSample(370_000, {
+        structures: [
+          { id: 'etol', construction_progress: 100 },
+          { id: 'etol', construction_progress: 100 },
+        ],
+      }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({
+      type: 'expansion',
+      id: 'etol',
+      time_ms: 250_000,
+      status: 'completed',
+      resolved_ms: 370_000,
+    })
+  })
+
+  it('marks an expansion as canceled when the unfinished hall disappears', () => {
+    const p = makePlayer('leqi', [
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 80 },
+        ],
+      }),
+      makeSample(4000, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({
+      type: 'expansion',
+      id: 'htow',
+      time_ms: 2000,
+      status: 'canceled',
+      resolved_ms: 4000,
+    })
+  })
+
+  it('keeps an unfinished expansion in_progress at the end of the data', () => {
+    const p = makePlayer('leqi', [
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 80 },
+        ],
+      }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ status: 'in_progress' })
+    expect(events[0].resolved_ms).toBeUndefined()
+  })
+
+  it('marks an expansion completed immediately when it first appears finished', () => {
+    const p = makePlayer('leqi', [
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 100 },
+        ],
+      }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ status: 'completed', resolved_ms: 2000 })
+  })
+
+  it('tracks a canceled tier upgrade and the later retry separately', () => {
+    const p = makePlayer('leqi', [
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(2000, { structures: [{ id: 'hkee', construction_progress: 50 }] }),
+      makeSample(4000, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(6000, { structures: [{ id: 'hkee', construction_progress: 60 }] }),
+      makeSample(8000, { structures: [{ id: 'hkee', construction_progress: 100 }] }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(2)
+    expect(events[0]).toMatchObject({
+      type: 'tier_upgrade',
+      id: 'hkee',
+      time_ms: 2000,
+      status: 'canceled',
+      resolved_ms: 4000,
+    })
+    expect(events[1]).toMatchObject({
+      type: 'tier_upgrade',
+      id: 'hkee',
+      time_ms: 6000,
+      status: 'completed',
+      resolved_ms: 8000,
+    })
+  })
+
+  it('keeps a completed expansion completed when the hall is destroyed later', () => {
+    const p = makePlayer('leqi', [
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 80 },
+        ],
+      }),
+      makeSample(4000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 100 },
+        ],
+      }),
+      makeSample(6000, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ status: 'completed', resolved_ms: 4000 })
+  })
+
+  it('does not fire an expansion when an uprooted tree re-roots', () => {
+    // Night Elf halls can uproot (leaving the structures list) and re-root
+    // later, re-appearing already complete. That is not a new expansion.
+    const p = makePlayer('LeMei', [
+      makeSample(0, {
+        structures: [
+          { id: 'etol', construction_progress: 100 },
+          { id: 'etol', construction_progress: 100 },
+        ],
+      }),
+      makeSample(2000, { structures: [{ id: 'etol', construction_progress: 100 }] }), // uprooted
+      makeSample(4000, {
+        structures: [
+          { id: 'etol', construction_progress: 100 },
+          { id: 'etol', construction_progress: 100 },
+        ],
+      }), // re-rooted
+    ])
+    expect(detectTimeline([p])).toHaveLength(0)
+  })
+
+  it('still fires an expansion for a new hall built after one was destroyed', () => {
+    // A genuine rebuild appears under construction, unlike a re-root.
+    const p = makePlayer('leqi', [
+      makeSample(0, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 100 },
+        ],
+      }),
+      makeSample(2000, { structures: [{ id: 'htow', construction_progress: 100 }] }), // destroyed
+      makeSample(4000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 10 },
+        ],
+      }),
+      makeSample(6000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 100 },
+        ],
+      }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({
+      type: 'expansion',
+      time_ms: 4000,
+      status: 'completed',
+      resolved_ms: 6000,
+    })
+  })
+
+  it('ignores a dirty sample with an empty structures array', () => {
+    const p = makePlayer('leqi', [
+      makeSample(0, { structures: [{ id: 'htow', construction_progress: 100 }] }),
+      makeSample(2000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 80 },
+        ],
+      }),
+      makeSample(4000, { structures: [] }), // dirty frame
+      makeSample(6000, {
+        structures: [
+          { id: 'htow', construction_progress: 100 },
+          { id: 'htow', construction_progress: 100 },
+        ],
+      }),
+    ])
+    const events = detectTimeline([p])
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({
+      type: 'expansion',
+      time_ms: 2000,
+      status: 'completed',
+      resolved_ms: 6000,
+    })
   })
 })
 
@@ -202,11 +492,11 @@ describe('detectTimeline — ordering', () => {
       makeSample(4000, { upgrades: [{ id: 'Rhme', level: 1, max_level: 3 }] }),
     ])
     const p2 = makePlayer('Rollex', [
-      makeSample(0, { structures: [{ id: 'ogre', construction_progress: 0 }] }),
+      makeSample(0, { structures: [{ id: 'ogre', construction_progress: 100 }] }),
       makeSample(2000, {
         structures: [
-          { id: 'ogre', construction_progress: 0 },
-          { id: 'ogre', construction_progress: 0 },
+          { id: 'ogre', construction_progress: 100 },
+          { id: 'ogre', construction_progress: 100 },
         ],
       }),
     ])

@@ -6,6 +6,26 @@ function formatTime(ms: number): string {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
+/** Construction outcome for structure events; time_ms is the start of construction. */
+function StatusBadge({ event }: { event: TimelineEvent }) {
+  if (!event.status) return null
+  if (event.status === 'completed') {
+    return (
+      <span style={{ color: '#3fb950' }}>
+        ✓ {event.resolved_ms !== undefined ? formatTime(event.resolved_ms) : ''}
+      </span>
+    )
+  }
+  if (event.status === 'canceled') {
+    return (
+      <span style={{ color: '#f85149' }}>
+        ✗ canceled {event.resolved_ms !== undefined ? formatTime(event.resolved_ms) : ''}
+      </span>
+    )
+  }
+  return <span style={{ color: '#888' }}>… building</span>
+}
+
 export function TimelineSection({
   events,
   playerColors,
@@ -46,9 +66,13 @@ export function TimelineSection({
               {e.player}
             </span>
             {e.type === 'expansion' ? (
-              <span style={{ color: '#d29922' }}>Expansion — {UNIT_NAME_BY_ID[e.id] ?? e.id}</span>
+              <span style={{ color: '#d29922' }}>
+                Expansion — {UNIT_NAME_BY_ID[e.id] ?? e.id} <StatusBadge event={e} />
+              </span>
             ) : e.type === 'tier_upgrade' ? (
-              <span style={{ color: '#7ca3d0' }}>{UNIT_NAME_BY_ID[e.id] ?? e.id}</span>
+              <span style={{ color: '#7ca3d0' }}>
+                {UNIT_NAME_BY_ID[e.id] ?? e.id} <StatusBadge event={e} />
+              </span>
             ) : (
               <span style={{ color: '#ccc' }}>
                 {UPGRADE_NAME_BY_ID[e.id] ?? e.id}
