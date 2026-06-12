@@ -28,6 +28,12 @@ interface GameViewerProps {
 
 export function GameViewer({ channel, gameId, onBack, onLayoutCheck }: GameViewerProps) {
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null)
+  const [bgOpacity, setBgOpacity] = useState<number>(() => {
+    const stored = localStorage.getItem('magic-sentry-bg-opacity')
+    if (stored === null) return 0.65
+    const parsed = parseFloat(stored)
+    return isNaN(parsed) ? 0.65 : Math.max(0, Math.min(1, parsed))
+  })
   const history = useChannelHistory(channel)
 
   // Reset to live view whenever the live game changes
@@ -35,7 +41,16 @@ export function GameViewer({ channel, gameId, onBack, onLayoutCheck }: GameViewe
     setSelectedHistoryId(null)
   }, [gameId])
 
+  useEffect(() => {
+    localStorage.setItem('magic-sentry-bg-opacity', String(bgOpacity))
+  }, [bgOpacity])
+
   const effectiveGameId = selectedHistoryId ?? gameId
+
+  const headerAlpha = 0.45 + bgOpacity * 0.5
+  const contentAlpha = bgOpacity * 0.65
+  const blurPx = (1 - bgOpacity) * 16
+  const blurVal = `blur(${blurPx.toFixed(1)}px)`
   const { game, fetchError, lastUpdated, refresh } = useMagicSentryGame(channel, effectiveGameId)
 
   const playerData: ChartPlayer[] = (game?.players ?? []).map((p, i) => ({
@@ -61,6 +76,9 @@ export function GameViewer({ channel, gameId, onBack, onLayoutCheck }: GameViewe
           flexWrap: 'wrap',
           padding: '12px 24px',
           borderBottom: '1px solid #1e1e26',
+          background: `rgba(14,14,16,${headerAlpha.toFixed(3)})`,
+          backdropFilter: blurVal,
+          WebkitBackdropFilter: blurVal,
         }}
       >
         <button
@@ -105,6 +123,26 @@ export function GameViewer({ channel, gameId, onBack, onLayoutCheck }: GameViewe
               updated {lastUpdated.toLocaleTimeString()}
             </span>
           )}
+          <span
+            aria-hidden="true"
+            style={{ color: '#555', fontSize: '.75em', fontFamily: 'monospace', lineHeight: 1 }}
+          >
+            ◑
+          </span>
+          <input
+            type="range"
+            min={0}
+            max={1}
+            step={0.01}
+            value={bgOpacity}
+            onChange={(e) => {
+              const v = parseFloat(e.target.value)
+              if (!isNaN(v)) setBgOpacity(Math.max(0, Math.min(1, v)))
+            }}
+            style={{ width: 70, accentColor: '#c8a050', cursor: 'pointer' }}
+            title="Background opacity"
+            aria-label="Background opacity"
+          />
           {onLayoutCheck && (
             <button onClick={onLayoutCheck} title="Extension preview" style={btnStyle}>
               ⊞
@@ -125,18 +163,29 @@ export function GameViewer({ channel, gameId, onBack, onLayoutCheck }: GameViewe
         </div>
       </div>
 
-      {/* Error / loading */}
-      {!game && (
-        <div style={{ padding: '20px 24px' }}>
-          {fetchError ? (
-            <StatusDot ok={false} label={`Error: ${fetchError}`} />
-          ) : (
-            <StatusDot ok={true} label="Loading…" />
-          )}
-        </div>
-      )}
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          background: `rgba(14,14,16,${contentAlpha.toFixed(3)})`,
+          backdropFilter: blurVal,
+          WebkitBackdropFilter: blurVal,
+        }}
+      >
+        {!game && (
+          <div style={{ padding: '20px 24px' }}>
+            {fetchError ? (
+              <StatusDot ok={false} label={`Error: ${fetchError}`} />
+            ) : (
+              <StatusDot ok={true} label="Loading…" />
+            )}
+          </div>
+        )}
 
-      {game && <ViewerContent players={playerData} iconSrc={webIconSrc} error={fetchError} />}
+        {game && <ViewerContent players={playerData} iconSrc={webIconSrc} error={fetchError} />}
+      </div>
     </div>
   )
 }
