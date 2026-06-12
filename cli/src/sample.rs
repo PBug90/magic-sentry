@@ -5,7 +5,7 @@ use warcraft3_stats_observer::{
 
 use crate::types::{
     AbilitySnapshot, HeroSnapshot, ItemSnapshot, PlayerItemStatSnapshot, PlayerState,
-    PlayerSummary, StructureSnapshot, UnitSnapshot, UpgradeSnapshot,
+    PlayerSummary, ResourceSample, StructureSnapshot, UnitSnapshot, UpgradeSnapshot,
 };
 use crate::util::{fourcc, race_name};
 
@@ -29,11 +29,10 @@ pub fn find_player_slots(od: &ObserverData, player_count: usize) -> Vec<usize> {
     slots
 }
 
-pub fn is_game_over(od: &ObserverData, player_slots: &[usize]) -> bool {
-    player_slots.iter().any(|&slot| {
-        let result = unsafe {
-            std::ptr::read_unaligned(std::ptr::addr_of!(od.players[slot].game_result) as *const u8)
-        };
+pub fn is_game_over<'a>(players: impl IntoIterator<Item = &'a PlayerInfo>) -> bool {
+    players.into_iter().any(|p| {
+        let result =
+            unsafe { std::ptr::read_unaligned(std::ptr::addr_of!(p.game_result) as *const u8) };
         matches!(result, 0..=2)
     })
 }
@@ -194,6 +193,26 @@ fn read_player_item_stat_snapshot(item: &PlayerItemInfo) -> Option<PlayerItemSta
     })
 }
 
+/// Upgrades are monotonic in WC3 — once researched they never disappear and a
+/// level never decreases. A tick where the upgrade block reads empty while
+/// earlier samples contain upgrades is a partial dirty read (WC3's write
+/// window), even when heroes/units read fine; reuse the most recent non-empty
+/// list instead of committing the bogus empty one.
+pub fn fill_upgrade_gap(
+    samples: &[ResourceSample],
+    upgrades: Vec<UpgradeSnapshot>,
+) -> Vec<UpgradeSnapshot> {
+    if !upgrades.is_empty() {
+        return upgrades;
+    }
+    samples
+        .iter()
+        .rev()
+        .find(|s| !s.upgrades.is_empty())
+        .map(|s| s.upgrades.clone())
+        .unwrap_or_default()
+}
+
 pub fn read_player_tick(p: &PlayerInfo) -> PlayerTickRead {
     let heroes = p
         .heroes
@@ -245,5 +264,74 @@ pub fn read_player_tick(p: &PlayerInfo) -> PlayerTickRead {
         food_used: p.food_used,
         food_cap: p.food_cap,
         apm: p.actions_per_minute,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn upgrade(id: &str, level: u32) -> UpgradeSnapshot {
+        UpgradeSnapshot {
+            id: id.to_string(),
+            level,
+            max_level: 3,
+        }
+    }
+
+    fn sample_with_upgrades(time_ms: u64, upgrades: Vec<UpgradeSnapshot>) -> ResourceSample {
+        ResourceSample {
+            time_ms,
+            gold: 0,
+            gold_mined: 0,
+            gold_upkeep_lost: 0,
+            lumber: 0,
+            lumber_mined: 0,
+            lumber_upkeep_lost: 0,
+            food_used: 0,
+            food_cap: 0,
+            apm: 0,
+            heroes: vec![],
+            units: vec![],
+            structures: vec![],
+            upgrades,
+            player_items: vec![],
+        }
+    }
+
+    /// An empty upgrade read with non-empty history is a dirty frame — the
+    /// last non-empty list must be carried forward.
+    #[test]
+    fn empty_upgrade_read_reuses_last_non_empty_list() {
+        let samples = vec![
+            sample_with_upgrades(1000, vec![]),
+            sample_with_upgrades(2000, vec![upgrade("Rhme", 1), upgrade("Rhpt", 1)]),
+            sample_with_upgrades(3000, vec![upgrade("Rhme", 2), upgrade("Rhpt", 1)]),
+        ];
+        let filled = fill_upgrade_gap(&samples, vec![]);
+        assert_eq!(filled.len(), 2);
+        assert_eq!(filled[0].id, "Rhme");
+        assert_eq!(filled[0].level, 2);
+        assert_eq!(filled[1].id, "Rhpt");
+    }
+
+    /// A non-empty read is trusted as-is, even if it differs from history.
+    #[test]
+    fn non_empty_upgrade_read_passes_through() {
+        let samples = vec![sample_with_upgrades(
+            1000,
+            vec![upgrade("Rhme", 1), upgrade("Rhpt", 1)],
+        )];
+        let filled = fill_upgrade_gap(&samples, vec![upgrade("Rhme", 2)]);
+        assert_eq!(filled.len(), 1);
+        assert_eq!(filled[0].level, 2);
+    }
+
+    /// No upgrades researched yet — an empty read is legitimate.
+    #[test]
+    fn empty_upgrade_read_with_no_history_stays_empty() {
+        let samples = vec![sample_with_upgrades(1000, vec![])];
+        assert!(fill_upgrade_gap(&samples, vec![]).is_empty());
+        assert!(fill_upgrade_gap(&[], vec![]).is_empty());
     }
 }

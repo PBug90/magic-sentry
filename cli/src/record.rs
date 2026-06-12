@@ -1,4 +1,4 @@
-use warcraft3_stats_observer::ObserverData;
+use warcraft3_stats_observer::PlayerInfo;
 
 use crate::types::{
     AbilitySnapshot, HeroSummary, ItemSnapshot, PlayerState, PlayerSummary, UnitSummary,
@@ -6,12 +6,10 @@ use crate::types::{
 };
 use crate::util::{fourcc, result_name};
 
-pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSummary> {
-    player_slots
+pub fn build_summary(snapshot_players: &[&PlayerInfo]) -> Vec<PlayerSummary> {
+    snapshot_players
         .iter()
-        .map(|&slot| {
-            let p = &od.players[slot];
-
+        .map(|p| {
             let hero_count = (p.hero_count as usize).min(999);
             let heroes = p
                 .heroes
@@ -120,10 +118,9 @@ pub fn build_summary(od: &ObserverData, player_slots: &[usize]) -> Vec<PlayerSum
         .collect()
 }
 
-pub fn update_summaries(players: &mut [PlayerState], od: &ObserverData, player_slots: &[usize]) {
-    let summaries = build_summary(od, player_slots);
-    for (i, &slot) in player_slots.iter().enumerate() {
-        let p = &od.players[slot];
+pub fn update_summaries(players: &mut [PlayerState], snapshot_players: &[&PlayerInfo]) {
+    let summaries = build_summary(snapshot_players);
+    for (i, p) in snapshot_players.iter().enumerate() {
         players[i].result = result_name(unsafe {
             std::ptr::read_unaligned(std::ptr::addr_of!(p.game_result) as *const u8)
         })

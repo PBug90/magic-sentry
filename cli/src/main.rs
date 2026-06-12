@@ -3,6 +3,7 @@ mod push;
 mod record;
 mod report;
 mod sample;
+mod snapshot;
 mod types;
 mod util;
 
@@ -10,14 +11,16 @@ use std::time::{Duration, Instant};
 
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use crossterm::{cursor, execute, terminal};
-use warcraft3_stats_observer::ObserverHandle;
+use warcraft3_stats_observer::{ObserverData, ObserverHandle, PlayerInfo};
 
 use display::{build_game_lines, ctrl_c_exit, is_ctrl_c, redraw, sleep_or_exit};
 use push::{check_auth, Pusher};
 use record::update_summaries;
 use sample::{
-    find_player_slots, init_player_state, is_game_over, read_player_tick, PlayerTickRead,
+    fill_upgrade_gap, find_player_slots, init_player_state, is_game_over, read_player_tick,
+    PlayerTickRead,
 };
+use snapshot::ObserverSnapshot;
 use types::{PlayerState, ResourceSample};
 use util::{build_game_id, fmt_bytes, short_map_name};
 
@@ -70,13 +73,20 @@ fn run_game(
     authorized_as: Option<&str>,
     session_bytes: usize,
 ) -> usize {
-    let map_name = short_map_name(&od.game.map_name.to_string());
-    let game_name = od.game.game_name.to_string();
+    // All game-state reads go through a double-read-validated local snapshot:
+    // WC3 rewrites the mapping from another process, so the live data must
+    // never be parsed directly (torn frames). od stays alive until return to
+    // keep the mapping valid for od_ptr.
+    let od_ptr: *const ObserverData = &*od;
     let player_count = player_slots.len();
+    let mut snap = ObserverSnapshot::new(player_count);
+    snap.capture(od_ptr, &player_slots);
 
-    let mut players: Vec<PlayerState> = player_slots
-        .iter()
-        .map(|&slot| init_player_state(&od.players[slot]))
+    let map_name = short_map_name(&snap.game().map_name.to_string());
+    let game_name = snap.game().game_name.to_string();
+
+    let mut players: Vec<PlayerState> = (0..player_count)
+        .map(|i| init_player_state(snap.player(i)))
         .collect();
 
     let name_race: Vec<(&str, &str)> = players
@@ -99,10 +109,13 @@ fn run_game(
     let mut ticks: u32 = 0;
     let mut frozen_ticks: u32 = 0;
 
-    // od is local to this function, so LLVM cannot apply noalias/readonly
-    // to it and must re-read each iteration.
     loop {
-        let time_ms = od.game.clock_ms as u64;
+        // Unstable means no two consecutive reads matched (WC3 kept writing);
+        // the snapshot then holds the newest, possibly torn read. Such ticks
+        // are display-only: no sample is committed and game-over is not
+        // evaluated, so torn data never reaches the permanent record.
+        let stable = snap.capture(od_ptr, &player_slots);
+        let time_ms = { snap.game().clock_ms } as u64;
 
         let clock_advanced = players[0]
             .samples
@@ -115,11 +128,10 @@ fn run_game(
             frozen_ticks += 1;
         }
 
-        if clock_advanced {
+        if clock_advanced && stable {
             // Collect raw reads for all players before committing any samples.
-            let tick_reads: Vec<PlayerTickRead> = player_slots
-                .iter()
-                .map(|&slot| read_player_tick(&od.players[slot]))
+            let tick_reads: Vec<PlayerTickRead> = (0..player_count)
+                .map(|i| read_player_tick(snap.player(i)))
                 .collect();
 
             // If every player returned empty heroes AND units this tick the frame
@@ -150,16 +162,14 @@ fn run_game(
                         .last()
                         .map(|s| s.structures.clone())
                         .unwrap_or_default();
-                    let prev_upgrades = players[i]
-                        .samples
-                        .iter()
-                        .rev()
-                        .find(|s| !s.upgrades.is_empty())
-                        .map(|s| s.upgrades.clone())
-                        .unwrap_or_default();
+                    let prev_upgrades = fill_upgrade_gap(&players[i].samples, Vec::new());
                     (prev_heroes, prev_units, prev_structures, prev_upgrades)
                 } else {
-                    (r.heroes, r.units, r.structures, r.upgrades)
+                    // The upgrade block alone can read empty in an otherwise
+                    // clean frame; gap-fill so a partial dirty read never
+                    // commits an empty upgrade list mid-game.
+                    let upgrades = fill_upgrade_gap(&players[i].samples, r.upgrades);
+                    (r.heroes, r.units, r.structures, upgrades)
                 };
 
                 players[i].samples.push(ResourceSample {
@@ -187,7 +197,7 @@ fn run_game(
             p.poll();
         }
 
-        let game_over = is_game_over(&od, &player_slots);
+        let game_over = stable && is_game_over((0..player_count).map(|i| snap.player(i)));
 
         let has_combat_data = players.iter().any(|p| {
             p.samples
@@ -221,7 +231,9 @@ fn run_game(
         }
 
         if game_over {
-            update_summaries(&mut players, &od, &player_slots);
+            let snapshot_players: Vec<&PlayerInfo> =
+                (0..player_count).map(|i| snap.player(i)).collect();
+            update_summaries(&mut players, &snapshot_players);
             if let Some(p) = pusher.as_mut() {
                 p.push(&players, &map_name, &game_name, true);
             }
@@ -250,7 +262,9 @@ fn run_game(
                     }
                     if key.kind == KeyEventKind::Press {
                         if let KeyCode::Char('p') = key.code {
-                            update_summaries(&mut players, &od, &player_slots);
+                            let snapshot_players: Vec<&PlayerInfo> =
+                                (0..player_count).map(|i| snap.player(i)).collect();
+                            update_summaries(&mut players, &snapshot_players);
                             if let Some(p) = pusher.as_mut() {
                                 p.push(&players, &map_name, &game_name, true);
                             }
@@ -366,7 +380,7 @@ fn main() {
             continue;
         }
 
-        if is_game_over(&od, &player_slots) {
+        if is_game_over(player_slots.iter().map(|&slot| &od.players[slot])) {
             sleep_or_exit(Duration::from_secs(2));
             continue;
         }

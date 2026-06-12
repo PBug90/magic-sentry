@@ -48,7 +48,8 @@ pub struct UnitSnapshot {
 #[derive(Serialize, Clone)]
 pub struct StructureSnapshot {
     pub id: String,
-    /// 0 = construction complete; > 0 = still being built.
+    /// Percentage counting up: 100 = complete, < 100 = still being built
+    /// (a freshly placed building reports 0).
     pub construction_progress: u32,
 }
 
