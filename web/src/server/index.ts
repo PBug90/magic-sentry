@@ -5,6 +5,13 @@ import { migrate } from './db.js'
 import { trafficStore } from './trafficStore.js'
 import { createApp } from './app.js'
 
+// Last line of defense: a stray rejection anywhere (e.g. a floating stream
+// pipe aborted by a client disconnect) must never crash the process under
+// Node's default --unhandled-rejections=throw.
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandledRejection]', reason)
+})
+
 const app = createApp()
 app.use('/reports/*', serveStatic({ root: './dist/client' }))
 app.use('/*', serveStatic({ root: './dist/client' }))

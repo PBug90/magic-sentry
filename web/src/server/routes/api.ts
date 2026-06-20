@@ -36,7 +36,11 @@ export const trackChannelFetch: MiddlewareHandler = async (c, next) => {
     },
     flush: () => trafficStore.record(token, 'fetch', rawBytes, wireBytes),
   })
-  src.body!.pipeTo(writable)
+  // Floating promise: when the client disconnects mid-response the consumer
+  // cancels `readable`, which aborts `writable` and rejects this pipe with the
+  // cancel reason (often `undefined`). Swallow it so it doesn't surface as an
+  // unhandled rejection and crash the process.
+  src.body!.pipeTo(writable).catch(() => {})
   c.res = new Response(readable, src)
 }
 
