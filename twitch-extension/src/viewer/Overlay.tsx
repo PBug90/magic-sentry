@@ -179,9 +179,7 @@ export function Overlay() {
               <>
                 <span style={{ color: '#2a2a3a' }}>·</span>
                 <span style={{ fontSize: '.78em', color: '#efeff1' }}>{game.map}</span>
-                <span
-                  style={{ fontSize: '.7em', color: '#6a6a6a', fontFamily: 'monospace' }}
-                >
+                <span style={{ fontSize: '.7em', color: '#6a6a6a', fontFamily: 'monospace' }}>
                   {formatDuration(game.duration_ms)}
                 </span>
                 <TeamsBar players={playerData} />
@@ -189,13 +187,9 @@ export function Overlay() {
             )}
 
             {isGameTab && (
-              <div
-                style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}
-              >
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
                 {lastUpdated && !selectedHistoryId && (
-                  <span
-                    style={{ fontSize: '.58em', color: '#555', fontFamily: 'monospace' }}
-                  >
+                  <span style={{ fontSize: '.58em', color: '#555', fontFamily: 'monospace' }}>
                     updated {lastUpdated.toLocaleTimeString()}
                   </span>
                 )}

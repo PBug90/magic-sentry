@@ -394,7 +394,14 @@ function DevApp() {
           />
           <div
             onMouseDown={(e) => startDrag('bottom', e)}
-            style={{ ...handleStyle, bottom: -5, left: 0, right: 8, height: 10, cursor: 'ns-resize' }}
+            style={{
+              ...handleStyle,
+              bottom: -5,
+              left: 0,
+              right: 8,
+              height: 10,
+              cursor: 'ns-resize',
+            }}
           />
           <div
             onMouseDown={(e) => startDrag('corner', e)}

@@ -38,7 +38,11 @@ function RailButton({
   const [hover, setHover] = useState(false)
   const style: CSSProperties = {
     ...btnBase,
-    background: active ? 'rgba(200,160,80,0.18)' : hover ? 'rgba(40,40,54,0.78)' : btnBase.background,
+    background: active
+      ? 'rgba(200,160,80,0.18)'
+      : hover
+        ? 'rgba(40,40,54,0.78)'
+        : btnBase.background,
     border: active ? '1px solid rgba(200,160,80,0.55)' : btnBase.border,
     color: active ? '#c8a050' : dim && !hover ? '#5a5a64' : hover ? '#efeff1' : btnBase.color,
   }
@@ -103,7 +107,9 @@ export function OverlayRail({
         onClick={() => toggle('encyclopedia')}
       />
 
-      <div style={{ width: 22, height: 1, background: '#2a2a3a', margin: '4px 0', flexShrink: 0 }} />
+      <div
+        style={{ width: 22, height: 1, background: '#2a2a3a', margin: '4px 0', flexShrink: 0 }}
+      />
 
       <RailButton
         icon={SettingsIcon}

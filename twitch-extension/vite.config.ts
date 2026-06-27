@@ -33,7 +33,10 @@ function devApi() {
           const patch = JSON.parse(readFileSync(resolve(__dirname, '..', file), 'utf8'))
           if (parseInt(seqStr, 10) < patch.seq) {
             return res.end(
-              JSON.stringify({ patches: [patch], next: `/dev-api/${example}/live/after/${patch.seq}` }),
+              JSON.stringify({
+                patches: [patch],
+                next: `/dev-api/${example}/live/after/${patch.seq}`,
+              }),
             )
           }
           res.statusCode = 204

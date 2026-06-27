@@ -74,7 +74,17 @@ export function OverlaySettings({
   onLayout: (v: OverlayLayout) => void
 }) {
   return (
-    <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 26 }}>
+    <div
+      style={{
+        flex: 1,
+        minHeight: 0,
+        overflowY: 'auto',
+        padding: '20px 18px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 26,
+      }}
+    >
       <div>
         <div style={label}>Background opacity</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -99,7 +109,9 @@ export function OverlaySettings({
             {Math.round(opacity * 100)}%
           </span>
         </div>
-        <div style={help}>How see-through the panel background is, so the stream shows through.</div>
+        <div style={help}>
+          How see-through the panel background is, so the stream shows through.
+        </div>
       </div>
 
       <div>
