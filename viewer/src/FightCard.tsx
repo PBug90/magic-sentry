@@ -1,4 +1,4 @@
-import { ITEM_BY_ID, UNIT_NAME_BY_ID } from '@magic-sentry/shared'
+import { ITEM_BY_ID, UNIT_NAME_BY_ID } from '@magic-sentry/wc3data'
 import type { Fight } from '@magic-sentry/shared'
 import { useIconSrc } from './context'
 

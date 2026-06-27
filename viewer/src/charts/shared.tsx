@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { HERO_OBSERVER_IDS } from '@magic-sentry/wc3data'
 import {
-  HERO_OBSERVER_IDS,
   UNIT_NAME_BY_ID,
+  UNIT_EFFECT_BY_ID,
   UNIT_GOLD_BY_ID,
   UNIT_LUMBER_BY_ID,
   UNIT_ICON_BY_ID,
-} from '@magic-sentry/shared'
+} from '@magic-sentry/wc3data'
 import { heroSupply, fmtTime, UNIT_COLORS } from '@magic-sentry/shared'
 import { HoverTooltip } from '../HoverTooltip'
 import { useIconSrc } from '../context'
@@ -114,6 +115,7 @@ export function UnitIcon({ name, fill, size = 1 }: { name: string; fill: string;
   const displayName = UNIT_NAME_BY_ID[name] ?? name
   const gold = !isHero ? UNIT_GOLD_BY_ID[name] : undefined
   const lumber = !isHero ? UNIT_LUMBER_BY_ID[name] : undefined
+  const effect = UNIT_EFFECT_BY_ID[name]
   return (
     <div
       style={{
@@ -150,6 +152,11 @@ export function UnitIcon({ name, fill, size = 1 }: { name: string; fill: string;
           )}
           {lumber !== undefined && lumber > 0 && (
             <div style={{ color: '#7dbf7d', fontFamily: 'monospace' }}>{lumber}w</div>
+          )}
+          {effect && (
+            <div style={{ color: '#888', whiteSpace: 'normal', maxWidth: 240, marginTop: 3 }}>
+              {effect}
+            </div>
           )}
         </HoverTooltip>
       )}

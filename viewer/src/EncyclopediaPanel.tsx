@@ -1,27 +1,43 @@
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
+import type { ReactNode, CSSProperties } from 'react'
+import { UNITS } from '@magic-sentry/wc3data'
 import {
-  UNITS,
   ITEM_BY_ID,
+  ITEM_EFFECT_BY_ID,
+  UNIT_EFFECT_BY_ID,
+  ABILITY_BY_ID,
+  UNIT_ABILITY_BY_ID,
+  UNIT_STATS_BY_ID,
+  HERO_STATS_BY_ID,
   UPGRADES_TECH,
   HERO_OBSERVER_IDS,
   UNIT_ICON_BY_ID,
-} from '@magic-sentry/shared'
+  UNIT_ALIAS_IDS,
+  BUILDING_IDS,
+  ROSTER_UNIT_IDS,
+} from '@magic-sentry/wc3data'
 import { useIconSrc } from './context'
+import { HoverTooltip } from './HoverTooltip'
+import { AbilityTooltipBody } from './AbilityTooltipBody'
+import { UnitTooltipBody } from './UnitTooltipBody'
+import { HeroTooltipBody } from './HeroTooltipBody'
+import { ITEM_ICON_IDS } from './itemIcons'
+import { DamageTable } from './DamageTable'
+import { GoldIcon, LumberIcon } from './StatIcons'
 
-type Category = 'units' | 'buildings' | 'heroes' | 'items' | 'upgrades'
-type Race = 'All' | 'Human' | 'Orc' | 'Night Elf' | 'Undead'
+type RaceTab = 'Human' | 'Orc' | 'Night Elf' | 'Undead'
+type OtherTab = 'items' | 'upgrades' | 'abilities' | 'damage'
+// 'Neutral' is a buildings-only tab (no neutral heroes/units/upgrades shown).
+type Tab = RaceTab | 'Neutral' | OtherTab
 
-const CATEGORIES: { key: Category; label: string }[] = [
-  { key: 'units', label: 'Units' },
-  { key: 'buildings', label: 'Buildings' },
-  { key: 'heroes', label: 'Heroes' },
+const RACE_TABS: RaceTab[] = ['Human', 'Orc', 'Night Elf', 'Undead']
+const OTHER_TABS: { key: OtherTab; label: string }[] = [
   { key: 'items', label: 'Items' },
   { key: 'upgrades', label: 'Upgrades' },
+  { key: 'abilities', label: 'Abilities' },
+  { key: 'damage', label: 'Combat' },
 ]
-
-const RACES: Race[] = ['All', 'Human', 'Orc', 'Night Elf', 'Undead']
-
-const HAS_RACE_FILTER = new Set<Category>(['units', 'buildings', 'heroes'])
+const RACE_SET = new Set<string>(RACE_TABS)
 
 function raceFromId(id: string): string {
   const c = id[0]
@@ -32,123 +48,123 @@ function raceFromId(id: string): string {
   return 'Neutral'
 }
 
-interface Entry {
-  id: string
-  name: string
-  gold: number
-  lumber: number
-  supply?: number
-  race: string
-}
-
-function buildEntries(category: Category): Entry[] {
-  switch (category) {
-    case 'units':
-      return Object.entries(UNITS)
-        .filter(([id, d]) => d.supply > 0 && d.gold > 0 && !HERO_OBSERVER_IDS.has(id))
-        .map(([id, d]) => ({
-          id,
-          name: d.name,
-          gold: d.gold,
-          lumber: d.lumber,
-          supply: d.supply,
-          race: raceFromId(id),
-        }))
-    case 'buildings':
-      return Object.entries(UNITS)
-        .filter(([id, d]) => d.supply === 0 && d.gold > 0 && !HERO_OBSERVER_IDS.has(id))
-        .map(([id, d]) => ({
-          id,
-          name: d.name,
-          gold: d.gold,
-          lumber: d.lumber,
-          race: raceFromId(id),
-        }))
-    case 'heroes':
-      return Object.entries(UNITS)
-        .filter(([id]) => HERO_OBSERVER_IDS.has(id))
-        .map(([id, d]) => ({
-          id,
-          name: d.name,
-          gold: d.gold,
-          lumber: d.lumber,
-          race: raceFromId(id),
-        }))
-    case 'items':
-      return Object.entries(ITEM_BY_ID).map(([id, d]) => ({
-        id,
-        name: d.name,
-        gold: d.gold,
-        lumber: 0,
-        race: 'Neutral',
-      }))
-    case 'upgrades':
-      return Object.entries(UPGRADES_TECH).map(([id, d]) => ({
-        id,
-        name: d.name,
-        gold: d.gold,
-        lumber: d.lumber,
-        race: raceFromId(id),
-      }))
+// Upgrade ids are 'R' + a race letter (e.g. 'Rhme' → Human). Letters other than
+// h/o/e/u (w, g, n) are neutral/special and belong to no race tab.
+function upgradeRaceFromId(id: string): string {
+  if (id[0] !== 'R') return 'Neutral'
+  switch (id[1]) {
+    case 'h':
+      return 'Human'
+    case 'o':
+      return 'Orc'
+    case 'e':
+      return 'Night Elf'
+    case 'u':
+      return 'Undead'
+    default:
+      return 'Neutral'
   }
 }
 
-function Stat({ value, color, suffix }: { value: number; color: string; suffix: string }) {
-  if (value === 0) return <span style={{ color: '#333', minWidth: 44, fontSize: '.6em' }}>—</span>
+const byUnitName = (a: string, b: string) =>
+  (UNITS[a]?.name ?? a).localeCompare(UNITS[b]?.name ?? b)
+
+const byUpgradeName = (a: string, b: string) =>
+  (UPGRADES_TECH[a]?.name ?? a).localeCompare(UPGRADES_TECH[b]?.name ?? b)
+
+// Upgrades kept in the data (for game-view name resolution) but hidden from the
+// encyclopedia: Roch = orc chaos conversion, Rusl = undead skeleton life span.
+const HIDDEN_UPGRADE_IDS = new Set(['Roch', 'Rusl'])
+
+function unitAbilities(id: string) {
+  return (UNIT_ABILITY_BY_ID[id] ?? []).flatMap((aid) => {
+    const info = ABILITY_BY_ID[aid]
+    return info ? [{ id: aid, info }] : []
+  })
+}
+
+const nameLine = (name: string) => <div style={{ color: '#efeff1' }}>{name}</div>
+
+function CostRow({ gold, lumber }: { gold: number; lumber: number }) {
+  if (gold <= 0 && lumber <= 0) return null
   return (
-    <span style={{ color, fontFamily: 'monospace', fontSize: '.6em', minWidth: 44 }}>
-      {value}
-      {suffix}
-    </span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'monospace' }}>
+      {gold > 0 && (
+        <span style={{ color: '#c8a050', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+          {gold}
+          <GoldIcon />
+        </span>
+      )}
+      {lumber > 0 && (
+        <span style={{ color: '#3fb950', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+          {lumber}
+          <LumberIcon />
+        </span>
+      )}
+    </div>
   )
 }
 
-function EntryRow({
-  entry,
-  iconPath,
-  showSupply,
+function IconTile({
   iconSrc,
+  iconPath,
+  id,
+  alt,
+  tooltip,
 }: {
-  entry: Entry
-  iconPath: string
-  showSupply: boolean
   iconSrc: (p: string) => string
+  iconPath: string
+  id: string
+  alt: string
+  tooltip: ReactNode
 }) {
+  const [hovered, setHovered] = useState(false)
+  const size = 32
   return (
     <div
+      className="ms-icon-frame"
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 8,
-        padding: '4px 0',
-        borderBottom: '1px solid #16161e',
+        position: 'relative',
+        width: size,
+        height: size,
+        border: '1px solid #2a2a3a',
+        overflow: 'hidden',
+        flexShrink: 0,
+        background: '#0d0d14',
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
+      {hovered && <HoverTooltip>{tooltip}</HoverTooltip>}
       <img
-        src={iconSrc(`${iconPath}/${UNIT_ICON_BY_ID[entry.id] ?? entry.id}.webp`)}
-        width={20}
-        height={20}
-        alt=""
-        style={{ imageRendering: 'pixelated', flexShrink: 0 }}
+        src={iconSrc(`${iconPath}/${UNIT_ICON_BY_ID[id] ?? id}.webp`)}
+        alt={alt}
+        width={size}
+        height={size}
+        style={{ display: 'block', imageRendering: 'pixelated', width: '100%', height: '100%' }}
         onError={(e) => {
-          ;(e.target as HTMLImageElement).style.visibility = 'hidden'
+          ;(e.currentTarget as HTMLImageElement).style.visibility = 'hidden'
         }}
       />
-      <span
-        style={{
-          flex: 1,
-          fontSize: '.7em',
-          color: '#ccc',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {entry.name}
-      </span>
-      <Stat value={entry.gold} color="#c8a050" suffix="g" />
-      <Stat value={entry.lumber} color="#6ca86c" suffix="l" />
-      {showSupply && <Stat value={entry.supply ?? 0} color="#888" suffix=" food" />}
+    </div>
+  )
+}
+
+const sectionLabel: CSSProperties = {
+  color: '#6a6a6a',
+  textTransform: 'uppercase',
+  fontFamily: 'monospace',
+  fontSize: '.55em',
+  fontWeight: 700,
+  letterSpacing: '.16em',
+  margin: '12px 0 5px',
+}
+
+function Section({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div>
+      <div style={sectionLabel}>{label}</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>{children}</div>
     </div>
   )
 }
@@ -158,188 +174,182 @@ export function EncyclopediaPanel({
 }: { iconSrc?: (p: string) => string } = {}) {
   const contextIconSrc = useIconSrc()
   const iconSrc = iconSrcProp ?? contextIconSrc
+  const [tab, setTab] = useState<Tab>('Human')
 
-  const [category, setCategory] = useState<Category>('units')
-  const [race, setRace] = useState<Race>('All')
-  const [search, setSearch] = useState('')
-
-  const entries = useMemo(() => buildEntries(category), [category])
-
-  const filtered = useMemo(() => {
-    let result = entries
-    if (HAS_RACE_FILTER.has(category) && race !== 'All') {
-      result = result.filter((e) => e.race === race)
-    }
-    const q = search.trim().toLowerCase()
-    if (q) result = result.filter((e) => e.name.toLowerCase().includes(q))
-    return [...result].sort((a, b) => a.name.localeCompare(b.name))
-  }, [entries, race, search, category])
-
-  const iconPath = category === 'items' ? '/items' : '/units'
-  const showSupply = category === 'units'
-  const showRaceFilter = HAS_RACE_FILTER.has(category)
-
-  const tabStyle = (active: boolean): React.CSSProperties => ({
+  const tabStyle = (active: boolean): CSSProperties => ({
     background: 'none',
     border: 'none',
     cursor: 'pointer',
     padding: '6px 10px',
-    fontSize: '.65em',
+    fontSize: '.6em',
     fontFamily: 'monospace',
-    letterSpacing: '.05em',
-    color: active ? '#c8a050' : '#555',
+    fontWeight: active ? 700 : 400,
+    textTransform: 'uppercase',
+    letterSpacing: '.12em',
+    color: active ? '#c8a050' : '#888',
     borderBottom: active ? '2px solid #c8a050' : '2px solid transparent',
   })
 
-  const filterBtnStyle = (active: boolean): React.CSSProperties => ({
-    background: active ? '#1e1e2e' : 'none',
-    border: `1px solid ${active ? '#2a2a4a' : '#1a1a28'}`,
-    borderRadius: 3,
-    cursor: 'pointer',
-    padding: '2px 7px',
-    fontSize: '.6em',
-    fontFamily: 'monospace',
-    color: active ? '#ccc' : '#555',
-  })
+  const heroesOf = (race: string) =>
+    Object.keys(UNITS)
+      .filter(
+        (id) => HERO_OBSERVER_IDS.has(id) && !UNIT_ALIAS_IDS.has(id) && raceFromId(id) === race,
+      )
+      .sort(byUnitName)
+  // Units come from the curated ROSTER_UNIT_IDS whitelist, not a heuristic —
+  // this keeps campaign characters, cinematic doubles and morph forms out.
+  const unitsOf = (race: string) =>
+    [...ROSTER_UNIT_IDS].filter((id) => raceFromId(id) === race).sort(byUnitName)
+  // Buildings come from the curated BUILDING_IDS allowlist (Liquipedia Buildings
+  // page), not a heuristic — every id has a /buildings icon and a UNITS entry.
+  const buildingsOf = (race: string) =>
+    [...BUILDING_IDS].filter((id) => raceFromId(id) === race).sort(byUnitName)
+  const upgradesOf = (race: string) =>
+    Object.keys(UPGRADES_TECH)
+      .filter((id) => upgradeRaceFromId(id) === race && !HIDDEN_UPGRADE_IDS.has(id))
+      .sort(byUpgradeName)
+
+  const heroTip = (id: string) => (
+    <>
+      {nameLine(UNITS[id]?.name ?? id)}
+      <HeroTooltipBody stats={HERO_STATS_BY_ID[id]} abilities={unitAbilities(id)} />
+    </>
+  )
+  const unitTip = (id: string) => {
+    const d = UNITS[id]
+    return (
+      <>
+        {nameLine(d?.name ?? id)}
+        <CostRow gold={d?.gold ?? 0} lumber={d?.lumber ?? 0} />
+        <UnitTooltipBody
+          stats={UNIT_STATS_BY_ID[id]}
+          effect={UNIT_EFFECT_BY_ID[id]}
+          abilities={unitAbilities(id)}
+        />
+      </>
+    )
+  }
+  const itemTip = (id: string) => {
+    const d = ITEM_BY_ID[id]
+    const effect = ITEM_EFFECT_BY_ID[id]
+    return (
+      <>
+        {nameLine(d?.name ?? id)}
+        <CostRow gold={d?.gold ?? 0} lumber={0} />
+        {effect && (
+          <div style={{ color: '#888', whiteSpace: 'normal', maxWidth: 240, marginTop: 3 }}>
+            {effect}
+          </div>
+        )}
+      </>
+    )
+  }
+  const upgradeTip = (id: string) => {
+    const d = UPGRADES_TECH[id]
+    return (
+      <>
+        {nameLine(d?.name ?? id)}
+        <CostRow gold={d?.gold ?? 0} lumber={d?.lumber ?? 0} />
+      </>
+    )
+  }
+  const abilityTip = (id: string) => {
+    const info = ABILITY_BY_ID[id]
+    return (
+      <>
+        {nameLine(ABILITY_BY_ID[id]?.name ?? id)}
+        {info && <AbilityTooltipBody info={info} />}
+      </>
+    )
+  }
+
+  const tile = (iconPath: string, id: string, alt: string, tooltip: ReactNode) => (
+    <IconTile key={id} iconSrc={iconSrc} iconPath={iconPath} id={id} alt={alt} tooltip={tooltip} />
+  )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Category tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid #1e1e26', flexShrink: 0 }}>
-        {CATEGORIES.map(({ key, label }) => (
-          <button
-            key={key}
-            style={tabStyle(category === key)}
-            onClick={() => {
-              setCategory(key)
-              setRace('All')
-            }}
-          >
+    <div
+      style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, height: '100%' }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          borderBottom: '1px solid #2a2a3a',
+          flexShrink: 0,
+        }}
+      >
+        {RACE_TABS.map((r) => (
+          <button key={r} style={tabStyle(tab === r)} onClick={() => setTab(r)}>
+            {r}
+          </button>
+        ))}
+        <button style={tabStyle(tab === 'Neutral')} onClick={() => setTab('Neutral')}>
+          Neutral
+        </button>
+        {OTHER_TABS.map(({ key, label }) => (
+          <button key={key} style={tabStyle(tab === key)} onClick={() => setTab(key)}>
             {label}
           </button>
         ))}
       </div>
 
-      {/* Search + race filter */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          alignItems: 'center',
-          padding: '8px 12px',
-          flexShrink: 0,
-          flexWrap: 'wrap',
-          borderBottom: '1px solid #1e1e26',
-        }}
-      >
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search…"
-          style={{
-            background: '#0d0d18',
-            border: '1px solid #2a2a3a',
-            borderRadius: 3,
-            padding: '3px 8px',
-            color: '#ccc',
-            fontSize: '.65em',
-            fontFamily: 'monospace',
-            width: 110,
-            outline: 'none',
-          }}
-        />
-        {showRaceFilter && (
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            {RACES.map((r) => (
-              <button key={r} style={filterBtnStyle(race === r)} onClick={() => setRace(r)}>
-                {r === 'Night Elf' ? 'NE' : r}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Header row */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          padding: '3px 12px',
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ width: 20, flexShrink: 0 }} />
-        <span
-          style={{
-            flex: 1,
-            fontSize: '.55em',
-            color: '#444',
-            fontFamily: 'monospace',
-            textTransform: 'uppercase',
-            letterSpacing: '.1em',
-          }}
-        >
-          Name
-        </span>
-        <span
-          style={{
-            fontSize: '.55em',
-            color: '#444',
-            fontFamily: 'monospace',
-            minWidth: 44,
-            textTransform: 'uppercase',
-            letterSpacing: '.05em',
-          }}
-        >
-          Gold
-        </span>
-        <span
-          style={{
-            fontSize: '.55em',
-            color: '#444',
-            fontFamily: 'monospace',
-            minWidth: 44,
-            textTransform: 'uppercase',
-            letterSpacing: '.05em',
-          }}
-        >
-          Lumber
-        </span>
-        {showSupply && (
-          <span
-            style={{
-              fontSize: '.55em',
-              color: '#444',
-              fontFamily: 'monospace',
-              minWidth: 44,
-              textTransform: 'uppercase',
-              letterSpacing: '.05em',
-            }}
-          >
-            Food
-          </span>
-        )}
-      </div>
-
-      {/* Entries */}
-      <div style={{ overflowY: 'auto', flex: 1, padding: '0 12px 12px' }}>
-        {filtered.length === 0 ? (
-          <div
-            style={{ fontSize: '.65em', color: '#444', fontFamily: 'monospace', paddingTop: 16 }}
-          >
-            No results
-          </div>
+      <div style={{ overflowY: 'auto', flex: 1, minHeight: 0, padding: '4px 12px 14px' }}>
+        {RACE_SET.has(tab) ? (
+          <>
+            {heroesOf(tab).length > 0 && (
+              <Section label="Heroes">
+                {heroesOf(tab).map((id) => tile('/heroes', id, UNITS[id]?.name ?? id, heroTip(id)))}
+              </Section>
+            )}
+            {unitsOf(tab).length > 0 && (
+              <Section label="Units">
+                {unitsOf(tab).map((id) => tile('/units', id, UNITS[id]?.name ?? id, unitTip(id)))}
+              </Section>
+            )}
+            {buildingsOf(tab).length > 0 && (
+              <Section label="Buildings">
+                {buildingsOf(tab).map((id) =>
+                  tile('/buildings', id, UNITS[id]?.name ?? id, unitTip(id)),
+                )}
+              </Section>
+            )}
+            {upgradesOf(tab).length > 0 && (
+              <Section label="Upgrades">
+                {upgradesOf(tab).map((id) =>
+                  tile('/upgrades', id, UPGRADES_TECH[id]?.name ?? id, upgradeTip(id)),
+                )}
+              </Section>
+            )}
+          </>
+        ) : tab === 'Neutral' ? (
+          <Section label="Buildings">
+            {buildingsOf('Neutral').map((id) =>
+              tile('/buildings', id, UNITS[id]?.name ?? id, unitTip(id)),
+            )}
+          </Section>
+        ) : tab === 'items' ? (
+          <Section label="Items">
+            {Object.keys(ITEM_BY_ID)
+              .filter((id) => ITEM_ICON_IDS.has(id))
+              .sort((a, b) => ITEM_BY_ID[a].name.localeCompare(ITEM_BY_ID[b].name))
+              .map((id) => tile('/items', id, ITEM_BY_ID[id].name, itemTip(id)))}
+          </Section>
+        ) : tab === 'upgrades' ? (
+          <Section label="Upgrades">
+            {Object.keys(UPGRADES_TECH)
+              .filter((id) => !HIDDEN_UPGRADE_IDS.has(id))
+              .sort((a, b) => UPGRADES_TECH[a].name.localeCompare(UPGRADES_TECH[b].name))
+              .map((id) => tile('/upgrades', id, UPGRADES_TECH[id].name, upgradeTip(id)))}
+          </Section>
+        ) : tab === 'abilities' ? (
+          <Section label="Abilities">
+            {Object.keys(ABILITY_BY_ID)
+              .sort((a, b) => ABILITY_BY_ID[a].name.localeCompare(ABILITY_BY_ID[b].name))
+              .map((id) => tile('/abilities', id, ABILITY_BY_ID[id].name, abilityTip(id)))}
+          </Section>
         ) : (
-          filtered.map((e) => (
-            <EntryRow
-              key={e.id}
-              entry={e}
-              iconPath={iconPath}
-              showSupply={showSupply}
-              iconSrc={iconSrc}
-            />
-          ))
+          <DamageTable />
         )}
       </div>
     </div>

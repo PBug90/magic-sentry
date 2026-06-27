@@ -4,7 +4,14 @@ export { EconomyChart, LumberChart, ApmChart } from './charts/ResourceChart'
 export { FoodChart } from './charts/FoodChart'
 export { ArmyChart, CurrentArmies } from './charts/ArmyChart'
 export { IconSrcProvider } from './context'
-export { ViewerContent, TeamsBar, TabBar, StatusDot, VIEWER_TABS } from './ViewerContent'
+export {
+  ViewerContent,
+  TabContent,
+  TeamsBar,
+  TabBar,
+  StatusDot,
+  VIEWER_TABS,
+} from './ViewerContent'
 export type { TabKey } from './ViewerContent'
 export type { HoverState } from './charts/shared'
 export { buildSharedColorMap } from './charts/shared'

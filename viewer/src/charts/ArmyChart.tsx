@@ -9,8 +9,8 @@ import {
   timeTicks,
   nearestSampleIdx,
   unitColor,
-  UNIT_NAME_BY_ID,
 } from '@magic-sentry/shared'
+import { UNIT_NAME_BY_ID } from '@magic-sentry/wc3data'
 import {
   CM,
   W,

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { ChartPlayer, PlayerItemStatSnapshot } from '@magic-sentry/shared'
-import { ITEM_BY_ID } from '@magic-sentry/shared'
+import { ITEM_BY_ID } from '@magic-sentry/wc3data'
 import { HoverTooltip } from './HoverTooltip'
 import { useIconSrc } from './context'
 

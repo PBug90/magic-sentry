@@ -7,16 +7,18 @@ import {
   UpgradeSnapshot,
 } from '@magic-sentry/shared'
 import { HoverTooltip } from './HoverTooltip'
+import { ABILITY_BY_ID } from '@magic-sentry/wc3data'
 import {
-  ABILITY_BY_ID,
+  HERO_EFFECT_BY_ID,
   HERO_XP_THRESHOLDS,
   ITEM_BY_ID,
   UNIT_NAME_BY_ID,
   UPGRADE_NAME_BY_ID,
   UPGRADE_GOLD_BY_ID,
   UPGRADE_LUMBER_BY_ID,
-} from '@magic-sentry/shared'
+} from '@magic-sentry/wc3data'
 import { useIconSrc } from './context'
+import { AbilityTooltipBody } from './AbilityTooltipBody'
 
 interface HeroDisplay {
   id: string
@@ -42,20 +44,35 @@ function heroesFromSamples(player: ChartPlayer): HeroDisplay[] {
 
 function HeroIcon({ id, size = 44 }: { id: string; size?: number }) {
   const iconSrc = useIconSrc()
+  const [hovered, setHovered] = useState(false)
+  const name = UNIT_NAME_BY_ID[id] ?? id
+  const effect = HERO_EFFECT_BY_ID[id]
   return (
     <div
       style={{
+        position: 'relative',
         width: size,
         height: size,
         border: '1px solid #2a2a3a',
         overflow: 'hidden',
         flexShrink: 0,
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
+      {hovered && (
+        <HoverTooltip>
+          <div style={{ color: '#efeff1' }}>{name}</div>
+          {effect && (
+            <div style={{ color: '#888', whiteSpace: 'normal', maxWidth: 240, marginTop: 3 }}>
+              {effect}
+            </div>
+          )}
+        </HoverTooltip>
+      )}
       <img
         src={iconSrc(`/heroes/${id}.webp`)}
         alt={id}
-        title={id}
         width={size}
         height={size}
         style={{ display: 'block', imageRendering: 'pixelated', width: '100%', height: '100%' }}
@@ -75,15 +92,27 @@ function fmtStat(n: number): string {
 
 function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
   const iconSrc = useIconSrc()
+  const [hovered, setHovered] = useState(false)
   const info = ABILITY_BY_ID[ability.id]
   const name = info?.name ?? ability.id
+  const abilityInfo = ABILITY_BY_ID[ability.id]
   const size = 32
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
       <div
-        title={`${name} (Lv.${ability.level})`}
         style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
       >
+        {hovered && (
+          <HoverTooltip>
+            <div style={{ color: '#efeff1' }}>
+              {name}{' '}
+              <span style={{ color: '#c8a050', fontFamily: 'monospace' }}>Lv.{ability.level}</span>
+            </div>
+            {abilityInfo && <AbilityTooltipBody info={abilityInfo} level={ability.level} />}
+          </HoverTooltip>
+        )}
         <div
           style={{
             width: size,
@@ -521,7 +550,15 @@ export function HeroPanel({ players }: { players: ChartPlayer[] }) {
           >
             {player.name}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+          <div
+            style={{
+              display: 'grid',
+              // 3-up when wide; wraps to fewer columns in the narrow docked/corner
+              // panel so every hero stays reachable (instead of being clipped).
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
+              gap: 6,
+            }}
+          >
             {[0, 1, 2].map((i) =>
               heroes[i] ? (
                 <HeroCard key={heroes[i].id} hero={heroes[i]} player={player} index={i} />
