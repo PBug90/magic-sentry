@@ -5,6 +5,7 @@ WORKDIR /app
 
 # Workspace package.json files needed for `npm ci` to resolve workspace links.
 COPY package.json package-lock.json ./
+COPY wc3data/package.json ./wc3data/
 COPY shared/package.json ./shared/
 COPY viewer/package.json ./viewer/
 COPY web/package.json ./web/
@@ -12,7 +13,9 @@ COPY twitch-extension/package.json ./twitch-extension/
 
 RUN npm ci
 
-# Source needed to build the web service.
+# Source needed to build the web service. wc3data is built first by
+# `magic-sentry-web`'s build:shared step, so its source must be present.
+COPY wc3data ./wc3data
 COPY shared ./shared
 COPY viewer ./viewer
 COPY web ./web
@@ -34,12 +37,15 @@ RUN apk add --no-cache tini
 
 # Lockfile + workspace manifests for the prod install.
 COPY --from=builder /app/package.json /app/package-lock.json ./
+COPY --from=builder /app/wc3data/package.json ./wc3data/
 COPY --from=builder /app/shared/package.json ./shared/
 COPY --from=builder /app/viewer/package.json ./viewer/
 COPY --from=builder /app/twitch-extension/package.json ./twitch-extension/
 COPY --from=builder /app/web/package.json ./web/
 
-# Built artifacts.
+# Built artifacts. shared/dist imports @magic-sentry/wc3data at runtime, so
+# wc3data/dist must ship too.
+COPY --from=builder /app/wc3data/dist ./wc3data/dist
 COPY --from=builder /app/shared/dist ./shared/dist
 COPY --from=builder /app/web/dist ./web/dist
 
