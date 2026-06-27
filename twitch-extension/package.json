@@ -13,6 +13,7 @@
   "dependencies": {
     "@magic-sentry/shared": "*",
     "@magic-sentry/viewer": "*",
+    "@magic-sentry/wc3data": "*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

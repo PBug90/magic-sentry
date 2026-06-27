@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Magic Sentry</title>
     <!--
+      Video - Overlay entry point. Twitch renders this on top of the whole video,
+      so the page background MUST be transparent for the stream to show through.
       The Twitch Extension Helper MUST be the first script in every extension HTML file.
-      It provides window.Twitch.ext and the JWT / configuration APIs.
     -->
     <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
     <style>
