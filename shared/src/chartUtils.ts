@@ -1,7 +1,5 @@
 import type { Sample } from './types.js'
-import { WORKERS_BY_ID } from './workers.js'
-import { HERO_OBSERVER_IDS } from './heroes.js'
-import { UNIT_SUPPLY_BY_ID } from './enriched.js'
+import { WORKERS_BY_ID, HERO_OBSERVER_IDS, UNIT_SUPPLY_BY_ID } from '@magic-sentry/wc3data'
 
 export const PLAYER_COLORS = ['#58a6ff', '#ff7b72', '#3fb950', '#d2a8ff', '#ffa657']
 export const UNIT_COLORS = [

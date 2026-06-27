@@ -1,0 +1,62 @@
+// Curated whitelist of the standard trainable units shown per race in the
+// encyclopedia Units sections. The raw UNITS table also contains campaign
+// heroes/characters, cinematic doubles, and toggle morph forms; only the ids
+// listed here are displayed. Race is derived from the id's first letter.
+// (Buildings are gated separately by BUILDING_IDS.)
+export const ROSTER_UNIT_IDS = new Set<string>([
+  // Human
+  'hpea',
+  'hfoo',
+  'hrif',
+  'hmpr',
+  'hsor',
+  'hspt',
+  'hkni',
+  'hmtm',
+  'hmtt',
+  'hgyr',
+  'hgry',
+  'hdhw',
+  'hmil',
+  // Orc
+  'opeo',
+  'ogru',
+  'ohun',
+  'otbk',
+  'odoc',
+  'oshm',
+  'orai',
+  'okod',
+  'otbr',
+  'ocat',
+  'ospw',
+  'otau',
+  'owyv',
+  // Night Elf — Druid of the Claw/Talon morph (bear/raven) forms are kept on purpose
+  'ewsp',
+  'earc',
+  'esen',
+  'ebal',
+  'edry',
+  'edoc',
+  'edcm',
+  'emtg',
+  'ehip',
+  'edot',
+  'edtm',
+  'efdr',
+  'echm',
+  'ehpr',
+  // Undead
+  'uaco',
+  'ugho',
+  'ucry',
+  'unec',
+  'uban',
+  'umtw',
+  'uobs',
+  'ubsp',
+  'uabo',
+  'ugar',
+  'ufro',
+])

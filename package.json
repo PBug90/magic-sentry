@@ -2,13 +2,15 @@
   "name": "magic-sentry-monorepo",
   "private": true,
   "workspaces": [
+    "wc3data",
     "shared",
     "viewer",
     "twitch-extension",
     "web"
   ],
   "scripts": {
-    "build:shared": "tsc -p shared/tsconfig.json",
+    "build:wc3data": "tsc -p wc3data/tsconfig.json",
+    "build:shared": "tsc -p wc3data/tsconfig.json && tsc -p shared/tsconfig.json",
     "build:icons": "tsx scripts/build-standalone.ts",
     "build:standalone": "npm run build:icons && npm -w magic-sentry-web run build:standalone",
     "dev": "docker compose up -d && concurrently --names \"web,ext\" --prefix-colors \"cyan,magenta\" \"npm -w magic-sentry-web run dev\" \"npm -w twitch-extension run dev\"",
@@ -26,6 +28,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,json}\""
   },
   "devDependencies": {
-    "prettier": "^3.8.3"
+    "prettier": "^3.8.3",
+    "sharp": "^0.35.2"
   }
 }

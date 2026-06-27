@@ -16,7 +16,7 @@ import {
   UNIT_COLORS,
   HERO_COLOR,
 } from '../src/chartUtils.js'
-import { HERO_OBSERVER_IDS } from '../src/heroes.js'
+import { HERO_OBSERVER_IDS } from '@magic-sentry/wc3data'
 
 // ---------------------------------------------------------------------------
 // Helpers

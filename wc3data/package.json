@@ -1,0 +1,19 @@
+{
+  "name": "@magic-sentry/wc3data",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "generate": "tsx scripts/parse-unitbalance.ts && tsx scripts/parse-upgradedata.ts && tsx scripts/parse-itemdata.ts && tsx scripts/generate-units.ts && tsx scripts/generate-upgrades.ts && tsx scripts/generate-items.ts && prettier --write src/units.ts src/heroes.ts src/upgrades.ts src/items.ts"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.5"
+  }
+}

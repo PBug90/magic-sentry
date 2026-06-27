@@ -8,26 +8,24 @@
 # Node
 node_modules/
 
+# Compiled build output for every package
+dist/
+
 # Web server
 /web/.env
 /web/.env.test
-/web/dist/
 
-# Shared package compiled output
-/shared/dist/
+# wc3data — SLK game data files (place in wc3data/slk/ to regenerate pipeline)
+/wc3data/slk/*.slk
 
-# Shared — SLK game data files (place in shared/slk/ to regenerate pipeline)
-/shared/slk/*.slk
+# wc3data — intermediate JSON generated from SLK files
+/wc3data/src/UnitBalance.json
+/wc3data/src/UpgradeBalance.json
+/wc3data/src/ItemBalance.json
 
-# Shared — intermediate JSON generated from SLK files
-/shared/src/UnitBalance.json
-/shared/src/UpgradeBalance.json
-/shared/src/ItemBalance.json
 /web/public/favicon.ico
 
 # Twitch extension
-/twitch-extension/dist/
-/twitch-extension/node_modules/
 /twitch-extension/.env
 /twitch-extension/*.zip
 
@@ -39,3 +37,6 @@ node_modules/
 
 # Standalone report — generated icon map (build artifact)
 /web/src/client/standalone/iconMap.ts
+
+# Liquipedia scraper cache
+shared/.liquipedia-cache/
