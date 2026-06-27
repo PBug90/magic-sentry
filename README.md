@@ -16,6 +16,16 @@ Live WarCraft III game intelligence — a monorepo containing three applications
 | [`web`](web/)                           | TypeScript · Hono · React | Receives patches from the CLI, reconstructs full game records, and exposes a JSON API for viewers                             |
 | [`twitch-extension`](twitch-extension/) | TypeScript · React · Vite | Twitch video overlay that polls the live API and renders interactive charts for heroes, resources, food, and army composition |
 
+### Supporting packages
+
+These workspace packages are shared by the applications above rather than deployed on their own:
+
+| Package | Description |
+| --- | --- |
+| [`shared`](shared/) | Game-record schema (Zod), patch protocol, chart helpers, and fight/timeline detection |
+| [`viewer`](viewer/) | Reusable React panels and charts rendered by both the web viewer and the Twitch overlay |
+| [`wc3data`](wc3data/) | Warcraft III reference data (units, heroes, items, upgrades, abilities) and its SLK refresh pipeline |
+
 ## Quick start
 
 ### CLI
@@ -88,5 +98,6 @@ cargo test -p magic-sentry
 
 # TypeScript type-checking
 npm run typecheck:extension
+npm run typecheck:viewer
 npm run typecheck:web
 ```

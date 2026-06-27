@@ -99,7 +99,7 @@ intervalRef.current = setInterval(() => void catchUp(), pollIntervalSec * 1000)
 ## Request flow
 
 ```
-Viewer                     CDN edge              Origin (Render)
+Viewer                     CDN edge              Origin (VPS)
   |                           |                       |
   |-- GET /:gameId/after/-1 ->|                       |
   |                           |-- cache miss -------->|
