@@ -12,7 +12,7 @@
     "build:server": "tsc -p tsconfig.server.json",
     "start": "node --env-file=.env dist/server/index.js",
     "typecheck": "npm run build:shared && tsc --noEmit && tsc -p tsconfig.server.json --noEmit",
-    "build:shared": "tsc -p ../shared/tsconfig.json",
+    "build:shared": "tsc -p ../wc3data/tsconfig.json && tsc -p ../shared/tsconfig.json",
     "build:standalone": "vite build --config vite.standalone.config.ts",
     "test:server": "vitest run --config vitest.config.server.ts"
   },
@@ -20,6 +20,7 @@
     "@hono/node-server": "^2.0.1",
     "@magic-sentry/shared": "*",
     "@magic-sentry/viewer": "*",
+    "@magic-sentry/wc3data": "*",
     "hono": "^4.6.0",
     "postgres": "^3.4.9",
     "react": "^19.0.0",

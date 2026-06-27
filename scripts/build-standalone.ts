@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { join, extname } from 'path'
 
-const ASSET_DIRS = ['heroes', 'units', 'items', 'abilities', 'upgrades']
+const ASSET_DIRS = ['heroes', 'units', 'items', 'abilities', 'upgrades', 'buildings']
 const ASSETS_ROOT = 'assets'
 const OUT_DIR = 'web/src/client/standalone'
 const OUT_FILE = join(OUT_DIR, 'iconMap.ts')
