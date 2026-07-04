@@ -31,6 +31,45 @@ export async function migrate(): Promise<void> {
     ALTER TABLE users ADD COLUMN IF NOT EXISTS allowed BOOLEAN NOT NULL DEFAULT FALSE
   `
 
+  // Split the manual approval flag out from the effective `allowed` so the
+  // Patreon sync can grant/revoke access without clobbering manual grants.
+  // Seeded from the current `allowed` exactly once, on first add.
+  await sql`
+    DO $$ BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'users' AND column_name = 'admin_allowed'
+      ) THEN
+        ALTER TABLE users ADD COLUMN admin_allowed BOOLEAN NOT NULL DEFAULT FALSE;
+        UPDATE users SET admin_allowed = allowed;
+      END IF;
+    END $$
+  `
+
+  // Patreon link (campaign-members model: we store the patron's id + standing,
+  // never their tokens).
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS patreon_id      TEXT`
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS patreon_tier_id   TEXT`
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS patreon_tier_name TEXT`
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS patreon_active  BOOLEAN NOT NULL DEFAULT FALSE`
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS patreon_synced_at TIMESTAMPTZ`
+  // One Patreon account per user, and it can't be claimed by two accounts.
+  await sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS users_patreon_id_key
+    ON users (patreon_id) WHERE patreon_id IS NOT NULL
+  `
+
+  // Single creator token used by the periodic sync to read campaign members.
+  // Seeded from env on first run; refreshed in place thereafter.
+  await sql`
+    CREATE TABLE IF NOT EXISTS patreon_creator (
+      id            INT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+      access_token  TEXT NOT NULL,
+      refresh_token TEXT NOT NULL,
+      updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `
+
   await sql`
     CREATE TABLE IF NOT EXISTS cli_tokens (
       token      TEXT        PRIMARY KEY,

@@ -3,6 +3,7 @@ import { serveStatic } from '@hono/node-server/serve-static'
 import { readFile } from 'node:fs/promises'
 import { migrate } from './db.js'
 import { trafficStore } from './trafficStore.js'
+import { startPatreonSync } from './patreonSync.js'
 import { createApp } from './app.js'
 
 // Last line of defense: a stray rejection anywhere (e.g. a floating stream
@@ -26,6 +27,7 @@ migrate()
   .then(() => {
     console.log('[db] migrations applied')
     trafficStore.startFlushLoop()
+    startPatreonSync()
     serve({ fetch: app.fetch, port }, () => {
       console.log(`Magic Sentry web server running on http://localhost:${port}`)
     })

@@ -1,8 +1,21 @@
 import { Hono } from 'hono'
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 import { authStore } from '../authStore.js'
+import {
+  patreonConfigured,
+  buildAuthorizeUrl,
+  exchangeCode,
+  fetchIdentity,
+} from '../patreon.js'
 
 const auth = new Hono()
+
+/** The Twitch user for the current session cookie, or null. */
+function sessionUser(c: Parameters<typeof getCookie>[0]) {
+  const token = getCookie(c, 'session')
+  if (!token) return null
+  return authStore.getSession(token)?.user ?? null
+}
 
 function clientId() {
   return process.env.TWITCH_CLIENT_ID ?? ''
@@ -121,6 +134,58 @@ auth.post('/logout', (c) => {
   const token = getCookie(c, 'session')
   if (token) authStore.deleteSession(token)
   deleteCookie(c, 'session', { path: '/' })
+  return c.json({ ok: true })
+})
+
+// ---------------------------------------------------------------------------
+// Patreon linking (requires an existing Twitch session)
+// ---------------------------------------------------------------------------
+
+// GET /auth/patreon — redirect a logged-in user to Patreon consent
+auth.get('/patreon', (c) => {
+  if (!process.env.PATREON_CLIENT_ID) return c.text('PATREON_CLIENT_ID not configured', 500)
+  if (!process.env.PATREON_CAMPAIGN_ID) return c.text('PATREON_CAMPAIGN_ID not configured', 500)
+  if (!patreonConfigured()) return c.text('Patreon not configured', 500)
+  if (!sessionUser(c)) return c.redirect('/settings?patreon=login_required')
+  const state = authStore.createOAuthState()
+  return c.redirect(buildAuthorizeUrl(state))
+})
+
+// GET /auth/patreon/callback — verify, evaluate tier, link to the session user
+auth.get('/patreon/callback', async (c) => {
+  const code = c.req.query('code')
+  const state = c.req.query('state')
+  const error = c.req.query('error')
+  const token = getCookie(c, 'session')
+  const user = token ? (authStore.getSession(token)?.user ?? null) : null
+
+  if (error || !code || !state || !authStore.consumeOAuthState(state) || !user || !token) {
+    return c.redirect('/settings?patreon=error')
+  }
+
+  try {
+    const tokens = await exchangeCode(code)
+    const membership = await fetchIdentity(tokens.accessToken)
+    if (!membership.patreonId) return c.redirect('/settings?patreon=error')
+    const res = await authStore.linkPatreon(user.id, membership)
+    if (!res.ok) return c.redirect('/settings?patreon=already_linked')
+    await authStore.refreshSessionAllowed(token)
+    return c.redirect('/settings?patreon=connected')
+  } catch (e) {
+    console.error('[patreon] callback failed:', e)
+    return c.redirect('/settings?patreon=error')
+  }
+  // Note: the linking user's Patreon tokens are intentionally discarded here —
+  // ongoing access is re-evaluated from the campaign member list, not per-user.
+})
+
+// POST /auth/patreon/disconnect — unlink and re-evaluate access
+auth.post('/patreon/disconnect', async (c) => {
+  const token = getCookie(c, 'session')
+  const user = token ? (authStore.getSession(token)?.user ?? null) : null
+  if (!user || !token) return c.json({ error: 'unauthorized' }, 401)
+  await authStore.unlinkPatreon(user.id)
+  await authStore.refreshSessionAllowed(token)
   return c.json({ ok: true })
 })
 

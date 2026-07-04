@@ -110,9 +110,13 @@ api.post('/load-example', (c) => {
 // GET /api/me
 // ---------------------------------------------------------------------------
 
-api.get('/me', (c) => {
+api.get('/me', async (c) => {
   const user = getSessionUser(c)
-  return c.json({ user })
+  if (!user) return c.json({ user: null, patreon: null })
+  // Read `allowed` fresh so a Patreon-granted change shows without re-login.
+  const fresh = (await authStore.getUserById(user.id)) ?? user
+  const patreon = await authStore.getPatreonStatus(user.id)
+  return c.json({ user: fresh, patreon })
 })
 
 // ---------------------------------------------------------------------------
