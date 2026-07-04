@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ChartPlayer, type Sample } from '@magic-sentry/shared'
 import { nearestSample, niceMax, timeTicks } from '@magic-sentry/shared'
 import { UNIT_GOLD_BY_ID, UNIT_LUMBER_BY_ID } from '@magic-sentry/wc3data'
+import { tavernReviveCost } from '../heroRevival'
 import {
   CM,
   W,
@@ -16,14 +17,17 @@ import {
 } from './shared'
 import { CenteredDiffPlot, DiffToggle } from './CenteredDiffPlot'
 
-// Gold / lumber tied up in a player's living units at a sample (alive count ×
-// unit cost over s.units; heroes and structures excluded). Kept for the tooltip
-// breakdown — the chart itself plots their sum.
+// Gold / lumber tied up in a player's army at a sample: alive count × unit cost
+// over s.units, plus each hero valued at its Tavern revive cost for its level (a
+// level-scaled proxy for the investment in a hero). Structures are excluded.
+// Kept split for the tooltip breakdown — the chart plots their sum.
 function goldValue(s: Sample): number {
-  return s.units.reduce((sum, u) => sum + u.alive * (UNIT_GOLD_BY_ID[u.id] ?? 0), 0)
+  const units = s.units.reduce((sum, u) => sum + u.alive * (UNIT_GOLD_BY_ID[u.id] ?? 0), 0)
+  return s.heroes.reduce((sum, h) => sum + tavernReviveCost(h.level).gold, units)
 }
 function lumberValue(s: Sample): number {
-  return s.units.reduce((sum, u) => sum + u.alive * (UNIT_LUMBER_BY_ID[u.id] ?? 0), 0)
+  const units = s.units.reduce((sum, u) => sum + u.alive * (UNIT_LUMBER_BY_ID[u.id] ?? 0), 0)
+  return s.heroes.reduce((sum, h) => sum + tavernReviveCost(h.level).lumber, units)
 }
 // Single combined data point: total unit value (gold + lumber) for a player.
 function totalValue(s: Sample): number {
