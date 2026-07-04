@@ -1007,7 +1007,6 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
       damageMax: 43,
       damageType: 'Normal',
     },
-    icon: 'edoc',
   },
   edes: {
     name: 'night elf destroyer',
@@ -1079,7 +1078,6 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
       damageMax: 33,
       damageType: 'Piercing',
     },
-    icon: 'edot',
   },
   efdr: {
     name: 'Faerie Dragon',
