@@ -161,6 +161,9 @@ fn read_structure_snapshot(s: &StructureInfo) -> Option<StructureSnapshot> {
         construction_progress: unsafe {
             std::ptr::read_unaligned(std::ptr::addr_of!(s.construction_progress))
         },
+        upgrade_progress: unsafe {
+            std::ptr::read_unaligned(std::ptr::addr_of!(s.upgrade_progress))
+        },
     })
 }
 

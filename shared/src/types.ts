@@ -78,6 +78,9 @@ export const UnitSnapshotSchema = z.object({
 export const StructureSnapshotSchema = z.object({
   id: fcc,
   construction_progress: nat(100_000),
+  // Progress of an in-place upgrade (e.g. Town Hall -> Keep). 0/absent when not
+  // upgrading. Optional so recordings made before the field existed still parse.
+  upgrade_progress: nat(100_000).optional().default(0),
 })
 
 export const UpgradeSnapshotSchema = z.object({
