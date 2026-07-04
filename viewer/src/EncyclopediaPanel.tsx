@@ -27,19 +27,22 @@ import { HeroTooltipBody } from './HeroTooltipBody'
 import { ITEM_ICON_IDS } from './itemIcons'
 import { DamageTable } from './DamageTable'
 import { ArmorTable } from './ArmorTable'
+import { ReviveTable } from './ReviveTable'
 import { GoldIcon, LumberIcon } from './StatIcons'
 
 type RaceTab = 'Human' | 'Orc' | 'Night Elf' | 'Undead'
-type OtherTab = 'items' | 'upgrades' | 'abilities' | 'damage'
+type OtherTab = 'search' | 'items' | 'upgrades' | 'abilities' | 'damage' | 'revival'
 // 'Neutral' is a buildings-only tab (no neutral heroes/units/upgrades shown).
 type Tab = RaceTab | 'Neutral' | OtherTab
 
 const RACE_TABS: RaceTab[] = ['Human', 'Orc', 'Night Elf', 'Undead']
 const OTHER_TABS: { key: OtherTab; label: string }[] = [
+  { key: 'search', label: 'Search' },
   { key: 'items', label: 'Items' },
   { key: 'upgrades', label: 'Upgrades' },
   { key: 'abilities', label: 'Abilities' },
   { key: 'damage', label: 'Combat' },
+  { key: 'revival', label: 'Hero Revival' },
 ]
 const RACE_SET = new Set<string>(RACE_TABS)
 
@@ -79,6 +82,58 @@ const byUpgradeName = (a: string, b: string) =>
 // Upgrades kept in the data (for game-view name resolution) but hidden from the
 // encyclopedia: Roch = orc chaos conversion, Rusl = undead skeleton life span.
 const HIDDEN_UPGRADE_IDS = new Set(['Roch', 'Rusl'])
+
+// --- Search index: every displayable entity, for the Search tab ---
+type SearchKind = 'Hero' | 'Unit' | 'Building' | 'Item' | 'Upgrade' | 'Ability'
+interface SearchEntry {
+  id: string
+  name: string
+  kind: SearchKind
+  iconPath: string
+}
+const SEARCH_KINDS: SearchKind[] = ['Hero', 'Unit', 'Building', 'Item', 'Upgrade', 'Ability']
+const SEARCH_KIND_LABEL: Record<SearchKind, string> = {
+  Hero: 'Heroes',
+  Unit: 'Units',
+  Building: 'Buildings',
+  Item: 'Items',
+  Upgrade: 'Upgrades',
+  Ability: 'Abilities',
+}
+const SEARCH_INDEX: SearchEntry[] = [
+  ...Object.keys(UNITS)
+    .filter((id) => HERO_OBSERVER_IDS.has(id) && !UNIT_ALIAS_IDS.has(id))
+    .map((id) => ({ id, name: UNITS[id].name, kind: 'Hero' as const, iconPath: '/heroes' })),
+  ...[...ROSTER_UNIT_IDS].map((id) => ({
+    id,
+    name: UNITS[id]?.name ?? id,
+    kind: 'Unit' as const,
+    iconPath: '/units',
+  })),
+  ...[...BUILDING_IDS].map((id) => ({
+    id,
+    name: UNITS[id]?.name ?? id,
+    kind: 'Building' as const,
+    iconPath: '/buildings',
+  })),
+  ...Object.keys(ITEM_BY_ID)
+    .filter((id) => ITEM_ICON_IDS.has(id))
+    .map((id) => ({ id, name: ITEM_BY_ID[id].name, kind: 'Item' as const, iconPath: '/items' })),
+  ...Object.keys(UPGRADES_TECH)
+    .filter((id) => !HIDDEN_UPGRADE_IDS.has(id))
+    .map((id) => ({
+      id,
+      name: UPGRADES_TECH[id].name,
+      kind: 'Upgrade' as const,
+      iconPath: '/upgrades',
+    })),
+  ...Object.keys(ABILITY_BY_ID).map((id) => ({
+    id,
+    name: ABILITY_BY_ID[id].name,
+    kind: 'Ability' as const,
+    iconPath: '/abilities',
+  })),
+]
 
 function unitAbilities(id: string) {
   return (UNIT_ABILITY_BY_ID[id] ?? []).flatMap((aid) => {
@@ -179,6 +234,7 @@ export function EncyclopediaPanel({
   const contextIconSrc = useIconSrc()
   const iconSrc = iconSrcProp ?? contextIconSrc
   const [tab, setTab] = useState<Tab>('Human')
+  const [query, setQuery] = useState('')
 
   const tabStyle = (active: boolean): CSSProperties => ({
     background: 'none',
@@ -269,6 +325,18 @@ export function EncyclopediaPanel({
     <IconTile key={id} iconSrc={iconSrc} iconPath={iconPath} id={id} alt={alt} tooltip={tooltip} />
   )
 
+  // The right tooltip for a search hit, by kind (buildings reuse the unit body).
+  const tipFor = (kind: SearchKind, id: string): ReactNode =>
+    kind === 'Hero'
+      ? heroTip(id)
+      : kind === 'Unit' || kind === 'Building'
+        ? unitTip(id)
+        : kind === 'Item'
+          ? itemTip(id)
+          : kind === 'Upgrade'
+            ? upgradeTip(id)
+            : abilityTip(id)
+
   return (
     <div
       style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, height: '100%' }}
@@ -330,6 +398,71 @@ export function EncyclopediaPanel({
               tile('/buildings', id, UNITS[id]?.name ?? id, unitTip(id)),
             )}
           </Section>
+        ) : tab === 'search' ? (
+          <div>
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search units, heroes, buildings, items, upgrades, abilities…"
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                margin: '6px 0 8px',
+                padding: '8px 10px',
+                background: '#0d0d14',
+                border: '1px solid #2a2a3a',
+                borderRadius: 4,
+                color: '#efeff1',
+                fontFamily: 'monospace',
+                fontSize: '.72em',
+                outline: 'none',
+              }}
+            />
+            {query.trim().length === 0 ? (
+              <p
+                style={{
+                  color: '#6a6a6a',
+                  fontFamily: 'monospace',
+                  fontSize: '.62em',
+                  padding: '8px 2px',
+                }}
+              >
+                Type to search across every unit, hero, building, item, upgrade and ability.
+              </p>
+            ) : (
+              (() => {
+                const q = query.trim().toLowerCase()
+                const hits = SEARCH_INDEX.filter(
+                  (e) => e.name.toLowerCase().includes(q) || e.id.toLowerCase().includes(q),
+                )
+                if (hits.length === 0) {
+                  return (
+                    <p
+                      style={{
+                        color: '#6a6a6a',
+                        fontFamily: 'monospace',
+                        fontSize: '.62em',
+                        padding: '8px 2px',
+                      }}
+                    >
+                      No matches for “{query.trim()}”.
+                    </p>
+                  )
+                }
+                return SEARCH_KINDS.map((kind) => {
+                  const group = hits.filter((h) => h.kind === kind).sort((a, b) => a.name.localeCompare(b.name))
+                  if (group.length === 0) return null
+                  return (
+                    <Section key={kind} label={`${SEARCH_KIND_LABEL[kind]} (${group.length})`}>
+                      {group.map((e) => tile(e.iconPath, e.id, e.name, tipFor(e.kind, e.id)))}
+                    </Section>
+                  )
+                })
+              })()
+            )}
+          </div>
         ) : tab === 'items' ? (
           <Section label="Items">
             {Object.keys(ITEM_BY_ID)
@@ -350,6 +483,8 @@ export function EncyclopediaPanel({
               .sort((a, b) => ABILITY_BY_ID[a].name.localeCompare(ABILITY_BY_ID[b].name))
               .map((id) => tile('/abilities', id, ABILITY_BY_ID[id].name, abilityTip(id)))}
           </Section>
+        ) : tab === 'revival' ? (
+          <ReviveTable />
         ) : (
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
             <DamageTable />
