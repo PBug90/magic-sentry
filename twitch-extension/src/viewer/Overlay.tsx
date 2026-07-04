@@ -45,6 +45,12 @@ export function Overlay() {
     const s = localStorage.getItem('magic-sentry-layout')
     return s === 'fullscreen' || s === 'corner' ? s : 'docked'
   })
+  // Viewer-adjustable text-size multiplier applied on top of the responsive base.
+  const [fontScale, setFontScale] = useState<number>(() => {
+    const s = localStorage.getItem('magic-sentry-font-scale')
+    const n = s === null ? 1 : parseFloat(s)
+    return isNaN(n) ? 1 : Math.max(0.7, Math.min(1.5, n))
+  })
   // Collapsed by default on first load; remembered across reloads.
   const [railOpen, setRailOpen] = useState<boolean>(
     () => localStorage.getItem('magic-sentry-rail-open') === 'true',
@@ -55,6 +61,9 @@ export function Overlay() {
   useEffect(() => {
     localStorage.setItem('magic-sentry-layout', layout)
   }, [layout])
+  useEffect(() => {
+    localStorage.setItem('magic-sentry-font-scale', String(fontScale))
+  }, [fontScale])
   useEffect(() => {
     localStorage.setItem('magic-sentry-rail-open', String(railOpen))
   }, [railOpen])
@@ -144,7 +153,7 @@ export function Overlay() {
         // Click-through: only the rail and the open panel capture pointer events,
         // so the rest of the stream stays interactive.
         pointerEvents: 'none',
-        fontSize: `${fontSize}px`,
+        fontSize: `${fontSize * fontScale}px`,
         fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
         color: '#efeff1',
       }}
@@ -246,8 +255,10 @@ export function Overlay() {
             <OverlaySettings
               opacity={opacity}
               layout={layout}
+              fontScale={fontScale}
               onOpacity={setOpacity}
               onLayout={setLayout}
+              onFontScale={setFontScale}
             />
           )}
 
