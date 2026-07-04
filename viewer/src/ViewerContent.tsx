@@ -4,6 +4,7 @@ import { HeroPanel } from './HeroPanel'
 import { ItemsPanel } from './ItemsPanel'
 import { EconomyChart, LumberChart, ApmChart } from './charts/ResourceChart'
 import { FoodChart } from './charts/FoodChart'
+import { TotalValueChart } from './charts/TotalValueChart'
 import { ArmyChart, CurrentArmies } from './charts/ArmyChart'
 import { IconSrcProvider } from './context'
 import { detectFights, detectTimeline } from '@magic-sentry/shared'
@@ -15,6 +16,7 @@ export type TabKey =
   | 'items'
   | 'gold'
   | 'lumber'
+  | 'value'
   | 'food'
   | 'armies'
   | 'army'
@@ -27,6 +29,7 @@ export const VIEWER_TABS: { key: TabKey; label: string }[] = [
   { key: 'items', label: 'Items' },
   { key: 'gold', label: 'Gold' },
   { key: 'lumber', label: 'Lumber' },
+  { key: 'value', label: 'Total Value' },
   { key: 'food', label: 'Food' },
   { key: 'armies', label: 'Current Armies' },
   { key: 'army', label: 'Army over time' },
@@ -34,6 +37,11 @@ export const VIEWER_TABS: { key: TabKey; label: string }[] = [
   { key: 'fights', label: 'Fights' },
   { key: 'timeline', label: 'Timings' },
 ]
+
+// Chart tabs that render their own player legends, so an outer player/teams
+// header is redundant on them.
+const GRAPH_TAB_SET = new Set<TabKey>(['gold', 'lumber', 'value', 'food', 'armies', 'army', 'apm'])
+export const isGraphTab = (tab: TabKey): boolean => GRAPH_TAB_SET.has(tab)
 
 export function StatusDot({ ok, label }: { ok: boolean; label: string }) {
   return (
@@ -216,6 +224,7 @@ export function TabContent({
       {tab === 'items' && <ItemsPanel players={players} />}
       {tab === 'gold' && <EconomyChart players={players} />}
       {tab === 'lumber' && <LumberChart players={players} />}
+      {tab === 'value' && <TotalValueChart players={players} />}
       {tab === 'food' && <FoodChart players={players} />}
       {tab === 'armies' && <CurrentArmies players={players} />}
       {tab === 'army' && <ArmyChart players={players} />}
@@ -231,19 +240,26 @@ export function ViewerContent({
   iconSrc,
   error,
   tabs = VIEWER_TABS,
+  onTabChange,
 }: {
   players: ChartPlayer[]
   iconSrc: (path: string) => string
   error?: string | null
   tabs?: typeof VIEWER_TABS
+  /** Fired when the active tab changes, so callers can react (e.g. hide a header on graph tabs). */
+  onTabChange?: (tab: TabKey) => void
 }) {
   const [tab, setTab] = useState<TabKey>('heroes')
+  const changeTab = (t: TabKey) => {
+    setTab(t)
+    onTabChange?.(t)
+  }
 
   return (
     <IconSrcProvider value={iconSrc}>
       <>
         <div style={{ padding: '0 24px', flexShrink: 0 }}>
-          <TabBar active={tab} onChange={setTab} tabs={tabs} />
+          <TabBar active={tab} onChange={changeTab} tabs={tabs} />
         </div>
         <TabContent players={players} tab={tab} error={error} />
       </>

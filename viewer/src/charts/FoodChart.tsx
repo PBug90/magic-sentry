@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { ChartPlayer } from '@magic-sentry/shared'
 import { nearestSample, niceMax, timeTicks } from '@magic-sentry/shared'
 import { CM, W, H, IW, IH, useChartHover, ChartTooltip, TooltipTime, SectionLabel } from './shared'
+import { CenteredDiffPlot, DiffToggle } from './CenteredDiffPlot'
 
 export function FoodChart({ players }: { players: ChartPlayer[] }) {
   const { hover, wrapRef, onSvgMouseMove, onSvgMouseLeave } = useChartHover()
+  const [diff, setDiff] = useState(false)
 
   if (players.every((p) => p.samples.length === 0)) return null
   const maxTime = Math.max(...players.flatMap((p) => p.samples.map((s) => s.time_ms))) / 1000
@@ -23,7 +26,21 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
       ref={wrapRef}
       style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}
     >
-      <SectionLabel>Food</SectionLabel>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <SectionLabel>Food</SectionLabel>
+        {players.length === 2 && <DiffToggle on={diff} onChange={setDiff} />}
+      </div>
+      {diff && players.length === 2 ? (
+        <CenteredDiffPlot
+          p1={players[0]}
+          p2={players[1]}
+          metrics={[
+            { label: 'used', value: (s) => s.food_used, color: '#c8a050' },
+            { label: 'cap', value: (s) => s.food_cap, color: '#c8a050', dash: '4 2' },
+          ]}
+        />
+      ) : (
+        <>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
@@ -213,6 +230,8 @@ export function FoodChart({ players }: { players: ChartPlayer[] }) {
           </span>
         ))}
       </div>
+        </>
+      )}
     </div>
   )
 }

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { ChartPlayer, PlayerItemStatSnapshot } from '@magic-sentry/shared'
-import { ITEM_BY_ID } from '@magic-sentry/wc3data'
+import { ITEM_BY_ID, ITEM_INFO_BY_ID } from '@magic-sentry/wc3data'
 import { HoverTooltip } from './HoverTooltip'
+import { ItemTooltipBody } from './ItemTooltipBody'
 import { useIconSrc } from './context'
 
 function itemsFromPlayer(player: ChartPlayer): PlayerItemStatSnapshot[] {
@@ -15,6 +16,7 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
   const iconSrc = useIconSrc()
   const [hovered, setHovered] = useState(false)
   const meta = ITEM_BY_ID[item.id]
+  const info = ITEM_INFO_BY_ID[item.id]
   const name = meta?.name ?? item.id
   const totalGold = item.purchased * (meta?.gold ?? 0)
 
@@ -42,6 +44,7 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
             {meta?.gold !== undefined && meta.gold > 0 && (
               <div style={{ color: '#c8a050' }}>{meta.gold}g</div>
             )}
+            {info && <ItemTooltipBody info={info} />}
           </HoverTooltip>
         )}
         <div style={{ position: 'relative', width: 20, height: 20 }}>

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { ChartPlayer, type Sample } from '@magic-sentry/shared'
 import { nearestSample, niceMax, timeTicks } from '@magic-sentry/shared'
 import {
@@ -12,6 +13,7 @@ import {
   SectionLabel,
   svgPath,
 } from './shared'
+import { CenteredDiffPlot, DiffToggle } from './CenteredDiffPlot'
 
 interface ResourceSeries {
   mined: (s: Sample) => number
@@ -27,14 +29,17 @@ function ResourceChart({
   series,
   yStep,
   singleLine = false,
+  diffLabel,
 }: {
   players: ChartPlayer[]
   title: string
   series: ResourceSeries
   yStep: number
   singleLine?: boolean
+  diffLabel?: string
 }) {
   const { hover, wrapRef, onSvgMouseMove, onSvgMouseLeave } = useChartHover()
+  const [diff, setDiff] = useState(false)
 
   if (players.every((p) => p.samples.length === 0)) return null
   const maxTime = Math.max(...players.flatMap((p) => p.samples.map((s) => s.time_ms))) / 1000
@@ -54,7 +59,18 @@ function ResourceChart({
       ref={wrapRef}
       style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}
     >
-      <SectionLabel>{title}</SectionLabel>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <SectionLabel>{title}</SectionLabel>
+        {players.length === 2 && <DiffToggle on={diff} onChange={setDiff} />}
+      </div>
+      {diff && players.length === 2 ? (
+        <CenteredDiffPlot
+          p1={players[0]}
+          p2={players[1]}
+          metrics={[{ label: diffLabel ?? title, value: series.mined, color: '#c8a050' }]}
+        />
+      ) : (
+        <>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         width="100%"
@@ -243,6 +259,8 @@ function ResourceChart({
           </span>
         ))}
       </div>
+        </>
+      )}
     </div>
   )
 }
@@ -333,6 +351,7 @@ export function EconomyChart({ players }: { players: ChartPlayer[] }) {
         players={players}
         title="Economy — Gold"
         yStep={step}
+        diffLabel="gold"
         series={{
           mined: (s) => s.gold_mined,
           upkeep: (s) => s.gold_upkeep_lost,
@@ -353,6 +372,7 @@ export function LumberChart({ players }: { players: ChartPlayer[] }) {
       players={players}
       title="Economy — Lumber"
       yStep={step}
+      diffLabel="lumber"
       singleLine
       series={{
         mined: (s) => s.lumber_mined,
@@ -373,6 +393,7 @@ export function ApmChart({ players }: { players: ChartPlayer[] }) {
       players={players}
       title="Actions per Minute"
       yStep={step}
+      diffLabel="apm"
       singleLine
       series={{
         mined: (s) => s.apm,

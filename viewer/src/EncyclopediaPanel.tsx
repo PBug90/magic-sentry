@@ -3,7 +3,7 @@ import type { ReactNode, CSSProperties } from 'react'
 import { UNITS } from '@magic-sentry/wc3data'
 import {
   ITEM_BY_ID,
-  ITEM_EFFECT_BY_ID,
+  ITEM_INFO_BY_ID,
   UNIT_EFFECT_BY_ID,
   ABILITY_BY_ID,
   UNIT_ABILITY_BY_ID,
@@ -15,14 +15,18 @@ import {
   UNIT_ALIAS_IDS,
   BUILDING_IDS,
   ROSTER_UNIT_IDS,
+  UPGRADE_INFO_BY_ID,
 } from '@magic-sentry/wc3data'
 import { useIconSrc } from './context'
 import { HoverTooltip } from './HoverTooltip'
 import { AbilityTooltipBody } from './AbilityTooltipBody'
+import { ItemTooltipBody } from './ItemTooltipBody'
+import { UpgradeTooltipBody } from './UpgradeTooltipBody'
 import { UnitTooltipBody } from './UnitTooltipBody'
 import { HeroTooltipBody } from './HeroTooltipBody'
 import { ITEM_ICON_IDS } from './itemIcons'
 import { DamageTable } from './DamageTable'
+import { ArmorTable } from './ArmorTable'
 import { GoldIcon, LumberIcon } from './StatIcons'
 
 type RaceTab = 'Human' | 'Orc' | 'Night Elf' | 'Undead'
@@ -231,25 +235,23 @@ export function EncyclopediaPanel({
   }
   const itemTip = (id: string) => {
     const d = ITEM_BY_ID[id]
-    const effect = ITEM_EFFECT_BY_ID[id]
+    const info = ITEM_INFO_BY_ID[id]
     return (
       <>
         {nameLine(d?.name ?? id)}
         <CostRow gold={d?.gold ?? 0} lumber={0} />
-        {effect && (
-          <div style={{ color: '#888', whiteSpace: 'normal', maxWidth: 240, marginTop: 3 }}>
-            {effect}
-          </div>
-        )}
+        {info && <ItemTooltipBody info={info} />}
       </>
     )
   }
   const upgradeTip = (id: string) => {
     const d = UPGRADES_TECH[id]
+    const info = UPGRADE_INFO_BY_ID[id]
     return (
       <>
         {nameLine(d?.name ?? id)}
         <CostRow gold={d?.gold ?? 0} lumber={d?.lumber ?? 0} />
+        {info && <UpgradeTooltipBody info={info} />}
       </>
     )
   }
@@ -349,7 +351,10 @@ export function EncyclopediaPanel({
               .map((id) => tile('/abilities', id, ABILITY_BY_ID[id].name, abilityTip(id)))}
           </Section>
         ) : (
-          <DamageTable />
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <DamageTable />
+            <ArmorTable />
+          </div>
         )}
       </div>
     </div>
