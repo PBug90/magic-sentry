@@ -78,16 +78,41 @@ export interface HeroEntry {
   abilities?: string[]
 }
 
+// Item records mirror AbilityEntry: a description plus optional numeric detail
+// (cooldown/duration/range/aoe/charges) and a flexible stats list. Tooltip text
+// originally from Liquipedia (CC-BY-SA 3.0). `gold` stays sourced from our SLK
+// data (authoritative for the game version we track).
 export interface ItemEntry {
   name: string
   gold: number
-  effect?: string
+  /** Tooltip prose. Supersedes the old one-line `effect`. */
+  description?: string
+  /** Liquipedia category: 'Permanent'|'Charged'|'Power Up'|'Artifact'|'Purchasable'|'Miscellaneous'. */
+  category?: string
+  /** Liquipedia item level. */
+  level?: number
+  /** Activation cooldown in seconds, for usable items. */
+  cooldown?: number
+  /** Effect duration in seconds. */
+  duration?: number
+  /** Cast/effect range. */
+  range?: number
+  /** Area of effect radius. */
+  aoe?: number[]
+  /** Number of charges, for charged items. */
+  charges?: number
+  /** Numeric bonuses/effects: attribute, armor, damage, etc. Mirrors AbilityEntry.stats. */
+  stats?: { label: string; values: string[] }[]
 }
 
 export interface UpgradeEntry {
   name: string
   gold: number
   lumber: number
+  /** Tooltip prose (Liquipedia, CC-BY-SA 3.0). */
+  description?: string
+  /** Per-level numeric effects; `values` holds one entry per research level. */
+  stats?: { label: string; values: string[] }[]
 }
 
 export interface AbilityEntry {

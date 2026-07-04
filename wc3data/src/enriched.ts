@@ -1,4 +1,12 @@
-import type { UnitData, ItemData, UpgradeData, UnitStats, HeroStats } from './balance.js'
+import type {
+  UnitData,
+  ItemData,
+  ItemEntry,
+  UpgradeData,
+  UpgradeEntry,
+  UnitStats,
+  HeroStats,
+} from './balance.js'
 import { UNIT_DATA } from './units.js'
 import { HERO_DATA } from './heroes.js'
 import { ITEM_DATA } from './items.js'
@@ -53,7 +61,8 @@ export const HERO_EFFECT_BY_ID = pick<string>(HERO_DATA, 'effect')
 export const ITEM_BY_ID: Record<string, ItemData> = Object.fromEntries(
   Object.entries(ITEM_DATA).map(([id, r]) => [id, { name: r.name, gold: r.gold }]),
 )
-export const ITEM_EFFECT_BY_ID = pick<string>(ITEM_DATA, 'effect')
+/** Full item records (description + numeric detail), mirroring ABILITY_BY_ID. */
+export const ITEM_INFO_BY_ID: Record<string, ItemEntry> = ITEM_DATA
 
 // --- Upgrades ---
 export const UPGRADES_TECH: Record<string, UpgradeData> = Object.fromEntries(
@@ -62,6 +71,8 @@ export const UPGRADES_TECH: Record<string, UpgradeData> = Object.fromEntries(
     { name: r.name, gold: r.gold, lumber: r.lumber },
   ]),
 )
+/** Full upgrade records (description + numeric detail), mirroring ITEM_INFO_BY_ID. */
+export const UPGRADE_INFO_BY_ID: Record<string, UpgradeEntry> = UPGRADE_DATA
 export const UPGRADE_NAME_BY_ID = pick<string>(UPGRADE_DATA, 'name')
 export const UPGRADE_GOLD_BY_ID = pick<number>(UPGRADE_DATA, 'gold')
 export const UPGRADE_LUMBER_BY_ID = pick<number>(UPGRADE_DATA, 'lumber')

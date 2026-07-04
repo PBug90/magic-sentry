@@ -5,7 +5,8 @@ import { ITEM_DATA } from '../src/items.js'
 import { emitRecords } from './_emit.js'
 
 // Refreshes item gold cost from the parsed SLK data, merging into the
-// consolidated records so hand-authored name/effect are preserved.
+// consolidated records so hand-authored fields (name, description, category,
+// stats, etc. — see merge-item-tooltips.ts) are preserved; only gold is updated.
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 interface Entry {
