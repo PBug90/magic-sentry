@@ -8,7 +8,9 @@ import {
   VIEWER_TABS,
   GameHistoryDropdown,
   IconSrcProvider,
+  isGraphTab,
 } from '@magic-sentry/viewer'
+import type { TabKey } from '@magic-sentry/viewer'
 import { useExtensionHistory } from './hooks/useExtensionHistory'
 import { OverlayRail, RAIL_WIDTH, type PanelKey } from './OverlayRail'
 import { OverlaySettings, type OverlayLayout } from './OverlaySettings'
@@ -43,12 +45,27 @@ export function Overlay() {
     const s = localStorage.getItem('magic-sentry-layout')
     return s === 'fullscreen' || s === 'corner' ? s : 'docked'
   })
+  // Collapsed by default on first load; remembered across reloads.
+  const [railOpen, setRailOpen] = useState<boolean>(
+    () => localStorage.getItem('magic-sentry-rail-open') === 'true',
+  )
   useEffect(() => {
     localStorage.setItem('magic-sentry-bg-opacity', String(opacity))
   }, [opacity])
   useEffect(() => {
     localStorage.setItem('magic-sentry-layout', layout)
   }, [layout])
+  useEffect(() => {
+    localStorage.setItem('magic-sentry-rail-open', String(railOpen))
+  }, [railOpen])
+
+  // Collapsing the rail returns the stream to fully clear: close any open panel.
+  const toggleRail = () =>
+    setRailOpen((prev) => {
+      const next = !prev
+      if (!next) setActiveTab(null)
+      return next
+    })
 
   useEffect(() => {
     const el = containerRef.current
@@ -97,6 +114,9 @@ export function Overlay() {
   const showSettings = activeTab === 'settings'
   const isWiki = activeTab === 'encyclopedia'
   const isGameTab = activeTab !== null && !isWiki && !showSettings
+  // Chart tabs show players in their own legends, so the map/duration/players
+  // block in the header is redundant there. (The refresh/history controls stay.)
+  const isGraphView = isGameTab && isGraphTab(activeTab as TabKey)
   // Settings stays docked for a stable form position, but uses the live opacity
   // for its background so dragging the slider previews the effect instantly.
   const effLayout: OverlayLayout = showSettings ? 'docked' : layout
@@ -175,7 +195,7 @@ export function Overlay() {
               </span>
             </div>
 
-            {isGameTab && game && (
+            {isGameTab && game && !isGraphView && (
               <>
                 <span style={{ color: '#2a2a3a' }}>·</span>
                 <span style={{ fontSize: '.78em', color: '#efeff1' }}>{game.map}</span>
@@ -251,7 +271,13 @@ export function Overlay() {
         </div>
       )}
 
-      <OverlayRail tabs={visibleTabs} activeKey={activeTab} onSelect={setActiveTab} />
+      <OverlayRail
+        tabs={visibleTabs}
+        activeKey={activeTab}
+        onSelect={setActiveTab}
+        open={railOpen}
+        onToggleOpen={toggleRail}
+      />
     </div>
   )
 }
