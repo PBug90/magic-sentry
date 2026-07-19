@@ -1,15 +1,6 @@
 import { ChartPlayer, type Sample } from '@magic-sentry/shared'
 import { nearestSample, niceMax, timeTicks } from '@magic-sentry/shared'
-import {
-  CM,
-  W,
-  H,
-  IW,
-  IH,
-  useChartHover,
-  ChartTooltip,
-  TooltipTime,
-} from './shared'
+import { CM, W, H, IW, IH, useChartHover, ChartTooltip, TooltipTime } from './shared'
 
 export interface DiffMetric {
   label: string
@@ -288,7 +279,15 @@ export function CenteredDiffPlot({
               }}
             >
               <svg width={16} height={2} style={{ flexShrink: 0 }}>
-                <line x1={0} y1={1} x2={16} y2={1} stroke="#888" strokeWidth={2} strokeDasharray={m.dash} />
+                <line
+                  x1={0}
+                  y1={1}
+                  x2={16}
+                  y2={1}
+                  stroke="#888"
+                  strokeWidth={2}
+                  strokeDasharray={m.dash}
+                />
               </svg>
               {m.label}
             </span>

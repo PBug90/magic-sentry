@@ -47,13 +47,18 @@ describe('parseIdentity', () => {
   })
 
   it('ignores a membership to a different campaign', () => {
-    const m = parseIdentity(identity('active_patron', [['t1', 'Gold']], 'someone-elses-campaign'), CAMPAIGN)
+    const m = parseIdentity(
+      identity('active_patron', [['t1', 'Gold']], 'someone-elses-campaign'),
+      CAMPAIGN,
+    )
     expect(m.active).toBe(false)
     expect(m.entitledTierIds).toEqual([])
   })
 
   it('marks non-active patrons inactive', () => {
-    expect(parseIdentity(identity('declined_patron', [['t1', 'Bronze']]), CAMPAIGN).active).toBe(false)
+    expect(parseIdentity(identity('declined_patron', [['t1', 'Bronze']]), CAMPAIGN).active).toBe(
+      false,
+    )
   })
 
   it('handles a user with no membership', () => {
@@ -113,7 +118,15 @@ describe('primaryTier / primaryTierInfo', () => {
   })
   it('falls back to the first tier when none are allow-listed', () => {
     expect(
-      primaryTierInfo({ patreonId: 'p', active: true, entitledTierIds: ['bronze'], tierNames: { bronze: 'Bronze' } }, access),
+      primaryTierInfo(
+        {
+          patreonId: 'p',
+          active: true,
+          entitledTierIds: ['bronze'],
+          tierNames: { bronze: 'Bronze' },
+        },
+        access,
+      ),
     ).toEqual({ id: 'bronze', name: 'Bronze' })
   })
   it('is null/null with no tiers', () => {

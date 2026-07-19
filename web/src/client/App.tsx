@@ -429,7 +429,7 @@ function PatreonSection() {
             <strong style={{ color: status.active ? 'var(--accent)' : 'var(--muted)' }}>
               {status.active ? 'active patron' : 'inactive'}
             </strong>
-            {status.tierName ?? status.tierId ? (
+            {(status.tierName ?? status.tierId) ? (
               <span style={{ color: 'var(--muted)' }}> · {status.tierName ?? status.tierId}</span>
             ) : null}
           </span>

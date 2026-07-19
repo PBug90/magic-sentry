@@ -249,7 +249,13 @@ class AuthStore {
 
   async getUserById(userId: string): Promise<TwitchUser | null> {
     const rows = await sql<
-      { id: string; login: string; display_name: string; profile_image_url: string; allowed: boolean }[]
+      {
+        id: string
+        login: string
+        display_name: string
+        profile_image_url: string
+        allowed: boolean
+      }[]
     >`
       SELECT id, login, display_name, profile_image_url, allowed FROM users WHERE id = ${userId}
     `

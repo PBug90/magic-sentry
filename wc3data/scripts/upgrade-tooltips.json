@@ -4,11 +4,7 @@
     "stats": [
       {
         "label": "Damage Dice Bonus",
-        "values": [
-          "+1",
-          "+2",
-          "+3"
-        ]
+        "values": ["+1", "+2", "+3"]
       }
     ]
   },
@@ -17,11 +13,7 @@
     "stats": [
       {
         "label": "Damage Dice Bonus",
-        "values": [
-          "+1",
-          "+2",
-          "+3"
-        ]
+        "values": ["+1", "+2", "+3"]
       }
     ]
   },
@@ -33,11 +25,7 @@
     "stats": [
       {
         "label": "Armor Bonus",
-        "values": [
-          "+2",
-          "+4",
-          "+6"
-        ]
+        "values": ["+2", "+4", "+6"]
       }
     ]
   },
@@ -49,19 +37,11 @@
     "stats": [
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "10%",
-          "20%",
-          "30%"
-        ]
+        "values": ["10%", "20%", "30%"]
       },
       {
         "label": "Armor Bonus",
-        "values": [
-          "+1",
-          "+2",
-          "+3"
-        ]
+        "values": ["+1", "+2", "+3"]
       }
     ]
   },
@@ -70,9 +50,7 @@
     "stats": [
       {
         "label": "Piercing Damage Reduction",
-        "values": [
-          "50%"
-        ]
+        "values": ["50%"]
       }
     ]
   },
@@ -81,9 +59,7 @@
     "stats": [
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       }
     ]
   },
@@ -95,21 +71,15 @@
     "stats": [
       {
         "label": "Mana Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       },
       {
         "label": "Mana Regeneration Bonus",
-        "values": [
-          "+0.32"
-        ]
+        "values": ["+0.32"]
       },
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+40"
-        ]
+        "values": ["+40"]
       }
     ]
   },
@@ -118,11 +88,7 @@
     "stats": [
       {
         "label": "Armor Bonus",
-        "values": [
-          "+2",
-          "+4",
-          "+6"
-        ]
+        "values": ["+2", "+4", "+6"]
       }
     ]
   },
@@ -131,9 +97,7 @@
     "stats": [
       {
         "label": "Attack Range Bonus",
-        "values": [
-          "+200"
-        ]
+        "values": ["+200"]
       }
     ]
   },
@@ -142,10 +106,7 @@
     "stats": [
       {
         "label": "Lumber Capacity Bonus",
-        "values": [
-          "+10",
-          "+20"
-        ]
+        "values": ["+10", "+20"]
       }
     ]
   },
@@ -157,21 +118,15 @@
     "stats": [
       {
         "label": "Reveal Duration",
-        "values": [
-          "15 sec"
-        ]
+        "values": ["15 sec"]
       },
       {
         "label": "Area of Effect",
-        "values": [
-          "1800"
-        ]
+        "values": ["1800"]
       },
       {
         "label": "Cooldown",
-        "values": [
-          "120 sec"
-        ]
+        "values": ["120 sec"]
       }
     ]
   },
@@ -180,21 +135,15 @@
     "stats": [
       {
         "label": "Mana Cost",
-        "values": [
-          "75"
-        ]
+        "values": ["75"]
       },
       {
         "label": "Cooldown (seconds)",
-        "values": [
-          "6"
-        ]
+        "values": ["6"]
       },
       {
         "label": "Cast Range",
-        "values": [
-          "700"
-        ]
+        "values": ["700"]
       }
     ]
   },
@@ -206,9 +155,7 @@
     "stats": [
       {
         "label": "Item Slots",
-        "values": [
-          "2"
-        ]
+        "values": ["2"]
       }
     ]
   },
@@ -223,27 +170,19 @@
     "stats": [
       {
         "label": "Ability Mana Cost",
-        "values": [
-          "100"
-        ]
+        "values": ["100"]
       },
       {
         "label": "Ability Cooldown (sec)",
-        "values": [
-          "20"
-        ]
+        "values": ["20"]
       },
       {
         "label": "Ability Area of Effect",
-        "values": [
-          "300"
-        ]
+        "values": ["300"]
       },
       {
         "label": "Ability Cast Range",
-        "values": [
-          "1000"
-        ]
+        "values": ["1000"]
       }
     ]
   },
@@ -252,9 +191,7 @@
     "stats": [
       {
         "label": "Damage Bonus vs Medium Armor",
-        "values": [
-          "10%"
-        ]
+        "values": ["10%"]
       }
     ]
   },
@@ -263,11 +200,7 @@
     "stats": [
       {
         "label": "Damage Dice Bonus",
-        "values": [
-          "+1",
-          "+2",
-          "+3"
-        ]
+        "values": ["+1", "+2", "+3"]
       }
     ]
   },
@@ -276,11 +209,7 @@
     "stats": [
       {
         "label": "Damage Dice Bonus",
-        "values": [
-          "+1",
-          "+2",
-          "+3"
-        ]
+        "values": ["+1", "+2", "+3"]
       }
     ]
   },
@@ -289,11 +218,7 @@
     "stats": [
       {
         "label": "Armor Bonus",
-        "values": [
-          "+2",
-          "+4",
-          "+6"
-        ]
+        "values": ["+2", "+4", "+6"]
       }
     ]
   },
@@ -302,10 +227,7 @@
     "stats": [
       {
         "label": "Aura Damage Bonus (before / after)",
-        "values": [
-          "10%",
-          "20%"
-        ]
+        "values": ["10%", "20%"]
       }
     ]
   },
@@ -317,15 +239,11 @@
     "stats": [
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+125"
-        ]
+        "values": ["+125"]
       },
       {
         "label": "Damage Bonus",
-        "values": [
-          "+3"
-        ]
+        "values": ["+3"]
       }
     ]
   },
@@ -334,21 +252,15 @@
     "stats": [
       {
         "label": "Activation Chance",
-        "values": [
-          "25%"
-        ]
+        "values": ["25%"]
       },
       {
         "label": "Full Damage (250 radius)",
-        "values": [
-          "60"
-        ]
+        "values": ["60"]
       },
       {
         "label": "Half Damage (350 radius)",
-        "values": [
-          "30"
-        ]
+        "values": ["30"]
       }
     ]
   },
@@ -357,27 +269,19 @@
     "stats": [
       {
         "label": "Duration (units)",
-        "values": [
-          "9 seconds"
-        ]
+        "values": ["9 seconds"]
       },
       {
         "label": "Duration (heroes)",
-        "values": [
-          "3 seconds"
-        ]
+        "values": ["3 seconds"]
       },
       {
         "label": "Cooldown",
-        "values": [
-          "15 seconds"
-        ]
+        "values": ["15 seconds"]
       },
       {
         "label": "Cast Range",
-        "values": [
-          "500"
-        ]
+        "values": ["500"]
       }
     ]
   },
@@ -386,15 +290,11 @@
     "stats": [
       {
         "label": "Poison Damage per Second",
-        "values": [
-          "3"
-        ]
+        "values": ["3"]
       },
       {
         "label": "Poison Duration (seconds)",
-        "values": [
-          "25"
-        ]
+        "values": ["25"]
       }
     ]
   },
@@ -403,21 +303,15 @@
     "stats": [
       {
         "label": "Mana Point Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       },
       {
         "label": "Mana Regeneration Bonus",
-        "values": [
-          "+0.32"
-        ]
+        "values": ["+0.32"]
       },
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+40"
-        ]
+        "values": ["+40"]
       }
     ]
   },
@@ -426,21 +320,15 @@
     "stats": [
       {
         "label": "Mana Capacity Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       },
       {
         "label": "Mana Regeneration Bonus",
-        "values": [
-          "+0.32"
-        ]
+        "values": ["+0.32"]
       },
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+40"
-        ]
+        "values": ["+40"]
       }
     ]
   },
@@ -449,17 +337,11 @@
     "stats": [
       {
         "label": "Base Return Damage",
-        "values": [
-          "5",
-          "5"
-        ]
+        "values": ["5", "5"]
       },
       {
         "label": "Attacker Damage Returned",
-        "values": [
-          "20%",
-          "50%"
-        ]
+        "values": ["20%", "50%"]
       }
     ]
   },
@@ -468,9 +350,7 @@
     "stats": [
       {
         "label": "Health Regeneration Rate",
-        "values": [
-          "1.0 HP/sec"
-        ]
+        "values": ["1.0 HP/sec"]
       }
     ]
   },
@@ -479,27 +359,19 @@
     "stats": [
       {
         "label": "Damage per Second",
-        "values": [
-          "8"
-        ]
+        "values": ["8"]
       },
       {
         "label": "Duration",
-        "values": [
-          "3"
-        ]
+        "values": ["3"]
       },
       {
         "label": "Attack Speed Reduction",
-        "values": [
-          "60%"
-        ]
+        "values": ["60%"]
       },
       {
         "label": "Repair Rate Reduction",
-        "values": [
-          "75%"
-        ]
+        "values": ["75%"]
       }
     ]
   },
@@ -508,21 +380,15 @@
     "stats": [
       {
         "label": "Mana Point Bonus",
-        "values": [
-          "+150"
-        ]
+        "values": ["+150"]
       },
       {
         "label": "Mana Regeneration Bonus",
-        "values": [
-          "+0.42"
-        ]
+        "values": ["+0.42"]
       },
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+60"
-        ]
+        "values": ["+60"]
       }
     ]
   },
@@ -534,9 +400,7 @@
     "stats": [
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       }
     ]
   },
@@ -545,9 +409,7 @@
     "stats": [
       {
         "label": "Item Slots",
-        "values": [
-          "2"
-        ]
+        "values": ["2"]
       }
     ]
   },
@@ -559,11 +421,7 @@
     "stats": [
       {
         "label": "Damage Dice Bonus",
-        "values": [
-          "+1",
-          "+2",
-          "+3"
-        ]
+        "values": ["+1", "+2", "+3"]
       }
     ]
   },
@@ -572,11 +430,7 @@
     "stats": [
       {
         "label": "Damage Dice Bonus",
-        "values": [
-          "+1",
-          "+2",
-          "+3"
-        ]
+        "values": ["+1", "+2", "+3"]
       }
     ]
   },
@@ -585,11 +439,7 @@
     "stats": [
       {
         "label": "Armor Bonus",
-        "values": [
-          "+2",
-          "+4",
-          "+6"
-        ]
+        "values": ["+2", "+4", "+6"]
       }
     ]
   },
@@ -598,15 +448,11 @@
     "stats": [
       {
         "label": "HP Restored per Second",
-        "values": [
-          "16"
-        ]
+        "values": ["16"]
       },
       {
         "label": "Consume Duration (seconds)",
-        "values": [
-          "20"
-        ]
+        "values": ["20"]
       }
     ]
   },
@@ -615,15 +461,11 @@
     "stats": [
       {
         "label": "Attack Rate Bonus",
-        "values": [
-          "+35%"
-        ]
+        "values": ["+35%"]
       },
       {
         "label": "Movement Speed Bonus",
-        "values": [
-          "+60"
-        ]
+        "values": ["+60"]
       }
     ]
   },
@@ -632,9 +474,7 @@
     "stats": [
       {
         "label": "Duration (seconds)",
-        "values": [
-          "12"
-        ]
+        "values": ["12"]
       }
     ]
   },
@@ -643,21 +483,15 @@
     "stats": [
       {
         "label": "Armor Bonus",
-        "values": [
-          "+12"
-        ]
+        "values": ["+12"]
       },
       {
         "label": "HP Regeneration (per second)",
-        "values": [
-          "8"
-        ]
+        "values": ["8"]
       },
       {
         "label": "Cooldown (seconds)",
-        "values": [
-          "30"
-        ]
+        "values": ["30"]
       }
     ]
   },
@@ -666,21 +500,15 @@
     "stats": [
       {
         "label": "Mana Capacity Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       },
       {
         "label": "Mana Regeneration Bonus",
-        "values": [
-          "+0.32"
-        ]
+        "values": ["+0.32"]
       },
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+40"
-        ]
+        "values": ["+40"]
       }
     ]
   },
@@ -689,21 +517,15 @@
     "stats": [
       {
         "label": "Mana Capacity Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       },
       {
         "label": "Mana Regeneration Bonus",
-        "values": [
-          "+0.32"
-        ]
+        "values": ["+0.32"]
       },
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+40"
-        ]
+        "values": ["+40"]
       }
     ]
   },
@@ -712,9 +534,7 @@
     "stats": [
       {
         "label": "Duration",
-        "values": [
-          "5 seconds"
-        ]
+        "values": ["5 seconds"]
       }
     ]
   },
@@ -723,11 +543,7 @@
     "stats": [
       {
         "label": "Armor Bonus",
-        "values": [
-          "+2",
-          "+4",
-          "+6"
-        ]
+        "values": ["+2", "+4", "+6"]
       }
     ]
   },
@@ -736,15 +552,11 @@
     "stats": [
       {
         "label": "Damage Per Second",
-        "values": [
-          "2"
-        ]
+        "values": ["2"]
       },
       {
         "label": "Duration (seconds)",
-        "values": [
-          "75"
-        ]
+        "values": ["75"]
       }
     ]
   },
@@ -753,9 +565,7 @@
     "stats": [
       {
         "label": "Skeleton Duration Bonus",
-        "values": [
-          "+20 sec"
-        ]
+        "values": ["+20 sec"]
       }
     ]
   },
@@ -770,9 +580,7 @@
     "stats": [
       {
         "label": "Corpse Generation Interval",
-        "values": [
-          "15 seconds"
-        ]
+        "values": ["15 seconds"]
       }
     ]
   },
@@ -781,9 +589,7 @@
     "stats": [
       {
         "label": "Item Slots",
-        "values": [
-          "2"
-        ]
+        "values": ["2"]
       }
     ]
   },
@@ -792,11 +598,7 @@
     "stats": [
       {
         "label": "Damage Dice Bonus",
-        "values": [
-          "+1",
-          "+2",
-          "+3"
-        ]
+        "values": ["+1", "+2", "+3"]
       }
     ]
   },
@@ -805,11 +607,7 @@
     "stats": [
       {
         "label": "Damage Dice Bonus",
-        "values": [
-          "+1",
-          "+2",
-          "+3"
-        ]
+        "values": ["+1", "+2", "+3"]
       }
     ]
   },
@@ -818,11 +616,7 @@
     "stats": [
       {
         "label": "Armor Bonus",
-        "values": [
-          "+2",
-          "+4",
-          "+6"
-        ]
+        "values": ["+2", "+4", "+6"]
       }
     ]
   },
@@ -831,11 +625,7 @@
     "stats": [
       {
         "label": "Armor Bonus",
-        "values": [
-          "+2",
-          "+4",
-          "+6"
-        ]
+        "values": ["+2", "+4", "+6"]
       }
     ]
   },
@@ -847,27 +637,19 @@
     "stats": [
       {
         "label": "Ancient Protector Armor Bonus",
-        "values": [
-          "+2"
-        ]
+        "values": ["+2"]
       },
       {
         "label": "Ancient Protector Movement Speed Bonus",
-        "values": [
-          "+40"
-        ]
+        "values": ["+40"]
       },
       {
         "label": "Other Ancients / Treants Armor Bonus",
-        "values": [
-          "+5"
-        ]
+        "values": ["+5"]
       },
       {
         "label": "Treant Movement Speed Bonus",
-        "values": [
-          "+50"
-        ]
+        "values": ["+50"]
       }
     ]
   },
@@ -876,9 +658,7 @@
     "stats": [
       {
         "label": "Duration",
-        "values": [
-          "120"
-        ]
+        "values": ["120"]
       }
     ]
   },
@@ -890,9 +670,7 @@
     "stats": [
       {
         "label": "Range Bonus",
-        "values": [
-          "200"
-        ]
+        "values": ["200"]
       }
     ]
   },
@@ -901,9 +679,7 @@
     "stats": [
       {
         "label": "Damage Bonus",
-        "values": [
-          "+4"
-        ]
+        "values": ["+4"]
       }
     ]
   },
@@ -912,21 +688,15 @@
     "stats": [
       {
         "label": "Mana Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       },
       {
         "label": "Mana Regeneration Bonus",
-        "values": [
-          "+0.32"
-        ]
+        "values": ["+0.32"]
       },
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+40"
-        ]
+        "values": ["+40"]
       }
     ]
   },
@@ -935,27 +705,19 @@
     "stats": [
       {
         "label": "Mana Capacity Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       },
       {
         "label": "Mana Regeneration Bonus",
-        "values": [
-          "+0.32"
-        ]
+        "values": ["+0.32"]
       },
       {
         "label": "Hit Point Bonus",
-        "values": [
-          "+75"
-        ]
+        "values": ["+75"]
       },
       {
         "label": "Damage Dice Bonus",
-        "values": [
-          "+1"
-        ]
+        "values": ["+1"]
       }
     ]
   },
@@ -964,15 +726,11 @@
     "stats": [
       {
         "label": "Mana Cost",
-        "values": [
-          "75"
-        ]
+        "values": ["75"]
       },
       {
         "label": "Damage to Summoned Units",
-        "values": [
-          "150"
-        ]
+        "values": ["150"]
       }
     ]
   },
@@ -987,9 +745,7 @@
     "stats": [
       {
         "label": "Damage Bonus",
-        "values": [
-          "+10"
-        ]
+        "values": ["+10"]
       }
     ]
   },
@@ -1001,15 +757,11 @@
     "stats": [
       {
         "label": "Damage Reduction",
-        "values": [
-          "8"
-        ]
+        "values": ["8"]
       },
       {
         "label": "Minimum Damage",
-        "values": [
-          "3"
-        ]
+        "values": ["3"]
       }
     ]
   },
@@ -1024,15 +776,11 @@
     "stats": [
       {
         "label": "Mana Capacity Bonus",
-        "values": [
-          "+100"
-        ]
+        "values": ["+100"]
       },
       {
         "label": "Mana Regeneration Bonus",
-        "values": [
-          "+0.52/sec"
-        ]
+        "values": ["+0.52/sec"]
       }
     ]
   },
@@ -1041,9 +789,7 @@
     "stats": [
       {
         "label": "Item Slots",
-        "values": [
-          "2"
-        ]
+        "values": ["2"]
       }
     ]
   }

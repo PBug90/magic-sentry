@@ -1,12 +1,7 @@
 import { Hono } from 'hono'
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 import { authStore } from '../authStore.js'
-import {
-  patreonConfigured,
-  buildAuthorizeUrl,
-  exchangeCode,
-  fetchIdentity,
-} from '../patreon.js'
+import { patreonConfigured, buildAuthorizeUrl, exchangeCode, fetchIdentity } from '../patreon.js'
 
 const auth = new Hono()
 

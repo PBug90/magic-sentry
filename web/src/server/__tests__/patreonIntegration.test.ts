@@ -100,7 +100,10 @@ describe('authStore.linkPatreon (DB)', () => {
   it('keeps an admin-approved user allowed even without a qualifying membership', async () => {
     await authStore.upsertUser(patron)
     await sql`UPDATE users SET admin_allowed = true WHERE id = ${patron.id}`
-    const res = await authStore.linkPatreon(patron.id, membership({ active: false, entitledTierIds: [] }))
+    const res = await authStore.linkPatreon(
+      patron.id,
+      membership({ active: false, entitledTierIds: [] }),
+    )
     expect(res).toEqual({ ok: true, allowed: true })
   })
 })
@@ -243,7 +246,10 @@ describe('POST /auth/patreon/disconnect', () => {
     await authStore.upsertUser(patron)
     await authStore.linkPatreon(patron.id, membership())
     const session = authStore.createSession(patron)
-    const res = await app.request('/auth/patreon/disconnect', { method: 'POST', headers: cookie(session) })
+    const res = await app.request('/auth/patreon/disconnect', {
+      method: 'POST',
+      headers: cookie(session),
+    })
     expect(res.status).toBe(200)
     expect((await authStore.getPatreonStatus(patron.id)).linked).toBe(false)
   })

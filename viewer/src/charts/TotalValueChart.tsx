@@ -61,7 +61,9 @@ export function TotalValueChart({ players }: { players: ChartPlayer[] }) {
       ref={wrapRef}
       style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+      <div
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}
+      >
         <SectionLabel>Total value — unit gold + lumber</SectionLabel>
         {players.length === 2 && <DiffToggle on={diff} onChange={setDiff} />}
       </div>
@@ -195,7 +197,13 @@ export function TotalValueChart({ players }: { players: ChartPlayer[] }) {
             {players.map(({ name, color }) => (
               <span
                 key={name}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '.6em', color: '#888' }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: '.6em',
+                  color: '#888',
+                }}
               >
                 <svg width={16} height={2} style={{ flexShrink: 0 }}>
                   <line x1={0} y1={1} x2={16} y2={1} stroke={color} strokeWidth={2} />

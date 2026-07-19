@@ -84,7 +84,8 @@ const tierIdsOf = (r: Resource): string[] => {
 /** Map tier id -> title from the `included` resources of any API response. */
 const tierNamesFromIncluded = (included: Resource[]): Record<string, string> => {
   const names: Record<string, string> = {}
-  for (const r of included) if (r.type === 'tier' && r.attributes?.title) names[r.id] = r.attributes.title
+  for (const r of included)
+    if (r.type === 'tier' && r.attributes?.title) names[r.id] = r.attributes.title
   return names
 }
 

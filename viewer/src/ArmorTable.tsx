@@ -75,8 +75,8 @@ export function ArmorTable() {
         }}
       >
         Damage reduction at each armor value: 0.06·armor / (1 + 0.06·armor). Positive armor reduces
-        damage (every point ≈ +6% effective HP); negative armor adds damage via ×(2 −
-        0.94<sup>|armor|</sup>), shown as a negative reduction. (Warcraft III: The Frozen Throne)
+        damage (every point ≈ +6% effective HP); negative armor adds damage via ×(2 − 0.94
+        <sup>|armor|</sup>), shown as a negative reduction. (Warcraft III: The Frozen Throne)
       </div>
     </div>
   )

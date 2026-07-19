@@ -37,23 +37,23 @@ export function StandaloneViewer({ game }: { game: GameRecord }) {
             borderBottom: '1px solid #1e1e26',
           }}
         >
-        <span
-          style={{
-            fontSize: '.75em',
-            letterSpacing: '.1em',
-            color: '#c8a050',
-            fontFamily: 'monospace',
-            textTransform: 'uppercase',
-          }}
-        >
-          Magic Sentry
-        </span>
-        <span style={{ color: '#2a2a3a' }}>·</span>
-        <span style={{ fontSize: '.8em', color: '#efeff1' }}>{game.map}</span>
-        <span style={{ fontSize: '.72em', color: '#888', fontFamily: 'monospace' }}>
-          {formatDuration(game.duration_ms)}
-        </span>
-        <TeamsBar players={players} />
+          <span
+            style={{
+              fontSize: '.75em',
+              letterSpacing: '.1em',
+              color: '#c8a050',
+              fontFamily: 'monospace',
+              textTransform: 'uppercase',
+            }}
+          >
+            Magic Sentry
+          </span>
+          <span style={{ color: '#2a2a3a' }}>·</span>
+          <span style={{ fontSize: '.8em', color: '#efeff1' }}>{game.map}</span>
+          <span style={{ fontSize: '.72em', color: '#888', fontFamily: 'monospace' }}>
+            {formatDuration(game.duration_ms)}
+          </span>
+          <TeamsBar players={players} />
         </div>
       )}
 
