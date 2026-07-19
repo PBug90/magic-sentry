@@ -17,7 +17,7 @@ import {
   ROSTER_UNIT_IDS,
   UPGRADE_INFO_BY_ID,
 } from '@magic-sentry/wc3data'
-import { useIconSrc } from './context'
+import { useIconSrc, useSurfaceBg } from './context'
 import { HoverTooltip } from './HoverTooltip'
 import { AbilityTooltipBody } from './AbilityTooltipBody'
 import { ItemTooltipBody } from './ItemTooltipBody'
@@ -37,13 +37,33 @@ type Tab = RaceTab | 'Neutral' | OtherTab
 
 const RACE_TABS: RaceTab[] = ['Human', 'Orc', 'Night Elf', 'Undead']
 const OTHER_TABS: { key: OtherTab; label: string }[] = [
-  { key: 'search', label: 'Search' },
   { key: 'items', label: 'Items' },
   { key: 'upgrades', label: 'Upgrades' },
   { key: 'abilities', label: 'Abilities' },
   { key: 'damage', label: 'Combat' },
   { key: 'revival', label: 'Hero Revival' },
+  { key: 'search', label: 'Search' },
 ]
+
+// Magnifying-glass glyph for the Search tab; strokes with currentColor so it
+// tracks the tab's active/inactive text colour.
+const SearchGlyph = () => (
+  <svg
+    width="1em"
+    height="1em"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2.4}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ verticalAlign: '-0.15em', marginRight: 4 }}
+    aria-hidden="true"
+  >
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.3-4.3" />
+  </svg>
+)
 const RACE_SET = new Set<string>(RACE_TABS)
 
 function raceFromId(id: string): string {
@@ -178,6 +198,7 @@ function IconTile({
   tooltip: ReactNode
 }) {
   const [hovered, setHovered] = useState(false)
+  const surfaceBg = useSurfaceBg()
   const size = 32
   return (
     <div
@@ -189,7 +210,7 @@ function IconTile({
         border: '1px solid #2a2a3a',
         overflow: 'hidden',
         flexShrink: 0,
-        background: '#0d0d14',
+        background: surfaceBg('#0d0d14'),
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -233,6 +254,7 @@ export function EncyclopediaPanel({
 }: { iconSrc?: (p: string) => string } = {}) {
   const contextIconSrc = useIconSrc()
   const iconSrc = iconSrcProp ?? contextIconSrc
+  const surfaceBg = useSurfaceBg()
   const [tab, setTab] = useState<Tab>('Human')
   const [query, setQuery] = useState('')
 
@@ -359,6 +381,7 @@ export function EncyclopediaPanel({
         </button>
         {OTHER_TABS.map(({ key, label }) => (
           <button key={key} style={tabStyle(tab === key)} onClick={() => setTab(key)}>
+            {key === 'search' && <SearchGlyph />}
             {label}
           </button>
         ))}
@@ -411,7 +434,7 @@ export function EncyclopediaPanel({
                 boxSizing: 'border-box',
                 margin: '6px 0 8px',
                 padding: '8px 10px',
-                background: '#0d0d14',
+                background: surfaceBg('#0d0d14'),
                 border: '1px solid #2a2a3a',
                 borderRadius: 4,
                 color: '#efeff1',
@@ -452,7 +475,9 @@ export function EncyclopediaPanel({
                   )
                 }
                 return SEARCH_KINDS.map((kind) => {
-                  const group = hits.filter((h) => h.kind === kind).sort((a, b) => a.name.localeCompare(b.name))
+                  const group = hits
+                    .filter((h) => h.kind === kind)
+                    .sort((a, b) => a.name.localeCompare(b.name))
                   if (group.length === 0) return null
                   return (
                     <Section key={kind} label={`${SEARCH_KIND_LABEL[kind]} (${group.length})`}>
