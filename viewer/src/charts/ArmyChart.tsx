@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { ChartPlayer } from '@magic-sentry/shared'
+import { useSurfaceBg } from '../context'
 import {
   buildLayers,
   buildByTime,
@@ -97,6 +98,7 @@ function ArmySnapshotPanel({
 }
 
 export function CurrentArmies({ players }: { players: ChartPlayer[] }) {
+  const surfaceBg = useSurfaceBg()
   if (players.length === 0) return null
 
   const perPlayer = players.map((p) => ({
@@ -111,7 +113,7 @@ export function CurrentArmies({ players }: { players: ChartPlayer[] }) {
         display: 'flex',
         gap: 16,
         padding: '10px 12px',
-        background: '#12121a',
+        background: surfaceBg('#12121a'),
         border: '1px solid #2a2a3a',
         flexWrap: 'wrap',
       }}

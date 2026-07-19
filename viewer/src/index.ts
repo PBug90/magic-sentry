@@ -4,7 +4,7 @@ export { EconomyChart, LumberChart, ApmChart } from './charts/ResourceChart'
 export { FoodChart } from './charts/FoodChart'
 export { TotalValueChart } from './charts/TotalValueChart'
 export { ArmyChart, CurrentArmies } from './charts/ArmyChart'
-export { IconSrcProvider } from './context'
+export { IconSrcProvider, PanelOpacityProvider } from './context'
 export {
   ViewerContent,
   TabContent,

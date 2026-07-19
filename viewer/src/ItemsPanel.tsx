@@ -4,7 +4,7 @@ import { ChartPlayer, PlayerItemStatSnapshot } from '@magic-sentry/shared'
 import { ITEM_BY_ID, ITEM_INFO_BY_ID } from '@magic-sentry/wc3data'
 import { HoverTooltip } from './HoverTooltip'
 import { ItemTooltipBody } from './ItemTooltipBody'
-import { useIconSrc } from './context'
+import { useIconSrc, useSurfaceBg } from './context'
 
 function itemsFromPlayer(player: ChartPlayer): PlayerItemStatSnapshot[] {
   const last = [...player.samples].reverse().find((s) => s.player_items.length > 0)
@@ -127,6 +127,7 @@ const HEADER_STYLE: CSSProperties = {
 }
 
 export function ItemsPanel({ players }: { players: ChartPlayer[] }) {
+  const surfaceBg = useSurfaceBg()
   const playerData = players.map((player) => {
     const items = itemsFromPlayer(player).filter((item) => item.id in ITEM_BY_ID)
     const totalGold = items.reduce(
@@ -175,7 +176,7 @@ export function ItemsPanel({ players }: { players: ChartPlayer[] }) {
             <div
               style={{
                 padding: '8px 10px',
-                background: '#12121a',
+                background: surfaceBg('#12121a'),
                 border: '1px solid #2a2a3a',
                 borderLeft: `3px solid ${player.color}`,
               }}

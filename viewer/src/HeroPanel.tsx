@@ -20,7 +20,7 @@ import {
   UPGRADE_LUMBER_BY_ID,
   UPGRADE_INFO_BY_ID,
 } from '@magic-sentry/wc3data'
-import { useIconSrc } from './context'
+import { useIconSrc, useSurfaceBg } from './context'
 import { AbilityTooltipBody } from './AbilityTooltipBody'
 import { HeroTooltipBody } from './HeroTooltipBody'
 import { ItemTooltipBody } from './ItemTooltipBody'
@@ -102,6 +102,7 @@ function fmtStat(n: number): string {
 
 function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
   const iconSrc = useIconSrc()
+  const surfaceBg = useSurfaceBg()
   const [hovered, setHovered] = useState(false)
   const info = ABILITY_BY_ID[ability.id]
   const name = info?.name ?? ability.id
@@ -129,7 +130,7 @@ function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
             height: size,
             border: '1px solid #2a2a3a',
             overflow: 'hidden',
-            background: '#0d0d14',
+            background: surfaceBg('#0d0d14'),
           }}
         >
           <img
@@ -175,6 +176,7 @@ function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
 
 function ItemTile({ item }: { item: ItemSnapshot }) {
   const iconSrc = useIconSrc()
+  const surfaceBg = useSurfaceBg()
   const [hovered, setHovered] = useState(false)
   const item_info = ITEM_BY_ID[item.id]
   const name = item_info?.name ?? item.id
@@ -201,7 +203,7 @@ function ItemTile({ item }: { item: ItemSnapshot }) {
           height: 32,
           border: '1px solid #2a2a3a',
           overflow: 'hidden',
-          background: '#0d0d14',
+          background: surfaceBg('#0d0d14'),
         }}
       >
         <img
@@ -276,6 +278,7 @@ function XpBar({ xp, level }: { xp: number; level: number }) {
 }
 
 function EmptyHeroSlot({ index, color }: { index: number; color: string }) {
+  const surfaceBg = useSurfaceBg()
   return (
     <div
       style={{
@@ -283,7 +286,7 @@ function EmptyHeroSlot({ index, color }: { index: number; color: string }) {
         flexDirection: 'column',
         alignItems: 'center',
         padding: '8px 10px',
-        background: '#0d0d12',
+        background: surfaceBg('#0d0d12'),
         border: '1px solid #1e1e26',
         borderTop: `3px solid ${color}`,
         opacity: 0.35,
@@ -330,6 +333,7 @@ function HeroCard({
   index: number
 }) {
   const display = UNIT_NAME_BY_ID[hero.id] ?? hero.id
+  const surfaceBg = useSurfaceBg()
   return (
     <div
       style={{
@@ -337,7 +341,7 @@ function HeroCard({
         flexDirection: 'column',
         gap: 8,
         padding: '8px 10px',
-        background: '#12121a',
+        background: surfaceBg('#12121a'),
         border: '1px solid #2a2a3a',
         borderTop: `3px solid ${player.color}`,
       }}
@@ -452,7 +456,7 @@ function HeroCard({
                     width: 32,
                     height: 32,
                     border: '1px solid #1e1e26',
-                    background: '#0a0a10',
+                    background: surfaceBg('#0a0a10'),
                   }}
                 />
               )
@@ -473,6 +477,7 @@ function upgradesFromPlayer(player: ChartPlayer): UpgradeSnapshot[] {
 
 function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
   const iconSrc = useIconSrc()
+  const surfaceBg = useSurfaceBg()
   const [hovered, setHovered] = useState(false)
   const name = UPGRADE_NAME_BY_ID[upgrade.id] ?? upgrade.id
   const gold = UPGRADE_GOLD_BY_ID[upgrade.id]
@@ -504,7 +509,7 @@ function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
             height: 25,
             border: '1px solid #2a2a3a',
             overflow: 'hidden',
-            background: '#0d0d14',
+            background: surfaceBg('#0d0d14'),
           }}
         >
           <img
@@ -538,6 +543,7 @@ function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
 }
 
 export function HeroPanel({ players }: { players: ChartPlayer[] }) {
+  const surfaceBg = useSurfaceBg()
   const playerData = players.map((player) => {
     const heroes: HeroDisplay[] =
       player.summary.heroes.length > 0
@@ -585,7 +591,7 @@ export function HeroPanel({ players }: { players: ChartPlayer[] }) {
             <div
               style={{
                 padding: '8px 10px',
-                background: '#12121a',
+                background: surfaceBg('#12121a'),
                 border: '1px solid #2a2a3a',
                 borderLeft: `3px solid ${player.color}`,
                 display: 'flex',

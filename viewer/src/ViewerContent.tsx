@@ -6,7 +6,7 @@ import { EconomyChart, LumberChart, ApmChart } from './charts/ResourceChart'
 import { FoodChart } from './charts/FoodChart'
 import { TotalValueChart } from './charts/TotalValueChart'
 import { ArmyChart, CurrentArmies } from './charts/ArmyChart'
-import { IconSrcProvider } from './context'
+import { IconSrcProvider, useSurfaceBg } from './context'
 import { detectFights, detectTimeline } from '@magic-sentry/shared'
 import { FightSection } from './FightSection'
 import { TimelineSection } from './TimelineSection'
@@ -117,6 +117,7 @@ export function TabBar({
 }
 
 export function TeamsBar({ players }: { players: ChartPlayer[] }) {
+  const surfaceBg = useSurfaceBg()
   const teams = [...new Set(players.map((p) => p.team))].sort((a, b) => a - b)
   return (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -131,7 +132,7 @@ export function TeamsBar({ players }: { players: ChartPlayer[] }) {
               alignItems: 'center',
               gap: 8,
               padding: '5px 12px',
-              background: '#12121a',
+              background: surfaceBg('#12121a'),
               border: won ? '1px solid rgba(200,160,80,0.4)' : '1px solid #2a2a3a',
               borderRadius: 3,
             }}
