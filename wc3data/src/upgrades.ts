@@ -9,7 +9,7 @@ export const UPGRADE_DATA: Record<string, UpgradeEntry> = {
       'Iron Forged Swords is a Human upgrade researched at the Blacksmith that increases the attack damage of melee/attacking units including Militia, Footmen, Spell Breakers, Knights, Gryphon Riders and Dragonhawk Riders. It has three tiers (Iron, Steel, and Mithril Forged Swords), each requiring a higher-tier town hall and granting a larger damage bonus.',
     stats: [
       {
-        label: 'Damage Bonus',
+        label: 'Damage Dice Bonus',
         values: ['+1', '+2', '+3'],
       },
     ],
@@ -22,7 +22,7 @@ export const UPGRADE_DATA: Record<string, UpgradeEntry> = {
       'Black Gunpowder is a Human upgrade researched at the Blacksmith that increases the ranged attack damage of Riflemen, Mortar Teams, Siege Engines and Flying Machines. It has three tiers (Black, Refined, and Imbued Gunpowder) requiring progressively higher-tier town halls.',
     stats: [
       {
-        label: 'Damage Bonus',
+        label: 'Damage Dice Bonus',
         values: ['+1', '+2', '+3'],
       },
     ],
@@ -293,7 +293,7 @@ export const UPGRADE_DATA: Record<string, UpgradeEntry> = {
       'Steel Melee Weapons is the first tier of the Orc melee weapon attack upgrade, researched at the War Mill; it increases the melee attack damage of Grunts, Raiders and Tauren. Its higher tiers are Thorium Melee Weapons (requires Stronghold) and Arcanite Melee Weapons (requires Fortress).',
     stats: [
       {
-        label: 'Damage Bonus',
+        label: 'Damage Dice Bonus',
         values: ['+1', '+2', '+3'],
       },
     ],
@@ -306,7 +306,7 @@ export const UPGRADE_DATA: Record<string, UpgradeEntry> = {
       'The Orc "Steel Ranged Weapons" upgrade (researched at the War Mill) increases the ranged attack damage of Headhunters, Wind Riders, Troll Batriders, and Demolishers. It has three tiers (Steel, Thorium, Arcanite Ranged Weapons) that progressively raise ranged damage.',
     stats: [
       {
-        label: 'Damage Bonus',
+        label: 'Damage Dice Bonus',
         values: ['+1', '+2', '+3'],
       },
     ],
@@ -595,7 +595,7 @@ export const UPGRADE_DATA: Record<string, UpgradeEntry> = {
       'Unholy Strength is an Undead upgrade researched at the Graveyard that increases the attack damage of Ghouls, Meat Wagons, Abominations, Skeleton Warriors, and Skeletal Mages. It has three cumulative levels unlocked by advancing tech tiers (Halls of the Dead, then Black Citadel).',
     stats: [
       {
-        label: 'Damage Bonus',
+        label: 'Damage Dice Bonus',
         values: ['+1', '+2', '+3'],
       },
     ],
@@ -608,7 +608,7 @@ export const UPGRADE_DATA: Record<string, UpgradeEntry> = {
       'Creature Attack is an Undead upgrade researched at the Graveyard that increases the attack damage of Crypt Fiends, Gargoyles, Destroyers, and Frost Wyrms across three research levels.',
     stats: [
       {
-        label: 'Damage Bonus',
+        label: 'Damage Dice Bonus',
         values: ['+1', '+2', '+3'],
       },
     ],
@@ -845,7 +845,7 @@ export const UPGRADE_DATA: Record<string, UpgradeEntry> = {
       "Strength of the Moon is a Night Elf upgrade researched at the Hunter's Hall that increases the attack damage of Archers, Huntresses, Glaive Throwers, and Hippogryph Riders. It has three levels, each granting a progressively larger damage bonus.",
     stats: [
       {
-        label: 'Damage Bonus',
+        label: 'Damage Dice Bonus',
         values: ['+1', '+2', '+3'],
       },
     ],
@@ -858,7 +858,7 @@ export const UPGRADE_DATA: Record<string, UpgradeEntry> = {
       "Strength of the Wild is a Night Elf upgrade researched at the Hunter's Hall that increases the attack damage of the faction's beast units: Druids of the Claw (Bear Form), Druids of the Talon (Storm Crow Form), Dryads, Mountain Giants, Faerie Dragons, Hippogryphs, and Chimaeras. It has three progressive research levels.",
     stats: [
       {
-        label: 'Damage Bonus',
+        label: 'Damage Dice Bonus',
         values: ['+1', '+2', '+3'],
       },
     ],
