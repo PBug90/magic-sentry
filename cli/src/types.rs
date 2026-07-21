@@ -51,6 +51,12 @@ pub struct StructureSnapshot {
     /// Percentage counting up: 100 = complete, < 100 = still being built
     /// (a freshly placed building reports 0).
     pub construction_progress: u32,
+    /// Percentage of an in-place upgrade affecting this structure (e.g. Town Hall
+    /// -> Keep). 0 when the building is not upgrading. Lets consumers see when a
+    /// tier upgrade started, since the morphed building only reports the new id
+    /// (at construction 100) once complete.
+    #[serde(default)]
+    pub upgrade_progress: u32,
 }
 
 #[derive(Serialize, Clone)]

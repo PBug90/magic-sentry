@@ -88,6 +88,14 @@ export const TAB_ICONS: Record<RailKey, ReactNode> = {
       />
     </svg>
   ),
+  // Cut gem — represents total unit value (gold + lumber).
+  value: (
+    <Svg>
+      <path d="M6 3h12l3 6-9 12L3 9z" />
+      <path d="M3 9h18" />
+      <path d="M9 3 6 9l6 12 6-12-3-6" />
+    </Svg>
+  ),
   // Chicken drumstick — browned meat with a cream bone.
   food: (
     <svg width={18} height={18} viewBox="0 0 24 24" aria-hidden="true">

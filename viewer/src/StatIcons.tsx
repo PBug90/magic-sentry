@@ -38,21 +38,23 @@ export function GoldIcon({ size = 11 }: { size?: number }) {
   )
 }
 
-/** Lumber log — intrinsically green to match the lumber accent. */
+/**
+ * Lumber pine — mirrors the rail menu-button lumber icon (a green pine with a
+ * brown trunk) so lumber reads the same across the rail and tooltips. Kept in
+ * sync by hand: the rail's copy lives in the extension's icons.tsx, which this
+ * shared package can't import.
+ */
 export function LumberIcon({ size = 11 }: { size?: number }) {
   return (
-    <svg viewBox="0 0 16 16" style={base(size)} aria-hidden="true">
-      <rect
-        x="2"
-        y="5.5"
-        width="12"
-        height="5"
-        rx="2.5"
-        fill="#5a8f4a"
-        stroke="#3a6230"
+    <svg viewBox="0 0 24 24" style={base(size)} aria-hidden="true">
+      <rect x="10.7" y="15" width="2.6" height="6" rx="0.4" fill="#7a4a1e" />
+      <path
+        d="M12 3l4.6 6.6h-2.8L18 16H6l4.2-6.4H7.4z"
+        fill="#3fa34d"
+        stroke="#2f7d3a"
         strokeWidth={1}
+        strokeLinejoin="round"
       />
-      <ellipse cx="3.4" cy="8" rx="1.1" ry="2.1" fill="#3a6230" />
     </svg>
   )
 }

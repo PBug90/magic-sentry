@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, type CSSProperties } from 'react'
 import { formatDuration } from '@magic-sentry/shared'
 import type { GameRecord } from '@magic-sentry/shared'
+import { useSurfaceBg } from './context'
 
 export interface HistorySummary {
   public_id: string
@@ -44,6 +45,7 @@ export function GameHistoryDropdown({
 }: GameHistoryDropdownProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const surfaceBg = useSurfaceBg()
 
   useEffect(() => {
     if (!open) return
@@ -67,7 +69,7 @@ export function GameHistoryDropdown({
     alignItems: 'center',
     gap: 6,
     padding: '3px 9px 3px 11px',
-    background: '#12121a',
+    background: surfaceBg('#12121a'),
     border: '1px solid #2a2a3a',
     borderRadius: 2,
     fontFamily: 'monospace',
@@ -83,7 +85,7 @@ export function GameHistoryDropdown({
     right: 0,
     top: '100%',
     width: 320,
-    background: '#12121a',
+    background: surfaceBg('#12121a'),
     border: '1px solid #2a2a3a',
     borderRadius: '0 0 3px 3px',
     zIndex: 100,

@@ -65,13 +65,17 @@ function Toggle({
 export function OverlaySettings({
   opacity,
   layout,
+  fontScale,
   onOpacity,
   onLayout,
+  onFontScale,
 }: {
   opacity: number
   layout: OverlayLayout
+  fontScale: number
   onOpacity: (v: number) => void
   onLayout: (v: OverlayLayout) => void
+  onFontScale: (v: number) => void
 }) {
   return (
     <div
@@ -112,6 +116,33 @@ export function OverlaySettings({
         <div style={help}>
           How see-through the panel background is, so the stream shows through.
         </div>
+      </div>
+
+      <div>
+        <div style={label}>Text size</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <input
+            type="range"
+            min={70}
+            max={150}
+            step={5}
+            value={Math.round(fontScale * 100)}
+            onChange={(e) => onFontScale(Number(e.target.value) / 100)}
+            style={{ flex: 1, accentColor: '#c8a050', cursor: 'pointer' }}
+          />
+          <span
+            style={{
+              fontFamily: 'monospace',
+              fontSize: '.72em',
+              color: '#c8a050',
+              minWidth: 38,
+              textAlign: 'right',
+            }}
+          >
+            {Math.round(fontScale * 100)}%
+          </span>
+        </div>
+        <div style={help}>Scales all text in the panel, on top of the automatic size.</div>
       </div>
 
       <div>

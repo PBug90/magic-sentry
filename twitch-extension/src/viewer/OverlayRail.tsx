@@ -20,6 +20,9 @@ const btnBase: CSSProperties = {
   color: '#9a9aa2',
   transition: 'color .12s, background .12s, border-color .12s',
   padding: 0,
+  // The rail strip itself is click-through; each button opts back in so the
+  // collapsed stream stays fully interactive except where a control sits.
+  pointerEvents: 'auto',
 }
 
 function RailButton({
@@ -66,10 +69,14 @@ export function OverlayRail({
   tabs,
   activeKey,
   onSelect,
+  open,
+  onToggleOpen,
 }: {
   tabs: typeof VIEWER_TABS
   activeKey: PanelKey | null
   onSelect: (key: PanelKey | null) => void
+  open: boolean
+  onToggleOpen: () => void
 }) {
   const toggle = (key: PanelKey) => onSelect(activeKey === key ? null : key)
 
@@ -84,39 +91,64 @@ export function OverlayRail({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         gap: 6,
         padding: '8px 0',
         overflowY: 'auto',
-        pointerEvents: 'auto',
+        // Strip is click-through; only the buttons inside capture pointer events.
+        pointerEvents: 'none',
       }}
     >
-      {tabs.map(({ key, label }: { key: TabKey; label: string }) => (
-        <RailButton
-          key={key}
-          icon={TAB_ICONS[key]}
-          label={label}
-          active={activeKey === key}
-          onClick={() => toggle(key)}
-        />
-      ))}
+      {/* Always-visible Magic Sentry logo: toggles the rest of the rail. */}
       <RailButton
-        icon={TAB_ICONS.encyclopedia}
-        label="Encyclopedia"
-        active={activeKey === 'encyclopedia'}
-        onClick={() => toggle('encyclopedia')}
+        icon={
+          <img
+            src="./magicsentry.webp"
+            alt=""
+            width={22}
+            height={22}
+            style={{ imageRendering: 'auto', flexShrink: 0 }}
+          />
+        }
+        label={open ? 'Hide panels' : 'Show panels'}
+        active={open}
+        onClick={onToggleOpen}
       />
 
-      <div
-        style={{ width: 22, height: 1, background: '#2a2a3a', margin: '4px 0', flexShrink: 0 }}
-      />
+      {open && (
+        <>
+          <div
+            style={{ width: 22, height: 1, background: '#2a2a3a', margin: '4px 0', flexShrink: 0 }}
+          />
 
-      <RailButton
-        icon={SettingsIcon}
-        label="Settings"
-        active={activeKey === 'settings'}
-        onClick={() => toggle('settings')}
-      />
+          {tabs.map(({ key, label }: { key: TabKey; label: string }) => (
+            <RailButton
+              key={key}
+              icon={TAB_ICONS[key]}
+              label={label}
+              active={activeKey === key}
+              onClick={() => toggle(key)}
+            />
+          ))}
+          <RailButton
+            icon={TAB_ICONS.encyclopedia}
+            label="Encyclopedia"
+            active={activeKey === 'encyclopedia'}
+            onClick={() => toggle('encyclopedia')}
+          />
+
+          <div
+            style={{ width: 22, height: 1, background: '#2a2a3a', margin: '4px 0', flexShrink: 0 }}
+          />
+
+          <RailButton
+            icon={SettingsIcon}
+            label="Settings"
+            active={activeKey === 'settings'}
+            onClick={() => toggle('settings')}
+          />
+        </>
+      )}
     </div>
   )
 }

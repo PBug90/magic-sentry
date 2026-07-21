@@ -1,6 +1,6 @@
 import { ITEM_BY_ID, UNIT_NAME_BY_ID } from '@magic-sentry/wc3data'
 import type { Fight } from '@magic-sentry/shared'
-import { useIconSrc } from './context'
+import { useIconSrc, useSurfaceBg } from './context'
 
 function formatTime(ms: number): string {
   const s = Math.floor(ms / 1000)
@@ -141,6 +141,7 @@ function Sparkline({ fight }: { fight: Fight }) {
 
 export function ExpandedPanel({ fight }: { fight: Fight }) {
   const iconSrc = useIconSrc()
+  const surfaceBg = useSurfaceBg()
   const playerColors = ['#388bfd', '#f85149']
 
   return (
@@ -148,7 +149,7 @@ export function ExpandedPanel({ fight }: { fight: Fight }) {
       style={{
         marginTop: 8,
         padding: '14px 16px',
-        background: '#0f0f1a',
+        background: surfaceBg('#0f0f1a'),
         border: '1px solid #2a2a3a',
         borderRadius: 4,
       }}

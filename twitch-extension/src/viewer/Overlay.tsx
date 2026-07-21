@@ -8,7 +8,10 @@ import {
   VIEWER_TABS,
   GameHistoryDropdown,
   IconSrcProvider,
+  PanelOpacityProvider,
+  isGraphTab,
 } from '@magic-sentry/viewer'
+import type { TabKey } from '@magic-sentry/viewer'
 import { useExtensionHistory } from './hooks/useExtensionHistory'
 import { OverlayRail, RAIL_WIDTH, type PanelKey } from './OverlayRail'
 import { OverlaySettings, type OverlayLayout } from './OverlaySettings'
@@ -43,12 +46,36 @@ export function Overlay() {
     const s = localStorage.getItem('magic-sentry-layout')
     return s === 'fullscreen' || s === 'corner' ? s : 'docked'
   })
+  // Viewer-adjustable text-size multiplier applied on top of the responsive base.
+  const [fontScale, setFontScale] = useState<number>(() => {
+    const s = localStorage.getItem('magic-sentry-font-scale')
+    const n = s === null ? 1 : parseFloat(s)
+    return isNaN(n) ? 1 : Math.max(0.7, Math.min(1.5, n))
+  })
+  // Collapsed by default on first load; remembered across reloads.
+  const [railOpen, setRailOpen] = useState<boolean>(
+    () => localStorage.getItem('magic-sentry-rail-open') === 'true',
+  )
   useEffect(() => {
     localStorage.setItem('magic-sentry-bg-opacity', String(opacity))
   }, [opacity])
   useEffect(() => {
     localStorage.setItem('magic-sentry-layout', layout)
   }, [layout])
+  useEffect(() => {
+    localStorage.setItem('magic-sentry-font-scale', String(fontScale))
+  }, [fontScale])
+  useEffect(() => {
+    localStorage.setItem('magic-sentry-rail-open', String(railOpen))
+  }, [railOpen])
+
+  // Collapsing the rail returns the stream to fully clear: close any open panel.
+  const toggleRail = () =>
+    setRailOpen((prev) => {
+      const next = !prev
+      if (!next) setActiveTab(null)
+      return next
+    })
 
   useEffect(() => {
     const el = containerRef.current
@@ -97,6 +124,9 @@ export function Overlay() {
   const showSettings = activeTab === 'settings'
   const isWiki = activeTab === 'encyclopedia'
   const isGameTab = activeTab !== null && !isWiki && !showSettings
+  // Chart tabs show players in their own legends, so the map/duration/players
+  // block in the header is redundant there. (The refresh/history controls stay.)
+  const isGraphView = isGameTab && isGraphTab(activeTab as TabKey)
   // Settings stays docked for a stable form position, but uses the live opacity
   // for its background so dragging the slider previews the effect instantly.
   const effLayout: OverlayLayout = showSettings ? 'docked' : layout
@@ -124,134 +154,144 @@ export function Overlay() {
         // Click-through: only the rail and the open panel capture pointer events,
         // so the rest of the stream stays interactive.
         pointerEvents: 'none',
-        fontSize: `${fontSize}px`,
+        fontSize: `${fontSize * fontScale}px`,
         fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
         color: '#efeff1',
       }}
     >
       {activeTab !== null && (
-        <div
-          style={{
-            position: 'absolute',
-            ...panelPos,
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-            background: panelBg,
-            borderLeft: '1px solid #1e1e26',
-            pointerEvents: 'auto',
-          }}
-        >
-          {/* Slim panel header */}
+        <PanelOpacityProvider value={opacity}>
           <div
             style={{
+              position: 'absolute',
+              ...panelPos,
               display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              flexWrap: 'wrap',
-              padding: '10px 16px',
-              borderBottom: '1px solid #1e1e26',
-              flexShrink: 0,
+              flexDirection: 'column',
+              overflow: 'hidden',
+              background: panelBg,
+              borderLeft: '1px solid #1e1e26',
+              pointerEvents: 'auto',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <img
-                src="./magicsentry.webp"
-                alt="Magic Sentry"
-                width={16}
-                height={16}
-                style={{ imageRendering: 'auto', flexShrink: 0 }}
-              />
-              <span
-                style={{
-                  fontSize: '.72em',
-                  letterSpacing: '.1em',
-                  color: '#c8a050',
-                  fontFamily: 'monospace',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {showSettings ? 'Settings' : isWiki ? 'Encyclopedia' : 'Magic Sentry'}
-              </span>
-            </div>
-
-            {isGameTab && game && (
-              <>
-                <span style={{ color: '#2a2a3a' }}>·</span>
-                <span style={{ fontSize: '.78em', color: '#efeff1' }}>{game.map}</span>
-                <span style={{ fontSize: '.7em', color: '#6a6a6a', fontFamily: 'monospace' }}>
-                  {formatDuration(game.duration_ms)}
-                </span>
-                <TeamsBar players={playerData} />
-              </>
-            )}
-
-            {isGameTab && (
-              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-                {lastUpdated && !selectedHistoryId && (
-                  <span style={{ fontSize: '.58em', color: '#555', fontFamily: 'monospace' }}>
-                    updated {lastUpdated.toLocaleTimeString()}
-                  </span>
-                )}
-                {!selectedHistoryId && (
-                  <button
-                    onClick={refresh}
-                    title="Refresh"
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      color: '#555',
-                      fontSize: '.85em',
-                      padding: '2px 4px',
-                      lineHeight: 1,
-                    }}
-                  >
-                    ↺
-                  </button>
-                )}
-                <GameHistoryDropdown
-                  channel={channel}
-                  liveGame={effectiveConfig === config ? game : null}
-                  history={history}
-                  selectedHistoryId={selectedHistoryId}
-                  onSelect={setSelectedHistoryId}
+            {/* Slim panel header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                flexWrap: 'wrap',
+                padding: '10px 16px',
+                borderBottom: '1px solid #1e1e26',
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <img
+                  src="./magicsentry.webp"
+                  alt="Magic Sentry"
+                  width={16}
+                  height={16}
+                  style={{ imageRendering: 'auto', flexShrink: 0 }}
                 />
+                <span
+                  style={{
+                    fontSize: '.72em',
+                    letterSpacing: '.1em',
+                    color: '#c8a050',
+                    fontFamily: 'monospace',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {showSettings ? 'Settings' : isWiki ? 'Encyclopedia' : 'Magic Sentry'}
+                </span>
               </div>
-            )}
-          </div>
 
-          {/* Panel body */}
-          {showSettings && (
-            <OverlaySettings
-              opacity={opacity}
-              layout={layout}
-              onOpacity={setOpacity}
-              onLayout={setLayout}
-            />
-          )}
+              {isGameTab && game && !isGraphView && (
+                <>
+                  <span style={{ color: '#2a2a3a' }}>·</span>
+                  <span style={{ fontSize: '.78em', color: '#efeff1' }}>{game.map}</span>
+                  <span style={{ fontSize: '.7em', color: '#6a6a6a', fontFamily: 'monospace' }}>
+                    {formatDuration(game.duration_ms)}
+                  </span>
+                  <TeamsBar players={playerData} />
+                </>
+              )}
 
-          {isWiki && <EncyclopediaPanel iconSrc={twitchIconSrc} />}
-
-          {isGameTab && !game && configReady && (
-            <div style={{ padding: '20px 16px' }}>
-              {!config.endpointUrl || !config.token ? (
-                <StatusDot ok={false} label="Incomplete setup — endpoint and token required" />
-              ) : (
-                <NoGameScreen />
+              {isGameTab && (
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {lastUpdated && !selectedHistoryId && (
+                    <span style={{ fontSize: '.58em', color: '#555', fontFamily: 'monospace' }}>
+                      updated {lastUpdated.toLocaleTimeString()}
+                    </span>
+                  )}
+                  {!selectedHistoryId && (
+                    <button
+                      onClick={refresh}
+                      title="Refresh"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#555',
+                        fontSize: '.85em',
+                        padding: '2px 4px',
+                        lineHeight: 1,
+                      }}
+                    >
+                      ↺
+                    </button>
+                  )}
+                  <GameHistoryDropdown
+                    channel={channel}
+                    liveGame={effectiveConfig === config ? game : null}
+                    history={history}
+                    selectedHistoryId={selectedHistoryId}
+                    onSelect={setSelectedHistoryId}
+                  />
+                </div>
               )}
             </div>
-          )}
 
-          {isGameTab && game && (
-            <IconSrcProvider value={twitchIconSrc}>
-              <TabContent players={playerData} tab={activeTab} error={fetchError} />
-            </IconSrcProvider>
-          )}
-        </div>
+            {/* Panel body */}
+            {showSettings && (
+              <OverlaySettings
+                opacity={opacity}
+                layout={layout}
+                fontScale={fontScale}
+                onOpacity={setOpacity}
+                onLayout={setLayout}
+                onFontScale={setFontScale}
+              />
+            )}
+
+            {isWiki && <EncyclopediaPanel iconSrc={twitchIconSrc} />}
+
+            {isGameTab && !game && configReady && (
+              <div style={{ padding: '20px 16px' }}>
+                {!config.endpointUrl || !config.token ? (
+                  <StatusDot ok={false} label="Incomplete setup — endpoint and token required" />
+                ) : (
+                  <NoGameScreen />
+                )}
+              </div>
+            )}
+
+            {isGameTab && game && (
+              <IconSrcProvider value={twitchIconSrc}>
+                <TabContent players={playerData} tab={activeTab} error={fetchError} />
+              </IconSrcProvider>
+            )}
+          </div>
+        </PanelOpacityProvider>
       )}
 
-      <OverlayRail tabs={visibleTabs} activeKey={activeTab} onSelect={setActiveTab} />
+      <OverlayRail
+        tabs={visibleTabs}
+        activeKey={activeTab}
+        onSelect={setActiveTab}
+        open={railOpen}
+        onToggleOpen={toggleRail}
+      />
     </div>
   )
 }

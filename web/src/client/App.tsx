@@ -365,6 +365,87 @@ function DataUsageSection({ user }: { user: TwitchUser }) {
   )
 }
 
+interface PatreonState {
+  linked: boolean
+  active: boolean
+  tierId: string | null
+  tierName: string | null
+}
+
+function PatreonSection() {
+  const [status, setStatus] = useState<PatreonState | null>(null)
+  const [flash] = useState(() => {
+    const p = new URLSearchParams(window.location.search).get('patreon')
+    if (p) window.history.replaceState(null, '', window.location.pathname)
+    return p
+  })
+
+  const load = useCallback(() => {
+    fetch('/api/me')
+      .then((r) => r.json())
+      .then((d) =>
+        setStatus(d.patreon ?? { linked: false, active: false, tierId: null, tierName: null }),
+      )
+      .catch(() => setStatus({ linked: false, active: false, tierId: null, tierName: null }))
+  }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  async function disconnect() {
+    await fetch('/auth/patreon/disconnect', { method: 'POST' })
+    load()
+  }
+
+  const flashMsg =
+    flash === 'connected'
+      ? { ok: true, text: 'Patreon connected.' }
+      : flash === 'already_linked'
+        ? { ok: false, text: 'That Patreon account is already linked to another user.' }
+        : flash === 'error'
+          ? { ok: false, text: 'Could not connect Patreon. Please try again.' }
+          : null
+
+  return (
+    <section className="section">
+      <h2 className="section-title">Patreon</h2>
+      <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24, marginTop: -10 }}>
+        Connect your Patreon to unlock access automatically while your membership is active.
+      </p>
+
+      {flashMsg && (
+        <p style={{ color: flashMsg.ok ? 'var(--accent)' : '#e06c6c', marginBottom: 16 }}>
+          {flashMsg.text}
+        </p>
+      )}
+
+      {status === null ? (
+        <p className="status-empty">Loading…</p>
+      ) : status.linked ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.9rem' }}>
+            Linked ·{' '}
+            <strong style={{ color: status.active ? 'var(--accent)' : 'var(--muted)' }}>
+              {status.active ? 'active patron' : 'inactive'}
+            </strong>
+            {(status.tierName ?? status.tierId) ? (
+              <span style={{ color: 'var(--muted)' }}> · {status.tierName ?? status.tierId}</span>
+            ) : null}
+          </span>
+          <button className="btn btn-sm btn-danger" onClick={disconnect}>
+            Disconnect
+          </button>
+        </div>
+      ) : (
+        <a className="btn" href="/auth/patreon">
+          Connect Patreon
+        </a>
+      )}
+    </section>
+  )
+}
+
 function SettingsPage({
   user,
   logout,
@@ -392,15 +473,18 @@ function SettingsPage({
       <div className="app" style={{ paddingTop: 48 }}>
         <h1 className="page-title">Settings</h1>
         {user ? (
-          user.allowed ? (
-            <>
-              <PublicTokenSection user={user} />
-              <TokenManager user={user} />
-              <DataUsageSection user={user} />
-            </>
-          ) : (
-            <PendingApprovalNotice />
-          )
+          <>
+            <PatreonSection />
+            {user.allowed ? (
+              <>
+                <PublicTokenSection user={user} />
+                <TokenManager user={user} />
+                <DataUsageSection user={user} />
+              </>
+            ) : (
+              <PendingApprovalNotice />
+            )}
+          </>
         ) : (
           <p className="status-empty">
             <a href="/auth/twitch">Sign in with Twitch</a> to manage your account.

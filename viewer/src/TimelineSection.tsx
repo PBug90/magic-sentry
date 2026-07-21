@@ -1,9 +1,23 @@
+import type { CSSProperties } from 'react'
 import { UNIT_NAME_BY_ID, UPGRADE_NAME_BY_ID } from '@magic-sentry/wc3data'
 import type { TimelineEvent } from '@magic-sentry/shared'
 
 function formatTime(ms: number): string {
   const s = Math.floor(ms / 1000)
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+
+// Pill (rather than plain grey text) so the research level reads against the
+// dark row background.
+const levelPill: CSSProperties = {
+  marginLeft: 6,
+  padding: '0 5px',
+  borderRadius: 3,
+  fontSize: '.85em',
+  color: '#c8a050',
+  background: 'rgba(200,160,80,0.14)',
+  border: '1px solid rgba(200,160,80,0.35)',
+  whiteSpace: 'nowrap',
 }
 
 /** Construction outcome for structure events; time_ms is the start of construction. */
@@ -76,7 +90,7 @@ export function TimelineSection({
             ) : (
               <span style={{ color: '#ccc' }}>
                 {UPGRADE_NAME_BY_ID[e.id] ?? e.id}
-                <span style={{ color: '#555', marginLeft: 6 }}>level {e.level}</span>
+                <span style={levelPill}>Level {e.level}</span>
               </span>
             )}
           </div>

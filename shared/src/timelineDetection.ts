@@ -40,6 +40,33 @@ const TIER_BUILDINGS = new Set([
 const isMainBuilding = (s: StructureSnapshot) =>
   EXPANSION_HALLS.has(s.id) || TIER_BUILDINGS.has(s.id)
 
+// A tier upgrade morphs the main hall in place: the building keeps its previous
+// tier id (at construction 100) and only reports the new tier id once complete.
+// So the start is invisible in construction_progress — instead we read it from
+// the source hall's upgrade_progress. This maps each source hall to the tier it
+// upgrades into.
+const UPGRADE_TARGET: Record<string, string> = {
+  htow: 'hkee',
+  hkee: 'hcas', // Human: Town Hall -> Keep -> Castle
+  ogre: 'ostr',
+  ostr: 'ofrt', // Orc: Great Hall -> Stronghold -> Fortress
+  etol: 'etoa',
+  etoa: 'etoe', // Night Elf: Tree of Life -> Ages -> Eternity
+  unpl: 'unp1',
+  unp1: 'unp2', // Undead: Necropolis -> Halls of the Dead -> Black Citadel
+}
+
+// In-progress tier upgrades keyed by the tier being upgraded toward, counted from
+// each source hall's upgrade_progress (> 0 while the in-place upgrade runs).
+function upgradingByTarget(structures: StructureSnapshot[]): Map<string, number> {
+  const m = new Map<string, number>()
+  for (const s of structures) {
+    const target = UPGRADE_TARGET[s.id]
+    if (target && s.upgrade_progress > 0) m.set(target, (m.get(target) ?? 0) + 1)
+  }
+  return m
+}
+
 // construction_progress is a percentage counting up: 100 = finished, anything
 // below (including a freshly placed building at 0) is still under construction.
 function countCompleted(structures: StructureSnapshot[], id: string): number {
@@ -73,6 +100,9 @@ export function detectTimeline(players: PlayerRecord[]): TimelineEvent[] {
     const missingHalls = new Map<string, number>()
     let lastStructures: StructureSnapshot[] =
       samples.length > 0 ? (samples[0].structures ?? []) : []
+    // Tier upgrades already running at sample 0 seed the baseline so we don't
+    // mistake a mid-flight upgrade for a fresh start on the first transition.
+    let prevUpgrading = upgradingByTarget(lastStructures)
 
     for (let i = 1; i < samples.length; i++) {
       const curr = samples[i]
@@ -103,12 +133,60 @@ export function detectTimeline(players: PlayerRecord[]): TimelineEvent[] {
       // Construction starts detected this transition, per structure id.
       const started = new Map<string, number>()
 
-      // Tier upgrade: a tier 2/3 main hall appears in structures for the first time.
+      // Tier upgrade START: an in-place upgrade begins the moment a source hall's
+      // upgrade_progress first reads > 0. The morphing building still shows its
+      // previous tier id, so this is the only signal until it finishes.
+      const currUpgrading = upgradingByTarget(currStructures)
+      for (const [target, cnt] of currUpgrading) {
+        const before = prevUpgrading.get(target) ?? 0
+        for (let k = 0; k < cnt - before; k++) {
+          const event: TimelineEvent = {
+            time_ms: curr.time_ms,
+            player: player.name,
+            type: 'tier_upgrade',
+            id: target,
+            status: 'in_progress',
+          }
+          events.push(event)
+          pending.push(event)
+        }
+      }
+
+      // Tier upgrade CANCEL: upgrade_progress dropped back to 0 for more halls than
+      // completed this transition — an aborted upgrade.
+      for (const [target, before] of prevUpgrading) {
+        const cnt = currUpgrading.get(target) ?? 0
+        if (cnt >= before) continue
+        const done = Math.max(
+          0,
+          countCompleted(currStructures, target) - countCompleted(prevStructures, target),
+        )
+        for (let canceled = before - cnt - done; canceled > 0; canceled--) {
+          let idx = -1
+          for (let j = pending.length - 1; j >= 0; j--) {
+            if (pending[j].id === target && pending[j].status === 'in_progress') {
+              idx = j
+              break
+            }
+          }
+          if (idx === -1) break
+          pending[idx].status = 'canceled'
+          pending[idx].resolved_ms = curr.time_ms
+          pending.splice(idx, 1)
+        }
+      }
+
+      // Fallback for recordings made before upgrade_progress existed: a tier 2/3
+      // hall appearing for the first time with no matching start. The start is
+      // unknown, so the resolve loop will settle it at this same time.
       for (const s of currStructures) {
         if (!TIER_BUILDINGS.has(s.id) || started.has(s.id)) continue
         const prevCount = prevStructures.filter((p) => p.id === s.id).length
         const currCount = currStructures.filter((c) => c.id === s.id).length
-        if (currCount > prevCount && prevCount === 0) {
+        const hasPendingStart = pending.some(
+          (e) => e.id === s.id && e.type === 'tier_upgrade' && e.status === 'in_progress',
+        )
+        if (currCount > prevCount && prevCount === 0 && !hasPendingStart) {
           const event: TimelineEvent = {
             time_ms: curr.time_ms,
             player: player.name,
@@ -121,6 +199,8 @@ export function detectTimeline(players: PlayerRecord[]): TimelineEvent[] {
           started.set(s.id, 1)
         }
       }
+
+      prevUpgrading = currUpgrading
 
       // A completed hall vanishing while the main-building total shrinks was
       // uprooted or destroyed (a tier swap keeps the total constant).

@@ -3,7 +3,7 @@ import type { ReactNode, CSSProperties } from 'react'
 import { UNITS } from '@magic-sentry/wc3data'
 import {
   ITEM_BY_ID,
-  ITEM_EFFECT_BY_ID,
+  ITEM_INFO_BY_ID,
   UNIT_EFFECT_BY_ID,
   ABILITY_BY_ID,
   UNIT_ABILITY_BY_ID,
@@ -15,18 +15,23 @@ import {
   UNIT_ALIAS_IDS,
   BUILDING_IDS,
   ROSTER_UNIT_IDS,
+  UPGRADE_INFO_BY_ID,
 } from '@magic-sentry/wc3data'
-import { useIconSrc } from './context'
+import { useIconSrc, useSurfaceBg } from './context'
 import { HoverTooltip } from './HoverTooltip'
 import { AbilityTooltipBody } from './AbilityTooltipBody'
+import { ItemTooltipBody } from './ItemTooltipBody'
+import { UpgradeTooltipBody } from './UpgradeTooltipBody'
 import { UnitTooltipBody } from './UnitTooltipBody'
 import { HeroTooltipBody } from './HeroTooltipBody'
 import { ITEM_ICON_IDS } from './itemIcons'
 import { DamageTable } from './DamageTable'
+import { ArmorTable } from './ArmorTable'
+import { ReviveTable } from './ReviveTable'
 import { GoldIcon, LumberIcon } from './StatIcons'
 
 type RaceTab = 'Human' | 'Orc' | 'Night Elf' | 'Undead'
-type OtherTab = 'items' | 'upgrades' | 'abilities' | 'damage'
+type OtherTab = 'search' | 'items' | 'upgrades' | 'abilities' | 'damage' | 'revival'
 // 'Neutral' is a buildings-only tab (no neutral heroes/units/upgrades shown).
 type Tab = RaceTab | 'Neutral' | OtherTab
 
@@ -36,7 +41,29 @@ const OTHER_TABS: { key: OtherTab; label: string }[] = [
   { key: 'upgrades', label: 'Upgrades' },
   { key: 'abilities', label: 'Abilities' },
   { key: 'damage', label: 'Combat' },
+  { key: 'revival', label: 'Hero Revival' },
+  { key: 'search', label: 'Search' },
 ]
+
+// Magnifying-glass glyph for the Search tab; strokes with currentColor so it
+// tracks the tab's active/inactive text colour.
+const SearchGlyph = () => (
+  <svg
+    width="1em"
+    height="1em"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2.4}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ verticalAlign: '-0.15em', marginRight: 4 }}
+    aria-hidden="true"
+  >
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.3-4.3" />
+  </svg>
+)
 const RACE_SET = new Set<string>(RACE_TABS)
 
 function raceFromId(id: string): string {
@@ -75,6 +102,58 @@ const byUpgradeName = (a: string, b: string) =>
 // Upgrades kept in the data (for game-view name resolution) but hidden from the
 // encyclopedia: Roch = orc chaos conversion, Rusl = undead skeleton life span.
 const HIDDEN_UPGRADE_IDS = new Set(['Roch', 'Rusl'])
+
+// --- Search index: every displayable entity, for the Search tab ---
+type SearchKind = 'Hero' | 'Unit' | 'Building' | 'Item' | 'Upgrade' | 'Ability'
+interface SearchEntry {
+  id: string
+  name: string
+  kind: SearchKind
+  iconPath: string
+}
+const SEARCH_KINDS: SearchKind[] = ['Hero', 'Unit', 'Building', 'Item', 'Upgrade', 'Ability']
+const SEARCH_KIND_LABEL: Record<SearchKind, string> = {
+  Hero: 'Heroes',
+  Unit: 'Units',
+  Building: 'Buildings',
+  Item: 'Items',
+  Upgrade: 'Upgrades',
+  Ability: 'Abilities',
+}
+const SEARCH_INDEX: SearchEntry[] = [
+  ...Object.keys(UNITS)
+    .filter((id) => HERO_OBSERVER_IDS.has(id) && !UNIT_ALIAS_IDS.has(id))
+    .map((id) => ({ id, name: UNITS[id].name, kind: 'Hero' as const, iconPath: '/heroes' })),
+  ...[...ROSTER_UNIT_IDS].map((id) => ({
+    id,
+    name: UNITS[id]?.name ?? id,
+    kind: 'Unit' as const,
+    iconPath: '/units',
+  })),
+  ...[...BUILDING_IDS].map((id) => ({
+    id,
+    name: UNITS[id]?.name ?? id,
+    kind: 'Building' as const,
+    iconPath: '/buildings',
+  })),
+  ...Object.keys(ITEM_BY_ID)
+    .filter((id) => ITEM_ICON_IDS.has(id))
+    .map((id) => ({ id, name: ITEM_BY_ID[id].name, kind: 'Item' as const, iconPath: '/items' })),
+  ...Object.keys(UPGRADES_TECH)
+    .filter((id) => !HIDDEN_UPGRADE_IDS.has(id))
+    .map((id) => ({
+      id,
+      name: UPGRADES_TECH[id].name,
+      kind: 'Upgrade' as const,
+      iconPath: '/upgrades',
+    })),
+  ...Object.keys(ABILITY_BY_ID).map((id) => ({
+    id,
+    name: ABILITY_BY_ID[id].name,
+    kind: 'Ability' as const,
+    iconPath: '/abilities',
+  })),
+]
 
 function unitAbilities(id: string) {
   return (UNIT_ABILITY_BY_ID[id] ?? []).flatMap((aid) => {
@@ -119,6 +198,7 @@ function IconTile({
   tooltip: ReactNode
 }) {
   const [hovered, setHovered] = useState(false)
+  const surfaceBg = useSurfaceBg()
   const size = 32
   return (
     <div
@@ -130,7 +210,7 @@ function IconTile({
         border: '1px solid #2a2a3a',
         overflow: 'hidden',
         flexShrink: 0,
-        background: '#0d0d14',
+        background: surfaceBg('#0d0d14'),
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -174,7 +254,9 @@ export function EncyclopediaPanel({
 }: { iconSrc?: (p: string) => string } = {}) {
   const contextIconSrc = useIconSrc()
   const iconSrc = iconSrcProp ?? contextIconSrc
+  const surfaceBg = useSurfaceBg()
   const [tab, setTab] = useState<Tab>('Human')
+  const [query, setQuery] = useState('')
 
   const tabStyle = (active: boolean): CSSProperties => ({
     background: 'none',
@@ -231,25 +313,23 @@ export function EncyclopediaPanel({
   }
   const itemTip = (id: string) => {
     const d = ITEM_BY_ID[id]
-    const effect = ITEM_EFFECT_BY_ID[id]
+    const info = ITEM_INFO_BY_ID[id]
     return (
       <>
         {nameLine(d?.name ?? id)}
         <CostRow gold={d?.gold ?? 0} lumber={0} />
-        {effect && (
-          <div style={{ color: '#888', whiteSpace: 'normal', maxWidth: 240, marginTop: 3 }}>
-            {effect}
-          </div>
-        )}
+        {info && <ItemTooltipBody info={info} />}
       </>
     )
   }
   const upgradeTip = (id: string) => {
     const d = UPGRADES_TECH[id]
+    const info = UPGRADE_INFO_BY_ID[id]
     return (
       <>
         {nameLine(d?.name ?? id)}
         <CostRow gold={d?.gold ?? 0} lumber={d?.lumber ?? 0} />
+        {info && <UpgradeTooltipBody info={info} />}
       </>
     )
   }
@@ -266,6 +346,18 @@ export function EncyclopediaPanel({
   const tile = (iconPath: string, id: string, alt: string, tooltip: ReactNode) => (
     <IconTile key={id} iconSrc={iconSrc} iconPath={iconPath} id={id} alt={alt} tooltip={tooltip} />
   )
+
+  // The right tooltip for a search hit, by kind (buildings reuse the unit body).
+  const tipFor = (kind: SearchKind, id: string): ReactNode =>
+    kind === 'Hero'
+      ? heroTip(id)
+      : kind === 'Unit' || kind === 'Building'
+        ? unitTip(id)
+        : kind === 'Item'
+          ? itemTip(id)
+          : kind === 'Upgrade'
+            ? upgradeTip(id)
+            : abilityTip(id)
 
   return (
     <div
@@ -289,6 +381,7 @@ export function EncyclopediaPanel({
         </button>
         {OTHER_TABS.map(({ key, label }) => (
           <button key={key} style={tabStyle(tab === key)} onClick={() => setTab(key)}>
+            {key === 'search' && <SearchGlyph />}
             {label}
           </button>
         ))}
@@ -328,6 +421,73 @@ export function EncyclopediaPanel({
               tile('/buildings', id, UNITS[id]?.name ?? id, unitTip(id)),
             )}
           </Section>
+        ) : tab === 'search' ? (
+          <div>
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search units, heroes, buildings, items, upgrades, abilities…"
+              style={{
+                width: '100%',
+                boxSizing: 'border-box',
+                margin: '6px 0 8px',
+                padding: '8px 10px',
+                background: surfaceBg('#0d0d14'),
+                border: '1px solid #2a2a3a',
+                borderRadius: 4,
+                color: '#efeff1',
+                fontFamily: 'monospace',
+                fontSize: '.72em',
+                outline: 'none',
+              }}
+            />
+            {query.trim().length === 0 ? (
+              <p
+                style={{
+                  color: '#6a6a6a',
+                  fontFamily: 'monospace',
+                  fontSize: '.62em',
+                  padding: '8px 2px',
+                }}
+              >
+                Type to search across every unit, hero, building, item, upgrade and ability.
+              </p>
+            ) : (
+              (() => {
+                const q = query.trim().toLowerCase()
+                const hits = SEARCH_INDEX.filter(
+                  (e) => e.name.toLowerCase().includes(q) || e.id.toLowerCase().includes(q),
+                )
+                if (hits.length === 0) {
+                  return (
+                    <p
+                      style={{
+                        color: '#6a6a6a',
+                        fontFamily: 'monospace',
+                        fontSize: '.62em',
+                        padding: '8px 2px',
+                      }}
+                    >
+                      No matches for “{query.trim()}”.
+                    </p>
+                  )
+                }
+                return SEARCH_KINDS.map((kind) => {
+                  const group = hits
+                    .filter((h) => h.kind === kind)
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                  if (group.length === 0) return null
+                  return (
+                    <Section key={kind} label={`${SEARCH_KIND_LABEL[kind]} (${group.length})`}>
+                      {group.map((e) => tile(e.iconPath, e.id, e.name, tipFor(e.kind, e.id)))}
+                    </Section>
+                  )
+                })
+              })()
+            )}
+          </div>
         ) : tab === 'items' ? (
           <Section label="Items">
             {Object.keys(ITEM_BY_ID)
@@ -348,8 +508,13 @@ export function EncyclopediaPanel({
               .sort((a, b) => ABILITY_BY_ID[a].name.localeCompare(ABILITY_BY_ID[b].name))
               .map((id) => tile('/abilities', id, ABILITY_BY_ID[id].name, abilityTip(id)))}
           </Section>
+        ) : tab === 'revival' ? (
+          <ReviveTable />
         ) : (
-          <DamageTable />
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+            <DamageTable />
+            <ArmorTable />
+          </div>
         )}
       </div>
     </div>

@@ -146,6 +146,14 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
     supply: 4,
     gold: 195,
     lumber: 60,
+    stats: {
+      hp: 700,
+      armor: 2,
+      armorType: 'Fortified',
+      damageMin: 45,
+      damageMax: 55,
+      damageType: 'Siege',
+    },
     effect: 'The sturdy Dwarven Siege Engines are a new addition to the Alliance forces.',
   },
   hpea: {
@@ -812,7 +820,7 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
     building: true,
   },
   ofor: {
-    name: 'Lumber Forge',
+    name: 'War Mill',
     supply: 0,
     gold: 205,
     lumber: 0,
@@ -991,7 +999,14 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
     supply: 4,
     gold: 255,
     lumber: 80,
-    icon: 'edoc',
+    stats: {
+      hp: 960,
+      armor: 3,
+      armorType: 'Heavy',
+      damageMin: 28,
+      damageMax: 43,
+      damageType: 'Normal',
+    },
   },
   edes: {
     name: 'night elf destroyer',
@@ -1055,7 +1070,14 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
     supply: 2,
     gold: 135,
     lumber: 20,
-    icon: 'edot',
+    stats: {
+      hp: 340,
+      armor: 0,
+      armorType: 'Unarmored',
+      damageMin: 27,
+      damageMax: 33,
+      damageType: 'Piercing',
+    },
   },
   efdr: {
     name: 'Faerie Dragon',
@@ -1108,6 +1130,7 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
     supply: 4,
     gold: 290,
     lumber: 30,
+    icon: 'ehir',
     stats: {
       hp: 800,
       armor: 1,
@@ -1183,7 +1206,7 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
       'Wisps are ancient spirits of nature that inhabit the forestlands of Kalimdor. Legends say that Wisps are actually the disembodied spirits of the Night Elves themselves, but these rumors have yet to be proven.',
   },
   eaoe: {
-    name: 'AncientofLore',
+    name: 'Ancient of Lore',
     supply: 0,
     gold: 155,
     lumber: 145,
@@ -1195,22 +1218,15 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
       damageMax: 50,
       damageType: 'Normal',
     },
-    icon: 'eaol',
+    effect:
+      'Keeper of ground based spellcasters. Trains Druids of the Claw, Dryads, and Mountain Giants.\nAlso contains the upgrades for Druids of the Claw, Mark of the Claw, Abolish Magic, Hardened Skin, and Resistant Skin.',
     building: true,
   },
   eaom: {
-    name: 'AncientofWar',
-    supply: 0,
-    gold: 150,
-    lumber: 60,
-    icon: 'eaow',
-    building: true,
-  },
-  eaow: {
     name: 'Ancient of War',
     supply: 0,
     gold: 150,
-    lumber: 140,
+    lumber: 60,
     stats: {
       hp: 900,
       armor: 2,
@@ -1221,6 +1237,15 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
     },
     effect:
       'Keeper of primary assault troops. Trains Archers, Huntresses, and Glaive Throwers.\nAlso contains Archer, Huntress and Glaive Thrower upgrades.',
+    building: true,
+  },
+  eaow: {
+    name: 'Ancient of Wonders',
+    supply: 0,
+    gold: 150,
+    lumber: 140,
+    effect:
+      'Creates a shop with purchasable items. The items available depend upon what level of upgrade your Tree of Life has (Tree of Life, Tree of Ages, or Tree of Eternity) and which buildings you have.',
     building: true,
   },
   eate: {
@@ -1236,7 +1261,7 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
     building: true,
   },
   eden: {
-    name: 'Ancient of Wonders',
+    name: 'Ancient of Wind',
     supply: 0,
     gold: 90,
     lumber: 30,
@@ -1248,7 +1273,8 @@ export const UNIT_DATA: Record<string, UnitEntry> = {
       damageMax: 25,
       damageType: 'Normal',
     },
-    icon: 'eawo',
+    effect:
+      'Keeper of aerial assault units and spellcasters. Trains Hippogryphs, Druids of the Talon, and Faerie Dragons.\nAlso contains the upgrades for Druids of the Talon and Mark of the Talon.',
     building: true,
   },
   edob: {

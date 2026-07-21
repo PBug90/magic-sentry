@@ -9,16 +9,31 @@ import {
 import { HoverTooltip } from './HoverTooltip'
 import { ABILITY_BY_ID } from '@magic-sentry/wc3data'
 import {
-  HERO_EFFECT_BY_ID,
+  HERO_STATS_BY_ID,
   HERO_XP_THRESHOLDS,
   ITEM_BY_ID,
+  ITEM_INFO_BY_ID,
+  UNIT_ABILITY_BY_ID,
   UNIT_NAME_BY_ID,
   UPGRADE_NAME_BY_ID,
   UPGRADE_GOLD_BY_ID,
   UPGRADE_LUMBER_BY_ID,
+  UPGRADE_INFO_BY_ID,
 } from '@magic-sentry/wc3data'
-import { useIconSrc } from './context'
+import { useIconSrc, useSurfaceBg } from './context'
 import { AbilityTooltipBody } from './AbilityTooltipBody'
+import { HeroTooltipBody } from './HeroTooltipBody'
+import { ItemTooltipBody } from './ItemTooltipBody'
+import { UpgradeTooltipBody } from './UpgradeTooltipBody'
+
+// Mirrors EncyclopediaPanel.unitAbilities: resolve a unit/hero's ability ids to
+// the records HeroTooltipBody expects, dropping any without data.
+function heroAbilities(id: string) {
+  return (UNIT_ABILITY_BY_ID[id] ?? []).flatMap((aid) => {
+    const info = ABILITY_BY_ID[aid]
+    return info ? [{ id: aid, info }] : []
+  })
+}
 
 interface HeroDisplay {
   id: string
@@ -46,7 +61,6 @@ function HeroIcon({ id, size = 44 }: { id: string; size?: number }) {
   const iconSrc = useIconSrc()
   const [hovered, setHovered] = useState(false)
   const name = UNIT_NAME_BY_ID[id] ?? id
-  const effect = HERO_EFFECT_BY_ID[id]
   return (
     <div
       style={{
@@ -63,11 +77,7 @@ function HeroIcon({ id, size = 44 }: { id: string; size?: number }) {
       {hovered && (
         <HoverTooltip>
           <div style={{ color: '#efeff1' }}>{name}</div>
-          {effect && (
-            <div style={{ color: '#888', whiteSpace: 'normal', maxWidth: 240, marginTop: 3 }}>
-              {effect}
-            </div>
-          )}
+          <HeroTooltipBody stats={HERO_STATS_BY_ID[id]} abilities={heroAbilities(id)} />
         </HoverTooltip>
       )}
       <img
@@ -92,6 +102,7 @@ function fmtStat(n: number): string {
 
 function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
   const iconSrc = useIconSrc()
+  const surfaceBg = useSurfaceBg()
   const [hovered, setHovered] = useState(false)
   const info = ABILITY_BY_ID[ability.id]
   const name = info?.name ?? ability.id
@@ -119,7 +130,7 @@ function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
             height: size,
             border: '1px solid #2a2a3a',
             overflow: 'hidden',
-            background: '#0d0d14',
+            background: surfaceBg('#0d0d14'),
           }}
         >
           <img
@@ -165,10 +176,12 @@ function AbilityTile({ ability }: { ability: AbilitySnapshot }) {
 
 function ItemTile({ item }: { item: ItemSnapshot }) {
   const iconSrc = useIconSrc()
+  const surfaceBg = useSurfaceBg()
   const [hovered, setHovered] = useState(false)
   const item_info = ITEM_BY_ID[item.id]
   const name = item_info?.name ?? item.id
   const gold = item_info?.gold
+  const info = ITEM_INFO_BY_ID[item.id]
   return (
     <div
       style={{ position: 'relative' }}
@@ -181,6 +194,7 @@ function ItemTile({ item }: { item: ItemSnapshot }) {
           {gold !== undefined && (
             <div style={{ color: '#c8a050', fontFamily: 'monospace' }}>{gold}g</div>
           )}
+          {info && <ItemTooltipBody info={info} />}
         </HoverTooltip>
       )}
       <div
@@ -189,7 +203,7 @@ function ItemTile({ item }: { item: ItemSnapshot }) {
           height: 32,
           border: '1px solid #2a2a3a',
           overflow: 'hidden',
-          background: '#0d0d14',
+          background: surfaceBg('#0d0d14'),
         }}
       >
         <img
@@ -264,6 +278,7 @@ function XpBar({ xp, level }: { xp: number; level: number }) {
 }
 
 function EmptyHeroSlot({ index, color }: { index: number; color: string }) {
+  const surfaceBg = useSurfaceBg()
   return (
     <div
       style={{
@@ -271,7 +286,7 @@ function EmptyHeroSlot({ index, color }: { index: number; color: string }) {
         flexDirection: 'column',
         alignItems: 'center',
         padding: '8px 10px',
-        background: '#0d0d12',
+        background: surfaceBg('#0d0d12'),
         border: '1px solid #1e1e26',
         borderTop: `3px solid ${color}`,
         opacity: 0.35,
@@ -318,6 +333,7 @@ function HeroCard({
   index: number
 }) {
   const display = UNIT_NAME_BY_ID[hero.id] ?? hero.id
+  const surfaceBg = useSurfaceBg()
   return (
     <div
       style={{
@@ -325,7 +341,7 @@ function HeroCard({
         flexDirection: 'column',
         gap: 8,
         padding: '8px 10px',
-        background: '#12121a',
+        background: surfaceBg('#12121a'),
         border: '1px solid #2a2a3a',
         borderTop: `3px solid ${player.color}`,
       }}
@@ -440,7 +456,7 @@ function HeroCard({
                     width: 32,
                     height: 32,
                     border: '1px solid #1e1e26',
-                    background: '#0a0a10',
+                    background: surfaceBg('#0a0a10'),
                   }}
                 />
               )
@@ -461,10 +477,12 @@ function upgradesFromPlayer(player: ChartPlayer): UpgradeSnapshot[] {
 
 function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
   const iconSrc = useIconSrc()
+  const surfaceBg = useSurfaceBg()
   const [hovered, setHovered] = useState(false)
   const name = UPGRADE_NAME_BY_ID[upgrade.id] ?? upgrade.id
   const gold = UPGRADE_GOLD_BY_ID[upgrade.id]
   const lumber = UPGRADE_LUMBER_BY_ID[upgrade.id]
+  const info = UPGRADE_INFO_BY_ID[upgrade.id]
   const pips = Array.from({ length: upgrade.max_level }, (_, i) => i < upgrade.level)
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -482,6 +500,7 @@ function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
             {lumber !== undefined && lumber > 0 && (
               <div style={{ color: '#7dbf7d', fontFamily: 'monospace' }}>{lumber}w</div>
             )}
+            {info && <UpgradeTooltipBody info={info} />}
           </HoverTooltip>
         )}
         <div
@@ -490,7 +509,7 @@ function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
             height: 25,
             border: '1px solid #2a2a3a',
             overflow: 'hidden',
-            background: '#0d0d14',
+            background: surfaceBg('#0d0d14'),
           }}
         >
           <img
@@ -524,6 +543,7 @@ function UpgradeRow({ upgrade }: { upgrade: UpgradeSnapshot }) {
 }
 
 export function HeroPanel({ players }: { players: ChartPlayer[] }) {
+  const surfaceBg = useSurfaceBg()
   const playerData = players.map((player) => {
     const heroes: HeroDisplay[] =
       player.summary.heroes.length > 0
@@ -571,7 +591,7 @@ export function HeroPanel({ players }: { players: ChartPlayer[] }) {
             <div
               style={{
                 padding: '8px 10px',
-                background: '#12121a',
+                background: surfaceBg('#12121a'),
                 border: '1px solid #2a2a3a',
                 borderLeft: `3px solid ${player.color}`,
                 display: 'flex',

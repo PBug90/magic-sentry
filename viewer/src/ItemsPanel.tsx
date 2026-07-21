@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
 import { ChartPlayer, PlayerItemStatSnapshot } from '@magic-sentry/shared'
-import { ITEM_BY_ID } from '@magic-sentry/wc3data'
+import { ITEM_BY_ID, ITEM_INFO_BY_ID } from '@magic-sentry/wc3data'
 import { HoverTooltip } from './HoverTooltip'
-import { useIconSrc } from './context'
+import { ItemTooltipBody } from './ItemTooltipBody'
+import { useIconSrc, useSurfaceBg } from './context'
 
 function itemsFromPlayer(player: ChartPlayer): PlayerItemStatSnapshot[] {
   const last = [...player.samples].reverse().find((s) => s.player_items.length > 0)
@@ -15,6 +16,7 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
   const iconSrc = useIconSrc()
   const [hovered, setHovered] = useState(false)
   const meta = ITEM_BY_ID[item.id]
+  const info = ITEM_INFO_BY_ID[item.id]
   const name = meta?.name ?? item.id
   const totalGold = item.purchased * (meta?.gold ?? 0)
 
@@ -42,6 +44,7 @@ function ItemRow({ item }: { item: PlayerItemStatSnapshot }) {
             {meta?.gold !== undefined && meta.gold > 0 && (
               <div style={{ color: '#c8a050' }}>{meta.gold}g</div>
             )}
+            {info && <ItemTooltipBody info={info} />}
           </HoverTooltip>
         )}
         <div style={{ position: 'relative', width: 20, height: 20 }}>
@@ -124,6 +127,7 @@ const HEADER_STYLE: CSSProperties = {
 }
 
 export function ItemsPanel({ players }: { players: ChartPlayer[] }) {
+  const surfaceBg = useSurfaceBg()
   const playerData = players.map((player) => {
     const items = itemsFromPlayer(player).filter((item) => item.id in ITEM_BY_ID)
     const totalGold = items.reduce(
@@ -172,7 +176,7 @@ export function ItemsPanel({ players }: { players: ChartPlayer[] }) {
             <div
               style={{
                 padding: '8px 10px',
-                background: '#12121a',
+                background: surfaceBg('#12121a'),
                 border: '1px solid #2a2a3a',
                 borderLeft: `3px solid ${player.color}`,
               }}

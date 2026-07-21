@@ -7,10 +7,25 @@ import {
   UNIT_GOLD_BY_ID,
   UNIT_LUMBER_BY_ID,
   UNIT_ICON_BY_ID,
+  UNIT_STATS_BY_ID,
+  UNIT_ABILITY_BY_ID,
+  HERO_STATS_BY_ID,
+  ABILITY_BY_ID,
 } from '@magic-sentry/wc3data'
 import { heroSupply, fmtTime, UNIT_COLORS } from '@magic-sentry/shared'
 import { HoverTooltip } from '../HoverTooltip'
+import { UnitTooltipBody } from '../UnitTooltipBody'
+import { HeroTooltipBody } from '../HeroTooltipBody'
 import { useIconSrc } from '../context'
+
+// Resolve a unit/hero's ability ids to the records the tooltip bodies expect,
+// mirroring EncyclopediaPanel.unitAbilities.
+function unitAbilities(id: string) {
+  return (UNIT_ABILITY_BY_ID[id] ?? []).flatMap((aid) => {
+    const info = ABILITY_BY_ID[aid]
+    return info ? [{ id: aid, info }] : []
+  })
+}
 
 export const CM = { top: 16, right: 16, bottom: 28, left: 52 }
 export const W = 640
@@ -146,17 +161,23 @@ export function UnitIcon({ name, fill, size = 1 }: { name: string; fill: string;
       </div>
       {hovered && (
         <HoverTooltip>
-          <div>{displayName}</div>
-          {gold !== undefined && gold > 0 && (
-            <div style={{ color: '#c8a050', fontFamily: 'monospace' }}>{gold}g</div>
-          )}
-          {lumber !== undefined && lumber > 0 && (
-            <div style={{ color: '#7dbf7d', fontFamily: 'monospace' }}>{lumber}w</div>
-          )}
-          {effect && (
-            <div style={{ color: '#888', whiteSpace: 'normal', maxWidth: 240, marginTop: 3 }}>
-              {effect}
-            </div>
+          <div style={{ color: '#efeff1' }}>{displayName}</div>
+          {isHero ? (
+            <HeroTooltipBody stats={HERO_STATS_BY_ID[name]} abilities={unitAbilities(name)} />
+          ) : (
+            <>
+              {gold || lumber ? (
+                <div style={{ display: 'flex', gap: 10, fontFamily: 'monospace' }}>
+                  {gold ? <span style={{ color: '#c8a050' }}>{gold}g</span> : null}
+                  {lumber ? <span style={{ color: '#7dbf7d' }}>{lumber}w</span> : null}
+                </div>
+              ) : null}
+              <UnitTooltipBody
+                stats={UNIT_STATS_BY_ID[name]}
+                effect={effect}
+                abilities={unitAbilities(name)}
+              />
+            </>
           )}
         </HoverTooltip>
       )}
