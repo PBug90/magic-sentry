@@ -69,6 +69,8 @@ export function useChartHover() {
   return { hover, wrapRef, onSvgMouseMove, onSvgMouseLeave: () => setHover(null) }
 }
 
+const TIP_MAX_W = 260
+
 export function ChartTooltip({
   hover,
   minWidth = 130,
@@ -78,7 +80,10 @@ export function ChartTooltip({
   minWidth?: number
   children: React.ReactNode
 }) {
-  const toLeft = hover.sx > hover.wrapW * 0.58
+  // Show right of the cursor unless the tooltip could clip the viewport's
+  // right edge; then flip left. Viewport-based (not chart-based) so it works
+  // wherever the panel is docked and in the full-width web viewer.
+  const toLeft = hover.vx + 12 + TIP_MAX_W > window.innerWidth
   return createPortal(
     <div
       style={{
@@ -92,7 +97,7 @@ export function ChartTooltip({
         pointerEvents: 'none',
         zIndex: 9999,
         minWidth,
-        maxWidth: 260,
+        maxWidth: TIP_MAX_W,
         boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
         borderRadius: 4,
         fontSize: `${hover.baseFontSize}px`,
