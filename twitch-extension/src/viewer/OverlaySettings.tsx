@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 
 export type OverlayLayout = 'docked' | 'fullscreen' | 'corner'
+export type OverlaySide = 'left' | 'right'
 
 const label: CSSProperties = {
   fontSize: '.62em',
@@ -18,14 +19,14 @@ const help: CSSProperties = {
   lineHeight: 1.5,
 }
 
-function Toggle({
+function Toggle<K extends string>({
   options,
   value,
   onChange,
 }: {
-  options: { key: OverlayLayout; label: string }[]
-  value: OverlayLayout
-  onChange: (v: OverlayLayout) => void
+  options: { key: K; label: string }[]
+  value: K
+  onChange: (v: K) => void
 }) {
   return (
     <div
@@ -65,16 +66,20 @@ function Toggle({
 export function OverlaySettings({
   opacity,
   layout,
+  side,
   fontScale,
   onOpacity,
   onLayout,
+  onSide,
   onFontScale,
 }: {
   opacity: number
   layout: OverlayLayout
+  side: OverlaySide
   fontScale: number
   onOpacity: (v: number) => void
   onLayout: (v: OverlayLayout) => void
+  onSide: (v: OverlaySide) => void
   onFontScale: (v: number) => void
 }) {
   return (
@@ -146,6 +151,19 @@ export function OverlaySettings({
       </div>
 
       <div>
+        <div style={label}>Screen side</div>
+        <Toggle
+          options={[
+            { key: 'left', label: 'Left' },
+            { key: 'right', label: 'Right' },
+          ]}
+          value={side}
+          onChange={onSide}
+        />
+        <div style={help}>Which side of the stream the rail and panels dock to.</div>
+      </div>
+
+      <div>
         <div style={label}>Graph layout</div>
         <Toggle
           options={[
@@ -157,8 +175,8 @@ export function OverlaySettings({
           onChange={onLayout}
         />
         <div style={help}>
-          Docked keeps a full-height panel on the right; Fullscreen fills the stream area beside the
-          rail; Corner shows a compact card in the bottom-right.
+          Docked keeps a full-height panel beside the rail; Fullscreen fills the stream area beside
+          the rail; Corner shows a compact card in the bottom corner.
         </div>
       </div>
     </div>

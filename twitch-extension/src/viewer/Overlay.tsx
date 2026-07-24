@@ -14,7 +14,7 @@ import {
 import type { TabKey } from '@magic-sentry/viewer'
 import { useExtensionHistory } from './hooks/useExtensionHistory'
 import { OverlayRail, RAIL_WIDTH, type PanelKey } from './OverlayRail'
-import { OverlaySettings, type OverlayLayout } from './OverlaySettings'
+import { OverlaySettings, type OverlayLayout, type OverlaySide } from './OverlaySettings'
 
 const visibleTabs =
   import.meta.env.VITE_ENABLE_FIGHTS === 'true'
@@ -46,6 +46,9 @@ export function Overlay() {
     const s = localStorage.getItem('magic-sentry-layout')
     return s === 'fullscreen' || s === 'corner' ? s : 'docked'
   })
+  const [side, setSide] = useState<OverlaySide>(() =>
+    localStorage.getItem('magic-sentry-side') === 'right' ? 'right' : 'left',
+  )
   // Viewer-adjustable text-size multiplier applied on top of the responsive base.
   const [fontScale, setFontScale] = useState<number>(() => {
     const s = localStorage.getItem('magic-sentry-font-scale')
@@ -62,6 +65,9 @@ export function Overlay() {
   useEffect(() => {
     localStorage.setItem('magic-sentry-layout', layout)
   }, [layout])
+  useEffect(() => {
+    localStorage.setItem('magic-sentry-side', side)
+  }, [side])
   useEffect(() => {
     localStorage.setItem('magic-sentry-font-scale', String(fontScale))
   }, [fontScale])
@@ -90,8 +96,18 @@ export function Overlay() {
 
   const { config, configReady } = useTwitchConfig()
 
+  // Without a full broadcaster config (endpoint + key) the extension runs in
+  // encyclopedia-only mode: no game tabs, no settings, and no network requests.
+  const configured = !!(config.endpointUrl && config.token)
+
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null)
-  const history = useExtensionHistory(config.endpointUrl)
+  const history = useExtensionHistory(configured ? config.endpointUrl : '')
+
+  // If the config goes away while a game tab or settings is open, close it —
+  // those panels no longer exist in encyclopedia-only mode.
+  useEffect(() => {
+    if (!configured && activeTab !== null && activeTab !== 'encyclopedia') setActiveTab(null)
+  }, [configured, activeTab])
 
   // Reset to live view when the channel/endpoint changes
   useEffect(() => {
@@ -133,17 +149,20 @@ export function Overlay() {
   const panelBg = `rgba(14,14,16,${opacity})`
   const panelPos: CSSProperties =
     effLayout === 'fullscreen'
-      ? { top: 0, bottom: 0, left: 0, right: RAIL_WIDTH }
+      ? side === 'left'
+        ? { top: 0, bottom: 0, left: RAIL_WIDTH, right: 0 }
+        : { top: 0, bottom: 0, left: 0, right: RAIL_WIDTH }
       : effLayout === 'corner'
         ? {
-            right: RAIL_WIDTH,
+            [side]: RAIL_WIDTH,
             bottom: 10,
             width: 'min(460px, 42vw)',
             maxHeight: 'min(62%, 480px)',
             borderTop: '1px solid #1e1e26',
-            borderTopLeftRadius: 8,
+            // Round the corner that faces the open stream.
+            [side === 'left' ? 'borderTopRightRadius' : 'borderTopLeftRadius']: 8,
           }
-        : { top: 0, bottom: 0, right: RAIL_WIDTH, width: 'min(460px, 42vw)' }
+        : { top: 0, bottom: 0, [side]: RAIL_WIDTH, width: 'min(460px, 42vw)' }
 
   return (
     <div
@@ -169,7 +188,8 @@ export function Overlay() {
               flexDirection: 'column',
               overflow: 'hidden',
               background: panelBg,
-              borderLeft: '1px solid #1e1e26',
+              // Border on the edge that faces the open stream.
+              [side === 'left' ? 'borderRight' : 'borderLeft']: '1px solid #1e1e26',
               pointerEvents: 'auto',
             }}
           >
@@ -257,9 +277,11 @@ export function Overlay() {
               <OverlaySettings
                 opacity={opacity}
                 layout={layout}
+                side={side}
                 fontScale={fontScale}
                 onOpacity={setOpacity}
                 onLayout={setLayout}
+                onSide={setSide}
                 onFontScale={setFontScale}
               />
             )}
@@ -286,11 +308,13 @@ export function Overlay() {
       )}
 
       <OverlayRail
-        tabs={visibleTabs}
+        tabs={configured ? visibleTabs : []}
         activeKey={activeTab}
         onSelect={setActiveTab}
         open={railOpen}
         onToggleOpen={toggleRail}
+        side={side}
+        configured={configured}
       />
     </div>
   )

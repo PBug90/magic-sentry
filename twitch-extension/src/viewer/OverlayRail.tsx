@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react'
 import type { TabKey, VIEWER_TABS } from '@magic-sentry/viewer'
 import { TAB_ICONS, SettingsIcon, type RailKey } from './icons'
+import type { OverlaySide } from './OverlaySettings'
 
 export const RAIL_WIDTH = 52
 
@@ -71,12 +72,17 @@ export function OverlayRail({
   onSelect,
   open,
   onToggleOpen,
+  side,
+  configured,
 }: {
   tabs: typeof VIEWER_TABS
   activeKey: PanelKey | null
   onSelect: (key: PanelKey | null) => void
   open: boolean
   onToggleOpen: () => void
+  side: OverlaySide
+  /** False when no broadcaster config is set — encyclopedia-only mode. */
+  configured: boolean
 }) {
   const toggle = (key: PanelKey) => onSelect(activeKey === key ? null : key)
 
@@ -84,8 +90,8 @@ export function OverlayRail({
     <div
       style={{
         position: 'absolute',
-        top: 0,
-        right: 0,
+        top: '5rem',
+        [side]: 0,
         bottom: 0,
         width: RAIL_WIDTH,
         display: 'flex',
@@ -118,7 +124,13 @@ export function OverlayRail({
       {open && (
         <>
           <div
-            style={{ width: 22, height: 1, background: '#2a2a3a', margin: '4px 0', flexShrink: 0 }}
+            style={{
+              width: 22,
+              height: 1,
+              background: '#2a2a3a',
+              margin: '4px 0',
+              flexShrink: 0,
+            }}
           />
 
           {tabs.map(({ key, label }: { key: TabKey; label: string }) => (
@@ -137,16 +149,26 @@ export function OverlayRail({
             onClick={() => toggle('encyclopedia')}
           />
 
-          <div
-            style={{ width: 22, height: 1, background: '#2a2a3a', margin: '4px 0', flexShrink: 0 }}
-          />
+          {configured && (
+            <>
+              <div
+                style={{
+                  width: 22,
+                  height: 1,
+                  background: '#2a2a3a',
+                  margin: '4px 0',
+                  flexShrink: 0,
+                }}
+              />
 
-          <RailButton
-            icon={SettingsIcon}
-            label="Settings"
-            active={activeKey === 'settings'}
-            onClick={() => toggle('settings')}
-          />
+              <RailButton
+                icon={SettingsIcon}
+                label="Settings"
+                active={activeKey === 'settings'}
+                onClick={() => toggle('settings')}
+              />
+            </>
+          )}
         </>
       )}
     </div>
