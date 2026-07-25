@@ -97,16 +97,22 @@ export function Overlay() {
   const { config, configReady } = useTwitchConfig()
 
   // Without a full broadcaster config (endpoint + key) the extension runs in
-  // encyclopedia-only mode: no game tabs, no settings, and no network requests.
+  // encyclopedia-only mode: no game tabs and no network requests.
   const configured = !!(config.endpointUrl && config.token)
 
   const [selectedHistoryId, setSelectedHistoryId] = useState<string | null>(null)
   const history = useExtensionHistory(configured ? config.endpointUrl : '')
 
-  // If the config goes away while a game tab or settings is open, close it —
-  // those panels no longer exist in encyclopedia-only mode.
+  // If the config goes away while a game tab is open, close it — those panels
+  // no longer exist in encyclopedia-only mode. Settings stays available.
   useEffect(() => {
-    if (!configured && activeTab !== null && activeTab !== 'encyclopedia') setActiveTab(null)
+    if (
+      !configured &&
+      activeTab !== null &&
+      activeTab !== 'encyclopedia' &&
+      activeTab !== 'settings'
+    )
+      setActiveTab(null)
   }, [configured, activeTab])
 
   // Reset to live view when the channel/endpoint changes
@@ -314,7 +320,6 @@ export function Overlay() {
         open={railOpen}
         onToggleOpen={toggleRail}
         side={side}
-        configured={configured}
       />
     </div>
   )
